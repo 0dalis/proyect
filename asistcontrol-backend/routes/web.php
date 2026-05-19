@@ -106,7 +106,36 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
     Route::delete('permissions', [PermissionController::class, 'destroy'])                      ->name('permissions.destroy');
 
 });
+/*Route::middleware(['auth', 'role:super-admin'])->prefix('api/web/services/1')->group(function () {
 
+    // Dashboard oculto
+    Route::get('dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    // Perfil oculto
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+    });
+
+    // Users y companies
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
+
+    // Roles
+    Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
+    Route::post('rolesupd', [RoleController::class, 'update'])->name('roles.update');
+    Route::delete('roles', [RoleController::class, 'destroy'])->name('roles.destroy');
+
+    // Permissions
+    Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+    Route::post('permissions', [PermissionController::class, 'store'])->name('permissions.store');
+    Route::post('permissionsupd', [PermissionController::class, 'update'])->name('permissions.update');
+    Route::delete('permissions', [PermissionController::class, 'destroy'])->name('permissions.destroy');
+
+});*/
 // Cargar rutas
 require __DIR__.'/auth.php';
 require __DIR__.'/api.php';
