@@ -42,7 +42,7 @@ return [
     |
     */
 
-    'path' => env('TELESCOPE_PATH', 'telescope'),
+    'path' => 'api/web/services/1/telescope', // antes era 'telescope'
 
     /*
     |--------------------------------------------------------------------------
