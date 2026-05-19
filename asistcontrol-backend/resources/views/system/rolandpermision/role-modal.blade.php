@@ -100,6 +100,78 @@
     });
 
     $('#closeRoleModal, #closeRoleModalBtn').on('click', closeRoleModal);
+    $(document).ready(function(){
+        $('#roleForm').on('submit', function(e){
+            e.preventDefault();
+            var action = $('#actionRole').val();
+            var id = $('#roleId').val();
+            var name = $('#roleName').val();
+            var permissions = [];
+            $('#roleForm input[name="permissions[]"]:checked').each(function(){
+                permissions.push($(this).val());
+            });
+            var url = '';
+            if(action === 'create') {
+                url = "{{ route('roles.store') }}";
+            } else if(action === 'update') {
+                url = "{{ route('roles.update') }}";
+            }
 
+            var $btn = $('#saveRoleBtn');
+            $btn.prop('disabled', true);
+            var originalText = $btn.html();
+            $btn.html('<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Guardando...');
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    roleId: id,
+                    name: name,
+                    permissions: permissions
+                },
+                success: function(response){
+                    // Mostrar toast de éxito
+                    Toastify({
+                        text: response.message,
+                        duration: 5000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#4fbe87"
+                    }).showToast();
+
+                    // Cerrar modal y recargar página
+                    closeRoleModal();
+                    setTimeout(function(){
+                        location.reload();
+                    }, 500); // medio segundo para que se vea el toast
+                },
+                error: function(xhr){
+                    var message = "Error al procesar la solicitud";
+                    if(xhr.responseJSON && xhr.responseJSON.message){
+                        message = xhr.responseJSON.message;
+                    }
+
+                    // Mostrar toast de error
+                    Toastify({
+                        text: message,
+                        duration: 5000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#e74c3c"
+                    }).showToast();
+
+                    closeRoleModal();
+                },
+                complete: function(){
+                    // Restaurar botón
+                    $btn.prop('disabled', false);
+                    $btn.html(originalText);
+                }
+            });
+        });
+
+    });
 </script>
 @endpush

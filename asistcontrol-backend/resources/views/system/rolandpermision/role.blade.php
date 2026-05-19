@@ -22,7 +22,11 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $role->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $role->permissions->pluck('name')->join(', ') }}
+                                        @foreach($role->permissions as $permission)
+                                            <span class="inline-block bg-indigo-100 text-indigo-800 text-xs font-medium mr-1 mb-1 px-2.5 py-0.5 rounded">
+                                                {{ $permission->name }}
+                                            </span>
+                                        @endforeach
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
                                         <!-- Editar rol -->
@@ -59,4 +63,79 @@
         Crear Rol
     </a>
     @include('system/rolandpermision/role-modal')
+@push('scripts')
+<script>
+    $(document).on('click', '.deleteRole', function(e){
+        e.preventDefault();
+
+        var roleId = $(this).data('id');
+        var roleName = $(this).data('name');
+
+        // Confirmación con SweetAlert
+        Swal.fire({
+            title: `¿Eliminar el rol "${roleName}"?`,
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if(result.isConfirmed) {
+
+                // Mostrar "Procesando..."
+                Swal.fire({
+                    title: 'Procesando...',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+
+                // AJAX para eliminar
+                $.ajax({
+                    url: "{{ url('roles/delete') }}/" + roleId, // Ajusta tu ruta
+                    type: 'DELETE',
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(response){
+                        Swal.close(); // cerrar el "Procesando..."
+
+                        // Toastify
+                        Toastify({
+                            text: response.message,
+                            duration: 4000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: response.success ? "#4fbe87" : "#e74c3c",
+                        }).showToast();
+
+                        if(response.success){
+                            // Remover la fila de la tabla
+                            $(`.deleteRole[data-id='${roleId}']`).closest('tr').remove();
+                        }
+                    },
+                    error: function(xhr){
+                        Swal.close();
+                        let message = "Error al eliminar el rol";
+                        if(xhr.responseJSON && xhr.responseJSON.message){
+                            message = xhr.responseJSON.message;
+                        }
+                        Toastify({
+                            text: message,
+                            duration: 4000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#e74c3c",
+                        }).showToast();
+                    }
+                });
+            }
+        });
+    });
+</script>
+@endpush
 </x-app-layout>
