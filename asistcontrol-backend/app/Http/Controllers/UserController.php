@@ -18,9 +18,8 @@ class UserController extends Controller implements HasMiddleware
     }
 
     // Mostrar todos los usuarios
-    public function index()
-    {
-        $users = User::all(); // Trae todos los usuarios
+    public function index(){
+        $users = User::with('roles')->get(); // Trae todos los usuarios
         return view('system.user', compact('users')); // Enviamos a la vista
     }
 }

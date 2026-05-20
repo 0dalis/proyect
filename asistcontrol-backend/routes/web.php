@@ -91,6 +91,7 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
         //Route::delete('/', [ProfileController::class, 'destroy'])                               ->name('profile.destroy');
     });
     Route::get('users', [UserController::class, 'index'])                                       ->name('users.index');
+    
     Route::get('companies', [CompanyController::class, 'index'])                                ->name('companies.index');
 
 
