@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  /* Mapeamos tus variables de TS a nombres de Tailwind */
+  --color-primary-dark: rgb(var(--primary-dark));
+  --color-primary-medium: rgb(var(--primary-medium));
+  --color-primary-light: rgb(var(--primary-light));
+  
+  --color-accent-blue: rgb(var(--accent-blue));
+  --color-accent-teal: rgb(var(--accent-teal));
+  
+  --color-success-green: rgb(var(--success-green));
+  
+  --color-surface: rgb(var(--surface));
+  --color-background-theme: rgb(var(--background));
+  
+  --color-text-title: rgb(var(--text-title));
+  --color-text-body: rgb(var(--text-body));
+  
+  --color-border-focus-theme: rgb(var(--border-focus));
+
+  /* Fuente dinámica */
+  --font-user: var(--user-font);
+}
+
+/* Configuramos el comportamiento base */
+@layer base {
+  :root {
+    /* Fallbacks necesarios para que no falle al inicio */
+    --primary-dark: 44 76 212;
+    --primary-medium: 0 110 235;
+    --background: 245 247 250;
+    --text-title: 17 24 39;
+    --text-body: 107 114 128;
+    --user-font: 'Inter', sans-serif;
+  }
+
+  body {
+    background-color: var(--color-background-theme);
+    color: var(--color-text-body);
+    font-family: var(--font-user);
+    @apply antialiased transition-colors duration-200;
+  }
+}
