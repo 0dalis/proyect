@@ -71,23 +71,23 @@ class RoleController extends Controller{
         }
     }
     public function destroy(Request $request){
-        $request->validate([
-            'roleId' => 'required|integer|exists:roles,id'
-        ]);
-        $id = $request->roleId;
-    try {
-        $role = Role::findOrFail($id);
-        $role->delete();
+            $request->validate([
+                'roleId' => 'required|integer|exists:roles,id'
+            ]);
+            $id = $request->roleId;
+        try {
+            $role = Role::findOrFail($id);
+            $role->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Rol eliminado correctamente'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error al eliminar el rol: ' . $e->getMessage()
-        ], 500);
+            return response()->json([
+                'success' => true,
+                'message' => 'Rol eliminado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el rol: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
 }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller implements HasMiddleware
 {
@@ -20,6 +21,7 @@ class UserController extends Controller implements HasMiddleware
     // Mostrar todos los usuarios
     public function index(){
         $users = User::with('roles')->get(); // Trae todos los usuarios
-        return view('system.user', compact('users')); // Enviamos a la vista
+        $roles = Role::all(); // Trae todos los roles
+        return view('system.user', compact('users', 'roles')); // Enviamos a la vista
     }
 }
