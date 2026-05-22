@@ -23,7 +23,7 @@
                         {{ __('Empresas') }}
                     </x-nav-link>
                     @php
-                        $dropdownActive = request()->routeIs('roles.index') || request()->routeIs('permissions.index');
+                        $dropdownActive = request()->routeIs('roles.index') || request()->routeIs('permissions.index') || request()->routeIs('planes.index');
                     @endphp
                     <!-- Dropdown Sistema -->
                     <x-dropdown align="left" width="48">
@@ -40,6 +40,7 @@
                         <x-slot name="content">
                             <x-dropdown-link :href="route('roles.index')">{{ __('Roles') }}</x-dropdown-link>
                             <x-dropdown-link :href="route('permissions.index')">{{ __('Permisos') }}</x-dropdown-link>
+                            <x-dropdown-link :href="route('planes.index')">{{ __('planes') }}</x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
                 </div>

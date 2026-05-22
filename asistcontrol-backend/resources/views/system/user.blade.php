@@ -15,6 +15,7 @@
                             <tr>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th> <!-- Nueva columna -->
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
@@ -25,6 +26,7 @@
                                 <tr>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $user->first_name }} {{ $user->last_name }}</td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $user->email }}</td>
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $user->company ? $user->company->name : '-' }}</td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">
                                         @foreach($user->roles as $role)
                                             <span class="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
@@ -53,6 +55,7 @@
                                         data-email="{{ $user->email }}"
                                         data-employee_code="{{ $user->employee_code }}"
                                         data-is_active="{{ $user->is_active }}"
+                                        data-company_name="{{ $user->company ? $user->company->name : 'Sin empresa' }}"
                                         data-roles='@json($user->roles->pluck("id"))'>
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>

@@ -29,6 +29,10 @@ class Company extends Model{
         'subscription_ends_at' => 'datetime',
     ];
 
+    public function plan(){
+        return $this->belongsTo(Plan::class, 'plan', 'id');
+    }
+
     public function offices(){
         return $this->hasMany(Office::class);
     }

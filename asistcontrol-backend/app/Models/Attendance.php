@@ -60,9 +60,9 @@ class Attendance extends Model
         return $query->where('company_id', $companyId);
     }
 
-    public function scopeByUser($query, $userId)
+    public function scopeByUser($query, $userid)
     {
-        return $query->where('user_id', $userId);
+        return $query->where('user_id', $userid);
     }
 
     public function scopeToday($query)

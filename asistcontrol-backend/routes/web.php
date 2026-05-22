@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\plancontroller;
 
 Route::get('/', function () {
     // Mensajes de error
@@ -75,7 +76,7 @@ Route::get('/', function () {
         ]
     ];
 
-    return response()->json($response, $response['code']);
+    return response()->json($response, (int) $response['code']);
 });
 Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
 
@@ -91,8 +92,13 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
         //Route::delete('/', [ProfileController::class, 'destroy'])                               ->name('profile.destroy');
     });
     Route::get('users', [UserController::class, 'index'])                                       ->name('users.index');
-    
+    Route::post('users', [UserController::class, 'store'])                                      ->name('users.store');
+    Route::post('usersupd', [UserController::class, 'update'])                                  ->name('users.update');
+
+
     Route::get('companies', [CompanyController::class, 'index'])                                ->name('companies.index');
+    Route::post('companies', [CompanyController::class, 'store'])                               ->name('companies.store');
+    Route::put('companies', [CompanyController::class, 'update'])                               ->name('companies.update');
 
 
     Route::get('roles', [RoleController::class, 'index'])                                       ->name('roles.index');
@@ -105,6 +111,10 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
     Route::post('permissions', [PermissionController::class, 'store'])                          ->name('permissions.store');
     Route::post('permissionsupd', [PermissionController::class, 'update'])                      ->name('permissions.update');
     Route::delete('permissions', [PermissionController::class, 'destroy'])                      ->name('permissions.destroy');
+
+    Route::get('planes', [plancontroller::class, 'index'])                                      ->name('planes.index');
+    Route::post('planes', [PlanController::class, 'store'])                                     ->name('planes.store');
+    Route::put('planes', [PlanController::class, 'update'])                                     ->name('planes.update');
 
 });
 /*Route::middleware(['auth', 'role:super-admin'])->prefix('api/web/services/1')->group(function () {
@@ -141,4 +151,3 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
 require __DIR__.'/auth.php';
 require __DIR__.'/api.php';
 require __DIR__.'/console.php';
-

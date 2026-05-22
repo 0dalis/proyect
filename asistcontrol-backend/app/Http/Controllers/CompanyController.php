@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Company;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Str;
 
-class CompanyController extends Controller implements HasMiddleware
-{
+class CompanyController extends Controller implements HasMiddleware{
     public static function middleware(): array
     {
         return ['auth'];
@@ -17,7 +17,52 @@ class CompanyController extends Controller implements HasMiddleware
     // Mostrar todas las empresas
     public function index()
     {
-        $companies = Company::all(); // O agregar paginación: Company::paginate(10);
+        $companies = Company::all();
         return view('system.companies', compact('companies'));
+    }
+    public function store(Request $request){
+        $request->merge([
+            'is_active' => $request->has('is_active') ? 1 : 0,
+        ]);
+
+        $validated = $request->validate([
+            'name'                 => 'required|string|max:255',
+            'code'                 => 'required|string|max:50|unique:companies,code',
+            'plan'                 => 'required|string|max:100',
+            'trial_ends_at'        => 'nullable|date',
+            'subscription_ends_at' => 'nullable|date',
+            'is_active'            => 'required|boolean',
+        ]);
+
+        $validated['slug'] = Str::slug($validated['name']);
+
+        Company::create($validated);
+
+        return response()->json(['success' => true, 'message' => 'Empresa creada correctamente']);
+    }
+
+    public function update(Request $request){
+        $request->merge([
+            'is_active' => $request->has('is_active') ? 1 : 0,
+        ]);
+
+        $company = Company::findOrFail($request->company_id);
+
+        $validated = $request->validate([
+            'name'                 => 'required|string|max:255',
+            'code'                 => 'required|string|max:50|unique:companies,code,' . $company->id,
+            'plan'                 => 'required|string|max:100',
+            'trial_ends_at'        => 'nullable|date',
+            'subscription_ends_at' => 'nullable|date',
+            'is_active'            => 'required|boolean',
+        ]);
+
+        if ($company->name !== $validated['name']) {
+            $validated['slug'] = Str::slug($validated['name']);
+        }
+
+        $company->update($validated);
+
+        return response()->json(['success' => true, 'message' => 'Empresa actualizada correctamente']);
     }
 }

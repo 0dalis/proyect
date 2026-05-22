@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration{
     /**
      * Run the migrations.
      */
@@ -20,7 +19,7 @@ return new class extends Migration
             $table->string('slug')->unique(); // Para URLs o subdominios: empresa-x
 
             // Plan / Suscripción
-            $table->enum('plan', ['free', 'growth', 'business', 'enterprise'])->default('free');
+            $table->integer('plan')->nullable();
             $table->timestamp('trial_ends_at')->nullable(); // Para pruebas gratis
             $table->timestamp('subscription_ends_at')->nullable(); // Control de pagos
 

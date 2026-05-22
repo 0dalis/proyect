@@ -19,7 +19,6 @@ class RolesAndAdminSeeder extends Seeder
             ['name' => 'AsistControl Global'],
             [
                 'code' => 'AC-GLOBAL',
-                'plan' => 'enterprise',
                 'has_dedicated_db' => false,
                 'is_active' => true,
             ]
