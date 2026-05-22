@@ -7,6 +7,8 @@ use App\Models\Company;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Str;
+use App\Models\Plan;
+
 
 class CompanyController extends Controller implements HasMiddleware{
     public static function middleware(): array
@@ -15,10 +17,10 @@ class CompanyController extends Controller implements HasMiddleware{
     }
 
     // Mostrar todas las empresas
-    public function index()
-    {
+    public function index(){
         $companies = Company::all();
-        return view('system.companies', compact('companies'));
+        $planes = Plan::all();
+        return view('system.companies', compact('companies', 'planes'));
     }
     public function store(Request $request){
         $request->merge([

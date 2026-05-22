@@ -33,9 +33,14 @@
                                    class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
                         </div>
                         <div>
-                            <label for="companyPlan" class="block text-sm font-medium text-neutral-700 mb-1">Plan</label>
-                            <input type="text" id="companyPlan" name="plan"
-                                   class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
+                            <label for="companyPlanId" class="block text-sm font-medium text-neutral-700 mb-1">Plan</label>
+                            <select id="companyPlanId" name="plan_id"
+                                    class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
+                                <option value="">Seleccione un plan</option>
+                                @foreach($planes as $plan)
+                                    <option value="{{ $plan->id }}">{{ $plan->nombre }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>

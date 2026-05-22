@@ -28,7 +28,9 @@
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $company->name }}</td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $company->code }}</td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $company->slug }}</td>
-                                    <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $company->plan }}</td>
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                        {{ $company->plan->nombre ?? 'Sin plan' }}
+                                    </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">
                                         {{ $company->trial_ends_at ? \Carbon\Carbon::parse($company->trial_ends_at)->format('d/m/Y H:i') : '-' }}
                                     </td>
