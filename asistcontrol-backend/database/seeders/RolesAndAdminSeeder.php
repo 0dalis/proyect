@@ -8,8 +8,7 @@ use App\Models\Company;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class RolesAndAdminSeeder extends Seeder
-{
+class RolesAndAdminSeeder extends Seeder{
     public function run(): void
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -26,10 +25,10 @@ class RolesAndAdminSeeder extends Seeder
 
         // 2. Crear Permisos básicos
         $permissions = [
-            'manage companies',
-            'manage all users',
-            'view reports',
-            'mark attendance'
+            'index',
+            'create',
+            'update',
+            'destroy',
         ];
 
         foreach ($permissions as $permission) {
@@ -39,7 +38,7 @@ class RolesAndAdminSeeder extends Seeder
         // 3. Crear Roles
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
         Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'employee']);
+        Role::firstOrCreate(['name' => 'empleado']);
 
         // 4. Crear el Super Admin (AÑADIDO EL PIN)
         $user = User::updateOrCreate(
@@ -49,7 +48,7 @@ class RolesAndAdminSeeder extends Seeder
                 'first_name' => 'Alejandro',
                 'last_name' => 'Admin',
                 'password' => 'password123',
-                'pin' => 123456, // <--- Solución al error Field 'pin'
+                'pin' => 12345678,
                 'employee_code' => 'SA-001',
                 'is_active' => true,
             ]
@@ -61,7 +60,7 @@ class RolesAndAdminSeeder extends Seeder
         $this->command->info('   ¡EXITO TOTAL! Usuario creado.');
         $this->command->info('   Email: admin@sistema.com');
         $this->command->info('   Pass:  password123');
-        $this->command->info('   PIN:   1234');
+        $this->command->info('   PIN:   12345678');
         $this->command->info('-----------------------------------------');
     }
 }

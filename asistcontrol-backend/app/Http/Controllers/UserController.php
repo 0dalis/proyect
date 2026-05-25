@@ -81,7 +81,7 @@ class UserController extends Controller implements HasMiddleware
             'last_name'     => 'required|string|max:255',
             'email'         => 'required|email|unique:users,email,' . $user->id,
             'password'      => 'nullable|string|min:6',
-            'pin'           => 'nullable|string|min:4',
+            'pin'           => 'nullable|string|min:8',
             'employee_code' => 'nullable|string|max:50',
             'is_active'     => 'required|boolean',
             'roles'         => 'nullable|array',

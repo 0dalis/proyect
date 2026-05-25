@@ -135,15 +135,6 @@ class User extends Authenticatable{
             $this->attributes['password'] = Hash::make($value);
         }
     }
-
-    // Hash automático del PIN
-    public function setPinAttribute($value)
-    {
-        if (!empty($value)) {
-            $this->attributes['pin'] = Hash::make($value);
-        }
-    }
-
     /*
     |--------------------------------------------------------------------------
     | Métodos útiles
