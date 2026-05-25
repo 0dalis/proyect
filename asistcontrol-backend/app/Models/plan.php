@@ -14,6 +14,7 @@ class Plan extends Model{
         'iva',
         'min_users',
         'max_users',
+        'public',
     ];
 
     protected $casts = [
@@ -21,5 +22,6 @@ class Plan extends Model{
         'tax'  => 'decimal:2',
         'min_users' => 'integer',
         'max_users' => 'integer',
+        'public' => 'boolean',
     ];
 }

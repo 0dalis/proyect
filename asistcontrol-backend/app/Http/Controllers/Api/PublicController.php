@@ -6,9 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cookie;
 
 class PublicController extends Controller{
-    public function loginWeb(Request $request){
+    public function loginWeb(Request $request) {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
@@ -26,19 +27,30 @@ class PublicController extends Controller{
                 'message' => 'Tu cuenta ha sido suspendida. Contacta al administrador.'
             ], 403);
         }
+
+        // Limpieza y generación del token de Sanctum
         $user->tokens()->where('name', 'web-token')->delete();
         $tokenResult = $user->createToken('web-token', ['web-access']);
         $token = $tokenResult->plainTextToken;
+
+        // Configuración de la cookie HttpOnly
+        $cookie = cookie(
+            'web_session',     
+            $token,            
+            1440,              
+            '/',               
+            null,              
+            false, // Recuerda cambiar a true en producción bajo HTTPS
+            true,  // httpOnly
+            false, 
+            'Lax'  
+        );
+
+        // JSON minimalista de éxito
         return response()->json([
             'status' => 'success',
-            'token' => $token,
-            'expires_at' => Carbon::now()->addHours(24)->toDateTimeString(),
-            'user' => [
-                'name' => $user->name,
-                'role' => $user->role, // O tus permisos de Spatie
-                'empresa_id' => $user->empresa_id // Importante para tu Middleware de Tenant
-            ]
-        ]);
+            'message' => 'Autenticado correctamente.'
+        ])->withCookie($cookie);
     }
     /**
      * LOGIN MOBILE

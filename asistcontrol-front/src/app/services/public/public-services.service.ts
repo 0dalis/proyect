@@ -5,6 +5,7 @@ import { ThemeService } from '../../theme/theme.service';
 import { Router } from '@angular/router';
 
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,14 +16,9 @@ export class PublicServicesService {
   constructor(private http: HttpClient, private themeService: ThemeService, private router: Router) {}
 
   login(data: { email: string, password: string }) {
-    return this.http.post<any>(`${this.API_URL}/login`, data).pipe(
-      tap(res => {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('user', JSON.stringify(res.user));
-        //se llama a el servicio de temas
-        this.themeService.initTheme(res.user);
-      })
-    );
+    return this.http.post<any>(`${this.API_URL}/login`, data, {
+      withCredentials: true // 👈 Si falta esto, el navegador jamás guardará la cookie
+    });
   }
 
   getToken(): string | null {

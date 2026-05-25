@@ -36,7 +36,7 @@
                             <label for="companyPlanId" class="block text-sm font-medium text-neutral-700 mb-1">Plan</label>
                             <select id="companyPlanId" name="plan_id"
                                     class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
-                                <option value="">Seleccione un plan</option>
+                                <option value="" disabled selected>Seleccione un plan</option>
                                 @foreach($planes as $plan)
                                     <option value="{{ $plan->id }}">{{ $plan->nombre }}</option>
                                 @endforeach

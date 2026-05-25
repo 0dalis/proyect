@@ -112,9 +112,11 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
     Route::post('permissionsupd', [PermissionController::class, 'update'])                      ->name('permissions.update');
     Route::delete('permissions', [PermissionController::class, 'destroy'])                      ->name('permissions.destroy');
 
+    
     Route::get('planes', [plancontroller::class, 'index'])                                      ->name('planes.index');
     Route::post('planes', [PlanController::class, 'store'])                                     ->name('planes.store');
     Route::put('planes', [PlanController::class, 'update'])                                     ->name('planes.update');
+    Route::patch('/planes/toggle', [PlanController::class, 'togglePublic'])                     ->name('planes.toggle');
 
 });
 /*Route::middleware(['auth', 'role:super-admin'])->prefix('api/web/services/1')->group(function () {

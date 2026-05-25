@@ -48,4 +48,24 @@ class plancontroller extends Controller
             'message' => 'Plan actualizado correctamente'
         ]);
     }
+    // En app/Http/Controllers/PlanController.php
+    public function togglePublic(Request $request){
+        $request->validate([
+            'id' => 'required|exists:plans,id',
+            'public' => 'required|boolean'
+        ]);
+
+        $plan = Plan::findOrFail($request->id);
+
+        $plan->update([
+            'public' => $request->boolean('public')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $plan->public
+                ? 'Plan publicado'
+                : 'Plan privado',
+        ]);
+    }
 }

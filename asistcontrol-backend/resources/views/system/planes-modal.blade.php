@@ -173,6 +173,68 @@
             });
         });
     });
+    $(document).on('change', '.togglepublic', function () {
+        let toggle = $(this);
+        let planId = toggle.data('id');
+        let newState = toggle.is(':checked') ? 1 : 0;
+        let originalState = !newState;
+        let statusSpan = toggle.closest('label').find('span');
+
+        // Deshabilitar el toggle y agregar clase visual "gris"
+        toggle.prop('disabled', true);
+        toggle.addClass('processing'); // Añadido
+
+        $.ajax({
+            url: '{{ route('planes.toggle') }}',
+            method: 'PATCH',
+            data: {
+                id: planId,
+                public: newState
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                if (response.success) {
+                    statusSpan.text(newState ? 'Sí' : 'No');
+                    Toastify({
+                        text: response.message,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: newState ? "#10B981" : "#F59E0B",
+                    }).showToast();
+                } else {
+                    toggle.prop('checked', originalState);
+                    Toastify({
+                        text: response.message || 'Error al actualizar',
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#EF4444",
+                    }).showToast();
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                toggle.prop('checked', originalState);
+                Toastify({
+                    text: 'Error de conexión',
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#EF4444",
+                }).showToast();
+            },
+            complete: function () {
+                // Esperar 2 segundos antes de volver a habilitar y quitar estilo gris
+                setTimeout(function() {
+                    toggle.prop('disabled', false);
+                    toggle.removeClass('processing'); // Removemos la clase
+                }, 2000);
+            }
+        });
+    });
     </script>
     <style>
         @keyframes spin {

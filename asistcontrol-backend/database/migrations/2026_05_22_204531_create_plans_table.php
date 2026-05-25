@@ -16,6 +16,7 @@ return new class extends Migration
             $table->decimal('iva', 5, 2)->default(0);   // iva (porcentaje, ej. 16.00)
             $table->unsignedInteger('min_users')->default(1);  // min usuarios
             $table->unsignedInteger('max_users')->nullable();  // max usuarios (null = ilimitado)
+            $table->boolean('public')->default(false);
             $table->timestamps();
         });
     }
