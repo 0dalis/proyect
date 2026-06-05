@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 })
 export class PublicServicesService {
 
-  private API_URL = 'http://localhost:5000/api';
+  private API_URL = 'http://localhost:8000/api';
 
   constructor(private http: HttpClient, private themeService: ThemeService, private router: Router) {}
 

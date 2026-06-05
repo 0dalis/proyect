@@ -1,74 +1,119 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart'; // Import esencial para debugPrint
+
 import 'api_constants.dart';
+import '../core/errors/exceptions.dart';
+import '../models/auth_model.dart';
+import '../models/app_config_model.dart';
 
 class ApiService {
-  // 1. Servicio de Login
-  Future<Map<String, dynamic>> login(String empresaId, String usuario, String password) async {
+  // LOGIN
+  Future<AuthModel> login(String idEmpresa, String correo, String password) async {
     try {
       final response = await http.post(
         Uri.parse(ApiConstants.login),
         body: {
-          'empresa_id': empresaId,
-          'username': usuario,
+          'id_empresa': idEmpresa,
+          'correo': correo,
           'password': password,
         },
       );
-      return _processResponse(response);
+      return _handleResponse(response, (data) => AuthModel.fromJson(data));
     } catch (e) {
-      return {'status': 'error', 'message': 'Error de conexión'};
+      // Lanzamos la excepción directamente para que el compilador sepa que no hay camino sin retorno
+      throw _processError(e);
     }
   }
 
-  // 2. Servicio de Registro (Con tus campos específicos)
-  Future<Map<String, dynamic>> register({
-    required String nombre,
-    required String apellidos,
-    required String codigoEmpresa,
-    required String pin, // 6 dígitos
-    required String password,
-  }) async {
+  // REGISTRAR ASISTENCIA
+  Future<Map<String, dynamic>> registrarAsistencia(String token, String userId, Map<String, dynamic> data) async {
     try {
       final response = await http.post(
-        Uri.parse(ApiConstants.register),
-        headers: {'Accept': 'application/json'},
+        Uri.parse("${ApiConstants.baseUrl}/asistencia/registrar"),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
         body: {
-          'name': nombre,
-          'last_name': apellidos,
-          'company_code': codigoEmpresa,
-          'pin': pin,
-          'password': password,
+          'user_id': userId,
+          ...data,
         },
       );
-      return _processResponse(response);
+
+      if (response.statusCode == 401) {
+        throw AuthException('Sesión expirada o usuario inactivo');
+      }
+
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      if (responseData['is_active'] == false) {
+        throw AuthException('Usuario inactivo. Contacte a su administrador');
+      }
+
+      return responseData;
     } catch (e) {
-      return {'status': 'error', 'message': 'Error al conectar con el servidor'};
+      throw _processError(e);
     }
   }
 
-  // 3. Servicio de Recuperación (Notificación al Admin)
-  Future<Map<String, dynamic>> requestPasswordRecovery(String empresaId, String email) async {
+  // ACTUALIZACIÓN PEREZOSA (Lazy Update)
+  Future<void> updateDynamicTheme(String token, String userId) async {
+    try {
+      final config = await getAppConfig(token, userId);
+      await downloadDynamicResources(config);
+    } catch (e) {
+      debugPrint('Error actualizando tema estacional: $e');
+    }
+  }
+
+  // --- MÉTODOS AUXILIARES ---
+
+  Future<AppConfigModel> getAppConfig(String token, String userId) async {
     try {
       final response = await http.post(
-        Uri.parse(ApiConstants.recoverPassword),
-        body: {
-          'empresa_id': empresaId,
-          'email': email,
-        },
+        Uri.parse("http://10.0.2.2:8000/api/mobile/empresa/fonts"),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+        body: {'user_id': userId},
       );
-      return _processResponse(response);
+      return _handleResponse(response, (data) => AppConfigModel.fromJson(data));
     } catch (e) {
-      return {'status': 'error', 'message': 'No se pudo enviar la solicitud'};
+      throw _processError(e);
     }
   }
 
-  // Función privada para procesar respuestas JSON
-  Map<String, dynamic> _processResponse(http.Response response) {
+  Future<void> downloadDynamicResources(AppConfigModel config) async {
+    final directory = await getApplicationDocumentsDirectory();
+    await _downloadFile(config.colorsUrl, '${directory.path}/app_color.json');
+    await _downloadFile(config.splashUrl, '${directory.path}/loading_font.${config.splashExtension}');
+    await _downloadFile(config.themeBackgroundUrl, '${directory.path}/theme_font_sistem.${config.themeBackgroundExtension}');
+  }
+
+  Future<void> _downloadFile(String url, String path) async {
+    if (url.isEmpty) return;
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final file = File(path);
+        await file.writeAsBytes(response.bodyBytes);
+      }
+    } catch (e) {
+      debugPrint('Download error: $e');
+    }
+  }
+
+  T _handleResponse<T>(http.Response response, T Function(Map<String, dynamic>) mapper) {
     final Map<String, dynamic> data = json.decode(response.body);
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return {'status': 'success', 'data': data};
-    } else {
-      return {'status': 'error', 'message': data['message'] ?? 'Error desconocido'};
-    }
+    if (response.statusCode == 200 || response.statusCode == 201) return mapper(data);
+    throw AuthException(data['message'] ?? 'Error desconocido');
+  }
+
+  // Cambiamos de void a AppException para que el 'throw' sea explícito en el flujo
+  AppException _processError(dynamic e) {
+    if (e is AppException) return e;
+    if (e is http.ClientException) return NetworkException('Sin conexión');
+    return AppException('Error inesperado: ${e.toString()}');
   }
 }

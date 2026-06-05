@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\plancontroller;
+use App\Http\Controllers\PlanController;
 
 Route::get('/', function () {
     // Mensajes de error
@@ -113,7 +113,7 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
     Route::delete('permissions', [PermissionController::class, 'destroy'])                      ->name('permissions.destroy');
 
     
-    Route::get('planes', [plancontroller::class, 'index'])                                      ->name('planes.index');
+    Route::get('planes', [PlanController::class, 'index'])                                      ->name('planes.index');
     Route::post('planes', [PlanController::class, 'store'])                                     ->name('planes.store');
     Route::put('planes', [PlanController::class, 'update'])                                     ->name('planes.update');
     Route::patch('/planes/toggle', [PlanController::class, 'togglePublic'])                     ->name('planes.toggle');

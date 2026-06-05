@@ -1,14 +1,83 @@
 import 'package:flutter/material.dart';
-import '../resources/theme/app_colors.dart'; // Asegúrate de importar tus colores
+import 'package:provider/provider.dart';
 import '../../routes/app_routes.dart';
+import '../../providers/session_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../services/api_service.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
   @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  final _idEmpresaController = TextEditingController();
+  final _correoController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  void _handleLogin() async {
+    final idEmpresa = _idEmpresaController.text.trim();
+    final correo = _correoController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (idEmpresa.isEmpty || correo.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, complete todos los campos')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final apiService = ApiService();
+      final sessionProv = Provider.of<SessionProvider>(context, listen: false);
+
+      final authResult = await apiService.login(idEmpresa, correo, password);
+
+      if (authResult.isActive) {
+        // Usuario Activo -> Guardar sesión y entrar
+        await sessionProv.setSession(authResult.token, authResult.userId);
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      } else {
+        // Usuario Inactivo -> Bloquear acceso
+        if (!mounted) return;
+        _showErrorDialog('Acceso Denegado', 'Usuario inactivo. Contacte a su administrador');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorDialog('Error de Autenticación', e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -16,86 +85,76 @@ class LoginView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 80),
-              // Título con el color más fuerte
-              const Text(
+              Text(
                 "Bienvenido",
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryDark,
+                  color: theme.primaryDark,
                 ),
               ),
               const Text(
                 "Ingresa tus datos de acceso",
-                style: TextStyle(fontSize: 16, color: AppColors.placeholder),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 50),
-
-              // Campo: ID Empresa
               _buildInput(
                 label: "ID Empresa",
                 hint: "Ej: EMP-123",
                 icon: Icons.business_rounded,
+                controller: _idEmpresaController,
+                theme: theme,
               ),
               const SizedBox(height: 20),
-
-              // Campo: Usuario
               _buildInput(
-                label: "Usuario",
-                hint: "Tu nombre de usuario",
-                icon: Icons.person_outline_rounded,
+                label: "Correo",
+                hint: "correo@ejemplo.com",
+                icon: Icons.email_outlined,
+                controller: _correoController,
+                theme: theme,
               ),
               const SizedBox(height: 20),
-
-              // Campo: Contraseña
               _buildInput(
                 label: "Contraseña",
                 hint: "••••••••",
                 icon: Icons.lock_outline_rounded,
+                controller: _passwordController,
                 isPassword: true,
+                theme: theme,
               ),
-
               const SizedBox(height: 10),
-              // Olvidé mi contraseña
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.forgotPassword);
-                  },
-                  child: const Text(
+                  onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
+                  child: Text(
                     "¿Olvidaste tu contraseña?",
-                    style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: theme.accentBlue, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
-
               const SizedBox(height: 40),
-
-              // Botón de Ingreso
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Lógica de autenticación
-                  },
+                  onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryDark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                    backgroundColor: theme.primaryDark,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    "INGRESAR",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
+                  child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "INGRESAR",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                 ),
               ),
             ],
@@ -105,11 +164,12 @@ class LoginView extends StatelessWidget {
     );
   }
 
-  // Widget reutilizable para los inputs (mantiene la consistencia)
   Widget _buildInput({
     required String label,
     required String hint,
     required IconData icon,
+    required TextEditingController controller,
+    required ThemeProvider theme,
     bool isPassword = false,
   }) {
     return Column(
@@ -117,8 +177,8 @@ class LoginView extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.primaryDark,
+          style: TextStyle(
+            color: theme.primaryDark,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
@@ -126,7 +186,7 @@ class LoginView extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
@@ -137,11 +197,12 @@ class LoginView extends StatelessWidget {
             ],
           ),
           child: TextField(
+            controller: controller,
             obscureText: isPassword,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(color: AppColors.placeholder, fontSize: 14),
-              prefixIcon: Icon(icon, color: AppColors.primaryMedium),
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              prefixIcon: Icon(icon, color: theme.primaryMedium),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 15),
             ),
