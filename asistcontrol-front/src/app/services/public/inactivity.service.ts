@@ -6,7 +6,7 @@ import { PublicServicesService } from './public-services.service';
 @Injectable({
     providedIn: 'root'
 })
-export class inactivitiservice {
+export class InactivityService {
 
     private readonly TIMEOUT = 60 * 60 * 1000;
     private stop$ = new Subject<void>();

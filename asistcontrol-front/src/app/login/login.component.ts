@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { PublicServicesService } from '../services/public/public-services.service';
 
 @Component({
@@ -14,10 +15,12 @@ export class LoginComponent {
 
   email = '';
   password = '';
+  errorMessage = '';
 
   constructor(private publicservices: PublicServicesService, private router: Router) {}
 
   onLogin() {
+    this.errorMessage = '';
     this.publicservices.login({
       email: this.email,
       password: this.password
@@ -25,9 +28,9 @@ export class LoginComponent {
       next: () => {
         this.router.navigate(['/welcome']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error(err);
-        alert('Credenciales incorrectas');
+        this.errorMessage = 'Credenciales incorrectas';
       }
     });
   }

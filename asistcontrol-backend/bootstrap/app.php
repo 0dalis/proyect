@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();
+        $middleware->encryptCookies(except: [
+            'user_id',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
     })->create();
