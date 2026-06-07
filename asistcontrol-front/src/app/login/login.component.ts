@@ -17,7 +17,10 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
 
-  constructor(private publicservices: PublicServicesService, private router: Router) {}
+  constructor(
+    private publicservices: PublicServicesService, 
+    private router: Router
+  ) {}
 
   onLogin() {
     this.errorMessage = '';
@@ -26,11 +29,16 @@ export class LoginComponent {
       password: this.password
     }).subscribe({
       next: () => {
+        localStorage.setItem('is_logged_in', 'true');
         this.router.navigate(['/welcome']);
       },
       error: (err: HttpErrorResponse) => {
         console.error(err);
-        this.errorMessage = 'Credenciales incorrectas';
+        if (err.error && err.error.message) {
+          this.errorMessage = err.error.message;
+        } else {
+          this.errorMessage = 'Ocurrió un error al intentar conectar con el servidor.';
+        }
       }
     });
   }

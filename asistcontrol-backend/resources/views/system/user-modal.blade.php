@@ -132,6 +132,7 @@ $(document).ready(function () {
     const $labelOn = $('#label-on');
     const $labelOff = $('#label-off');
     const $circle = $('.toggle-circle');
+
     function syncToggleVisual() {
         if ($toggle.prop('checked')) {
             $circle.addClass('translate-x-6');
@@ -143,29 +144,26 @@ $(document).ready(function () {
             $labelOn.removeClass('font-semibold text-indigo-600');
         }
     }
+
+    // Inicializar visualización del toggle
     syncToggleVisual();
+    
+    // Escuchar únicamente el cambio nativo
     $toggle.on('change', syncToggleVisual);
-    $toggle.parent().on('click', function(e) {
-        if (!$(e.target).is('#is_active')) {
-            $toggle.prop('checked', !$toggle.prop('checked')).trigger('change');
-        }
-    });
 
     // ========== ABRIR MODAL CREAR ==========
-    $('#openUserModal').on('click', function () {
+    $('#openUserModal').on('click', function (e) {
+        e.preventDefault();
         $('#userForm')[0].reset();
         $('#modalTitle').text('Crear Usuario');
         $('#actionUser').val('create');
         $('#userid').val('');
 
-        // Empresa: ocultar contenedor nombre/checkbox, mostrar input limpio
         $('#currentCompanyContainer').addClass('hidden');
         $('#company_code').show().val('');
         $('#changeCompany').prop('checked', false);
 
-        // Toggle activo por defecto
-        $toggle.prop('checked', true);
-        syncToggleVisual();
+        $toggle.prop('checked', true).trigger('change');
 
         $('#userModal').removeClass('hidden');
         setTimeout(() => {
@@ -174,7 +172,8 @@ $(document).ready(function () {
     });
 
     // ========== ABRIR MODAL EDITAR ==========
-    $(document).on('click', '.editUser', function () {
+    $(document).on('click', '.editUser', function (e) {
+        e.preventDefault();
         $('#userForm')[0].reset();
         $('#modalTitle').text('Editar Usuario');
         $('#actionUser').val('update');
@@ -184,22 +183,19 @@ $(document).ready(function () {
         $('#email').val($(this).data('email'));
         $('#employee_code').val($(this).data('employee_code'));
 
-        const isActive = $(this).data('is_active');
-        $toggle.prop('checked', isActive);
-        syncToggleVisual();
+        const isActive = parseInt($(this).data('is_active')) === 1;
+        $toggle.prop('checked', isActive).trigger('change');
 
-        // Roles
         $('.role-checkbox').prop('checked', false);
         const roles = $(this).data('roles');
         if (roles) {
             roles.forEach(id => $('.role-checkbox[value="'+id+'"]').prop('checked', true));
         }
 
-        // Empresa: mostrar nombre actual + checkbox "Cambiar empresa"
         const companyName = $(this).data('company_name') || 'Sin empresa';
-        $('#currentCompanyName').text(companyName).show();   // asegurar visible
-        $('#currentCompanyContainer').removeClass('hidden'); // mostrar contenedor
-        $('#company_code').hide().val('');                  // ocultar input
+        $('#currentCompanyName').text(companyName).show();   
+        $('#currentCompanyContainer').removeClass('hidden'); 
+        $('#company_code').hide().val('');                  
         $('#changeCompany').prop('checked', false);
 
         $('#userModal').removeClass('hidden');
@@ -211,12 +207,9 @@ $(document).ready(function () {
     // ========== CHECKBOX "CAMBIAR EMPRESA" ==========
     $('#changeCompany').on('change', function () {
         if ($(this).is(':checked')) {
-            // Ocultar solo el nombre, mostrar input al lado del checkbox
             $('#currentCompanyName').hide();
             $('#company_code').show().focus();
-            // El contenedor sigue visible (checkbox permanece)
         } else {
-            // Volver a mostrar nombre y ocultar input
             $('#currentCompanyName').show();
             $('#company_code').hide().val('');
         }
@@ -227,17 +220,17 @@ $(document).ready(function () {
         $('#modalBox').removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
         setTimeout(() => {
             $('#userModal').addClass('hidden');
-            $toggle.prop('checked', true);
-            syncToggleVisual();
         }, 200);
     });
 
     // ========== ENVÍO AJAX ==========
     $('#userForm').on('submit', function(e) {
         e.preventDefault();
+        
         const action = $('#actionUser').val();
         const url = action === 'create' ? "{{ route('users.store') }}" : "{{ route('users.update') }}";
-        const method = action === 'create' ? 'POST' : 'PUT';
+        const method = 'POST'; 
+        
         const data = $(this).serialize();
         const $btn = $('#saveUserBtn');
         const $btnText = $('#saveBtnText');
@@ -249,6 +242,7 @@ $(document).ready(function () {
             url: url,
             type: method,
             data: data,
+            dataType: 'json',
             success: function(response) {
                 Toastify({
                     text: response.message || 'Usuario guardado correctamente',
@@ -256,11 +250,15 @@ $(document).ready(function () {
                     close: true,
                     gravity: "top",
                     position: "right",
-                    backgroundColor: "#10B981",
+                    backgroundColor: "#10B981"
                 }).showToast();
+                
                 setTimeout(() => location.reload(), 1000);
             },
             error: function(xhr) {
+                $btn.prop('disabled', false);
+                $btnText.html('Guardar');
+
                 let errorMessage = 'Error al guardar el usuario';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
@@ -268,16 +266,15 @@ $(document).ready(function () {
                     let errors = xhr.responseJSON.errors;
                     errorMessage = Object.values(errors).flat().join('\n');
                 }
+                
                 Toastify({
                     text: errorMessage,
                     duration: 5000,
                     close: true,
                     gravity: "top",
                     position: "right",
-                    backgroundColor: "#EF4444",
+                    backgroundColor: "#EF4444" // <-- Sintaxis corregida aquí }
                 }).showToast();
-                $btn.prop('disabled', false);
-                $btnText.html('Guardar');
             }
         });
     });

@@ -7,20 +7,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Http\JsonResponse;
 
-class PublicController extends Controller
-{
-    /**
-     * Handle an incoming authentication request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function loginWeb(Request $request): JsonResponse
-    {
+class PublicController extends Controller{
+
+    public function loginWeb(Request $request){
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
+
+        $credentials['is_active'] = true;
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
@@ -34,49 +29,34 @@ class PublicController extends Controller
 
             $request->session()->regenerate();
 
-            // Adherir cookie user_id (no encriptada, httpOnly false)
-            // Importante: En Laravel 12, para que no sea encriptada,
-            // se debe configurar en bootstrap/app.php o usar Cookie::queue
             Cookie::queue('user_id', $user->id, 120, null, null, false, false, false, false);
 
             return response()->json([
                 'message' => 'Sesión iniciada correctamente.',
-                'user' => $user,
+                'user' => [
+                    'id' => $user->id,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                ],
             ]);
         }
-
         return response()->json([
-            'message' => 'Las credenciales proporcionadas son incorrectas.',
+            'message' => 'Las credenciales proporcionadas son incorrectas o el usuario está inactivo.',
         ], 401);
     }
 
-    /**
-     * Get authenticated user permissions and profile.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getUserPermissions(Request $request): JsonResponse
-    {
+    public function getUserPermissions(Request $request){
         $user = $request->user();
 
         return response()->json([
             'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
+            'name' => $user->first_name . ' ' . $user->last_name,
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
         ]);
     }
 
-    /**
-     * Log the user out of the application.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function logout(Request $request): JsonResponse
-    {
+    public function logout(Request $request){
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

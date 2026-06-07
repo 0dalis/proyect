@@ -68,14 +68,16 @@ class UserController extends Controller implements HasMiddleware
         }
         return response()->json(['success' => true, 'message' => 'Usuario creado correctamente']);
     }
-    public function update(Request $request){
+    public function update(Request $request) {
+        // 1. Encontrar al usuario
         $user = User::findOrFail($request->userid);
 
-        // Normalizar el valor del checkbox is_active
+        // 2. Homologar el estado del toggle antes de validar
         $request->merge([
             'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
 
+        // 3. Validar los datos entrantes
         $validated = $request->validate([
             'first_name'    => 'required|string|max:255',
             'last_name'     => 'required|string|max:255',
@@ -83,43 +85,48 @@ class UserController extends Controller implements HasMiddleware
             'password'      => 'nullable|string|min:6',
             'pin'           => 'nullable|string|min:8',
             'employee_code' => 'nullable|string|max:50',
-            'is_active'     => 'required|boolean',
+            'is_active'     => 'required|in:0,1',
             'roles'         => 'nullable|array',
-            'roles.*'       => 'integer|exists:roles,id',  // validación extra: solo IDs válidos
+            'roles.*'       => 'integer|exists:roles,id',
             'company_code'  => 'nullable|string',
         ]);
 
-        // Buscar empresa si se cambió
-        $companyId = $user->company_id;
+        // 4. Filtrar solo los campos que realmente vienen presentes en el Request
+        // Esto evita pisar datos con valores por defecto o volver a escribir lo mismo
+        $updateData = $request->only(['first_name', 'last_name', 'email', 'employee_code', 'is_active']);
+
+        // 5. Manejo condicional de la Contraseña y PIN (Solo si traen información)
+        if ($request->filled('password')) {
+            $updateData['password'] = bcrypt($request->password);
+        }
+        
+        if ($request->filled('pin')) {
+            $updateData['pin'] = $request->pin;
+        }
+
+        // 6. Manejo de la Empresa (Solo si se envió un código de empresa)
         if ($request->filled('company_code')) {
             $company = Company::where('code', $request->company_code)->first();
             if ($company) {
-                $companyId = $company->id;
+                $updateData['company_id'] = $company->id;
             } else {
                 return response()->json(['message' => 'Código de empresa inválido'], 422);
             }
         }
 
-        // Actualizar datos del usuario
-        $user->update([
-            'first_name'    => $validated['first_name'],
-            'last_name'     => $validated['last_name'],
-            'email'         => $validated['email'],
-            'password'      => $request->filled('password') ? bcrypt($validated['password']) : $user->password,
-            'pin'           => $validated['pin'] ?? $user->pin,
-            'employee_code' => $validated['employee_code'] ?? $user->employee_code,
-            'is_active'     => $validated['is_active'],
-            'company_id'    => $companyId,
-        ]);
+        // 7. Ejecutar la actualización (Laravel solo generará el SET de los campos contenidos en $updateData)
+        $user->update($updateData);
 
-        // Sincronizar roles – convertir IDs a enteros
-        if ($request->filled('roles')) {
-            $rolesIds = array_map('intval', $validated['roles']); // convierte a enteros
+        // 8. Sincronizar Roles de manera inteligente
+        // Si la casilla 'roles' viene en el request (aunque esté vacía), se procesa
+        if ($request->has('roles')) {
+            $rolesIds = is_array($request->roles) ? array_map('intval', $request->roles) : [];
             $user->syncRoles($rolesIds);
-        } else {
-            $user->syncRoles([]);
         }
 
-        return response()->json(['success' => true, 'message' => 'Usuario actualizado correctamente']);
+        return response()->json([
+            'success' => true, 
+            'message' => 'Usuario actualizado correctamente'
+        ]);
     }
 }
