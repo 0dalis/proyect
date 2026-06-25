@@ -5,8 +5,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicController;
 
 Route::post('/login', [PublicController::class, 'loginWeb']);
+Route::post('/mobile', [PublicController::class, 'loginmobile']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user-permissions', [PublicController::class, 'getUserPermissions']);
-    Route::post('/logout', [PublicController::class, 'logout']);
+Route::middleware('auth:sanctum')->prefix('web')->group(function () {
+    require base_path('routes/web/route.php');
 });
+
+Route::middleware('auth:sanctum')->prefix('mobile')->group(function () {
+    require base_path('routes/mobile/route.php');
+});
+
