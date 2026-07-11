@@ -5,6 +5,9 @@ import 'providers/session_provider.dart';
 import 'providers/theme_provider.dart';
 
 void main() {
+  // 1. OBLIGATORIO: Inicializa los canales nativos de comunicación (corrige la pantalla blanca)
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(
     MultiProvider(
       providers: [
@@ -21,7 +24,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Consumimos el ThemeProvider para que la app reaccione a los cambios de color
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
@@ -32,7 +34,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: themeProvider.primaryDark,
         scaffoldBackgroundColor: themeProvider.background,
-        // Aquí puedes expandir el ThemeData usando los colores dinámicos
       ),
     );
   }

@@ -1,0 +1,30 @@
+<div class="flex h-screen overflow-hidden bg-background-theme text-text-body">
+  <!-- Mobile Header -->
+  <header class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-surface border-b border-gray-200 dark:border-gray-700 z-40 flex items-center px-4 justify-between">
+    <span class="text-xl font-bold text-primary-medium">AdminPanel</span>
+    <button (click)="toggleSidebar()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </header>
+
+  <!-- Sidebar Overlay -->
+  <div *ngIf="isSidebarOpen"
+       (click)="closeSidebar()"
+       class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden">
+  </div>
+
+  <!-- Sidebar -->
+  <app-sidebar [isOpen]="isSidebarOpen"></app-sidebar>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <!-- Space for mobile header -->
+    <div class="lg:hidden h-16"></div>
+
+    <div class="flex-1 overflow-x-hidden overflow-y-auto p-4 lg:p-8">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

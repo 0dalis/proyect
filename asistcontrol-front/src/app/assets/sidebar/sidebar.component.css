@@ -1,0 +1,64 @@
+/* --- Side Menu Card Stacking Effect --- */
+
+.submenu-contenedor {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  /* Height is calculated based on number of items * standard card height (44px) */
+  height: calc(var(--total) * 44px * 0);
+}
+
+.submenu-abierto {
+  height: calc(var(--total) * 44px) !important;
+}
+
+.carta-submenu {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: calc(100% - 0px);
+  height: 44px;
+  opacity: 0;
+  z-index: calc(10 - var(--i));
+  transform: translateY(0);
+  pointer-events: none;
+
+  /* Visual Architecture */
+  background-color: inherit;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+
+  /* Semi-translucent gradient border effect */
+  border: 1px solid rgba(200, 200, 200, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+
+  /* Motion Timing */
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s ease,
+    top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* OPENING STATE */
+.submenu-abierto .carta-submenu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(calc(var(--i) * 44px));
+  transition-delay: calc(var(--i) * 0.12s);
+}
+
+/* CLOSING STATE (Retract upside down) */
+.submenu-contenedor:not(.submenu-abierto) .carta-submenu {
+  opacity: 0;
+  transform: translateY(0);
+  transition-delay: calc((var(--total) - 1 - var(--i)) * 0.12s);
+}
+
+/* Hover effect specifically for stacked cards to enhance the physical feel */
+.carta-submenu:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 20 !important;
+}

@@ -1,5 +1,5 @@
 name: asistcontrol
-description: "A new Flutter project."
+description: "Proyecto que me sacara de la pobreza"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -16,6 +16,8 @@ dependencies:
   provider: ^6.1.1
   path_provider: ^2.1.2
   lottie: ^3.1.0
+  image_picker: ^1.1.2
+  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:

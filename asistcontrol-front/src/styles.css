@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "toastify-js/src/toastify.css";
 
 @theme {
   /* Mapeamos tus variables de TS a nombres de Tailwind */

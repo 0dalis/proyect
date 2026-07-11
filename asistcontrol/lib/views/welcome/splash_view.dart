@@ -6,7 +6,6 @@ import '../../routes/app_routes.dart';
 import '../../providers/session_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/api_service.dart';
-import '../../models/app_config_model.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -32,16 +31,25 @@ class _SplashViewState extends State<SplashView> {
 
     try {
       await sessionProv.checkSession();
+    } catch (e) {
+      debugPrint('Error al verificar sesión: $e');
+    }
 
-      if (sessionProv.status == SessionStatus.authenticated) {
-        // 1. Get config and download everything
+    if (sessionProv.status == SessionStatus.authenticated) {
+      try {
         final config = await apiService.getAppConfig(sessionProv.token!, sessionProv.userId!);
         await apiService.downloadDynamicResources(config);
+      } catch (e) {
+        debugPrint('Error cargando recursos remotos: $e');
+      }
 
-        // 2. Apply colors from the downloaded JSON
+      try {
         await themeProv.loadColorsFromJson();
+      } catch (e) {
+        debugPrint('Error cargando colores locales: $e');
+      }
 
-        // 3. Resolve loading font path (check extensions)
+      try {
         final directory = await getApplicationDocumentsDirectory();
         final files = directory.listSync();
         final loadingFile = files.firstWhereOrNull((f) => f.path.contains('loading_font.'));
@@ -51,31 +59,24 @@ class _SplashViewState extends State<SplashView> {
             _localImagePath = loadingFile.path;
           });
         }
-
-        // Aumentamos la espera a 4 segundos para que se aprecie el Splash dinámico
-        await Future.delayed(const Duration(seconds: 4));
-
-        // Aquí redirigirías a Home
-        if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-      } else {
-        // Para usuarios no autenticados, también damos un tiempo de cortesía para ver la marca
-        await Future.delayed(const Duration(seconds: 3));
-        if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-        return;
+      } catch (e) {
+        debugPrint('Error cargando splash local: $e');
       }
-    } catch (e) {
 
-      debugPrint('Error de inicialización: $e');
+      await Future.delayed(const Duration(seconds: 4));
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+    } else {
+      await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -85,17 +86,26 @@ class _SplashViewState extends State<SplashView> {
 
     return Scaffold(
       backgroundColor: theme.background,
-      body: Center(
-        child: _isLoading
-          ? const CircularProgressIndicator()
-          : _buildContent(theme),
+      body: Stack(
+        children: [
+          // El contenido siempre es visible
+          Center(child: _buildContent(theme)),
+
+          // El spinner se muestra como un overlay mientras carga
+          if (_isLoading)
+            Center(
+              child: CircularProgressIndicator(
+                color: theme.primaryDark,
+                strokeWidth: 3,
+              ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _buildContent(ThemeProvider theme) {
     if (_localImagePath != null) {
-      // Flutter's Image.file handles both .png and .gif (animated) automatically
       return SizedBox.expand(
         child: Image.file(
           File(_localImagePath!),
@@ -118,7 +128,8 @@ class _SplashViewState extends State<SplashView> {
           ),
         ),
         const SizedBox(height: 30),
-        const CircularProgressIndicator(),
+        // Quitamos el spinner de aquí para que no haya duplicados,
+        // ya que ahora está en la capa superior del Stack.
       ],
     );
   }

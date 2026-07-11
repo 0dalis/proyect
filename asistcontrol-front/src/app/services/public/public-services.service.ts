@@ -17,8 +17,8 @@ export class PublicServicesService {
   private httpOptions = { withCredentials: true };
 
   constructor(
-    private http: HttpClient, 
-    private themeService: ThemeService, 
+    private http: HttpClient,
+    private themeService: ThemeService,
     private router: Router
   ) {}
 
@@ -31,7 +31,7 @@ export class PublicServicesService {
   }
 
   logout(): Observable<any> {
-    return this.http.post(`${this.API_URL}/logout`, {}, this.httpOptions).pipe(
+    return this.http.post(`${this.API_URL}/web/logout`, {}, this.httpOptions).pipe(
       tap(() => {
         this.router.navigate(['/login']);
       })
@@ -39,6 +39,6 @@ export class PublicServicesService {
   }
 
   getUserPermissions(): Observable<any> {
-    return this.http.get(`${this.API_URL}/user-permissions`, this.httpOptions);
+    return this.http.get(`${this.API_URL}/web/user-permissions`, this.httpOptions);
   }
 }

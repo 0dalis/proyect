@@ -15,6 +15,9 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse(ApiConstants.login),
+        headers: {
+          'Accept': 'application/json',
+        },
         body: {
           'id_empresa': idEmpresa,
           'correo': correo,
@@ -23,7 +26,6 @@ class ApiService {
       );
       return _handleResponse(response, (data) => AuthModel.fromJson(data));
     } catch (e) {
-      // Lanzamos la excepción directamente para que el compilador sepa que no hay camino sin retorno
       throw _processError(e);
     }
   }
@@ -74,7 +76,7 @@ class ApiService {
   Future<AppConfigModel> getAppConfig(String token, String userId) async {
     try {
       final response = await http.post(
-        Uri.parse("http://10.0.2.2:8000/api/mobile/empresa/fonts"),
+        Uri.parse("http://10.0.2.2:5000/api/mobile/empresa/fonts"),
         headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
         body: {'user_id': userId},
       );

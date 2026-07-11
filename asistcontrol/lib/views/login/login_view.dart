@@ -17,6 +17,7 @@ class _LoginViewState extends State<LoginView> {
   final _correoController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void _handleLogin() async {
     final idEmpresa = _idEmpresaController.text.trim();
@@ -39,12 +40,15 @@ class _LoginViewState extends State<LoginView> {
       final authResult = await apiService.login(idEmpresa, correo, password);
 
       if (authResult.isActive) {
-        // Usuario Activo -> Guardar sesión y entrar
         await sessionProv.setSession(authResult.token, authResult.userId);
         if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+
+        if (authResult.isFirstTime) {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.completeProfile);
+        } else {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+        }
       } else {
-        // Usuario Inactivo -> Bloquear acceso
         if (!mounted) return;
         _showErrorDialog('Acceso Denegado', 'Usuario inactivo. Contacte a su administrador');
       }
@@ -82,11 +86,26 @@ class _LoginViewState extends State<LoginView> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center, // Logo y Bienvenido centrados
             children: [
               const SizedBox(height: 80),
+
+              // LOGO CENTRADO
+              Image.asset(
+                'assets/logo_splash.png',
+                height: 90,
+                width: 90,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.lock_person, size: 80, color: theme.primaryDark);
+                },
+              ),
+              const SizedBox(height: 15),
+
+              // TEXTOS CENTRADOS
               Text(
                 "Bienvenido",
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -94,46 +113,65 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
               const Text(
-                "Ingresa tus datos de acceso",
+                "Ingresa tus datos para comenzar",
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 50),
-              _buildInput(
-                label: "ID Empresa",
-                hint: "Ej: EMP-123",
-                icon: Icons.business_rounded,
-                controller: _idEmpresaController,
-                theme: theme,
-              ),
-              const SizedBox(height: 20),
-              _buildInput(
-                label: "Correo",
-                hint: "correo@ejemplo.com",
-                icon: Icons.email_outlined,
-                controller: _correoController,
-                theme: theme,
-              ),
-              const SizedBox(height: 20),
-              _buildInput(
-                label: "Contraseña",
-                hint: "••••••••",
-                icon: Icons.lock_outline_rounded,
-                controller: _passwordController,
-                isPassword: true,
-                theme: theme,
-              ),
-              const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
-                  child: Text(
-                    "¿Olvidaste tu contraseña?",
-                    style: TextStyle(color: theme.accentBlue, fontWeight: FontWeight.w600),
-                  ),
+
+              // FORMULARIO ALINEADO A LA IZQUIERDA
+              SizedBox(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. CORREO
+                    _buildInput(
+                      label: "Correo",
+                      hint: "correo@ejemplo.com",
+                      icon: Icons.email_outlined,
+                      controller: _correoController,
+                      theme: theme,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 2. CONTRASEÑA
+                    _buildInput(
+                      label: "Contraseña",
+                      hint: "••••••••",
+                      icon: Icons.lock_outline_rounded,
+                      controller: _passwordController,
+                      isPassword: true,
+                      theme: theme,
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
+                        child: Text(
+                          "¿Olvidaste tu contraseña?",
+                          style: TextStyle(color: theme.accentBlue, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 3. EMPRESA (Sin el "ID")
+                    _buildInput(
+                      label: "Empresa",
+                      hint: "Ej: Mi Empresa",
+                      icon: Icons.business_rounded,
+                      controller: _idEmpresaController,
+                      theme: theme,
+                    ),
+                  ],
                 ),
               ),
+
               const SizedBox(height: 40),
+
+              // BOTÓN DE INGRESO
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -157,6 +195,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                 ),
               ),
+              const SizedBox(height: 60),
             ],
           ),
         ),
@@ -172,43 +211,47 @@ class _LoginViewState extends State<LoginView> {
     required ThemeProvider theme,
     bool isPassword = false,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword ? _obscurePassword : false,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.grey, fontSize: 15),
+          floatingLabelStyle: TextStyle(
             color: theme.primaryDark,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+          prefixIcon: Icon(icon, color: theme.primaryMedium),
+          suffixIcon: isPassword
+              ? GestureDetector(
+                  onLongPressStart: (_) => setState(() => _obscurePassword = false),
+                  onLongPressEnd: (_) => setState(() => _obscurePassword = true),
+                  child: Icon(
+                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    color: theme.primaryMedium,
+                  ),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: controller,
-            obscureText: isPassword,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-              prefixIcon: Icon(icon, color: theme.primaryMedium),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 15),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

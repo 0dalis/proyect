@@ -68,8 +68,10 @@ class PublicController extends Controller{
 
         return response()->json([
             'message' => 'Sesión cerrada exitosamente.',
-        ]);}
-        public function loginmobile(Request $request){
+        ]);
+    }
+
+    public function loginmobile(Request $request){
         $validator = Validator::make($request->all(), [
             'id_empresa' => 'required|string',
             'correo'     => 'required|email',
@@ -114,9 +116,6 @@ class PublicController extends Controller{
             ], 401);
         }
 
-        // 5. Verificar si el usuario está activo individualmente
-        // Nota: Forzamos el cast manual aquí por si acaso, aunque Laravel maneja booleanos,
-        // esto asegura la compatibilidad exacta con la estructura que espera tu Flutter.
         $userIsActive = (bool) $user->is_active;
 
         if (!$userIsActive) {
@@ -125,16 +124,15 @@ class PublicController extends Controller{
                 'message'   => 'Usuario inactivo. Contacte a su administrador.'
             ], 403);
         }
-
-        // 6. Generar el Token con Laravel Sanctum
-        // Puedes guardar metadatos en el nombre del token si lo deseas (ej: 'Flutter-App')
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // 7. Respuesta exitosa estructurada exactamente como la mapea tu AuthModel en Flutter
+        $isFirstTime = trim((string) $user->pin) === '';
+        
         return response()->json([
             'token'     => $token,
             'user_id'   => (string) $user->id,
             'is_active' => true,
+            'is_first_time' => $isFirstTime,
             'message'   => 'Inicio de sesión exitoso.'
         ], 200);
     }
