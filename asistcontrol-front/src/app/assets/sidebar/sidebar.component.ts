@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { PublicServicesService } from '../../services/public/public-services.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,15 +10,32 @@ import { PublicServicesService } from '../../services/public/public-services.ser
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
-  @Input() isOpen = false;
-
-  // Controladores de estado individuales y estáticos
+  isOpen = false;
   gestionExpanded = false;
   configExpanded = false;
 
-  constructor(private auth: PublicServicesService) {}
+  // NUEVA PROPIEDAD: Control del menú del perfil superior
+  userMenuOpen = false;
+
+  isSidebarHovered = false;
+  private hoverTimeout: any;
+
+  onSidebarMouseEnter() {
+    if (this.hoverTimeout) {
+      clearTimeout(this.hoverTimeout);
+    }
+    this.isSidebarHovered = true;
+  }
+
+  onSidebarMouseLeave() {
+    this.hoverTimeout = setTimeout(() => {
+      this.isSidebarHovered = false;
+      this.gestionExpanded = false;
+      this.configExpanded = false;
+    }, 500);
+  }
 
   onLogout() {
-    this.auth.logout();
+    console.log('Cerrar sesión');
   }
 }

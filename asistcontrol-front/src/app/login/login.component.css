@@ -1,0 +1,38 @@
+/* Animación Figura 1 */
+@keyframes dvdMotion1 {
+  0%   { top: 10%; left: 10%; }
+  25%  { top: 70%; left: 40%; }
+  50%  { top: 30%; left: 80%; }
+  75%  { top: 80%; left: 20%; }
+  100% { top: 10%; left: 10%; }
+}
+
+/* Animación Figura 2 */
+@keyframes dvdMotion2 {
+  0%   { top: 80%; left: 70%; }
+  30%  { top: 20%; left: 10%; }
+  60%  { top: 60%; left: 80%; }
+  85%  { top: 10%; left: 40%; }
+  100% { top: 80%; left: 70%; }
+}
+
+/* Animación Figura 3 */
+@keyframes dvdMotion3 {
+  0%   { top: 40%; left: 80%; }
+  20%  { top: 80%; left: 30%; }
+  50%  { top: 10%; left: 60%; }
+  75%  { top: 60%; left: 10%; }
+  100% { top: 40%; left: 80%; }
+}
+
+.animate-dvd-1 {
+  animation: dvdMotion1 24s linear infinite;
+}
+
+.animate-dvd-2 {
+  animation: dvdMotion2 28s linear infinite;
+}
+
+.animate-dvd-3 {
+  animation: dvdMotion3 20s linear infinite;
+}
