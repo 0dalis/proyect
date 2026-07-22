@@ -13,7 +13,7 @@ class Company extends Model{
         'name',
         'code',
         'slug',
-        'plan',
+        'plan_id',
         'trial_ends_at',
         'subscription_ends_at',
         'has_dedicated_db',
@@ -30,7 +30,7 @@ class Company extends Model{
     ];
 
     public function plan(){
-        return $this->belongsTo(Plan::class, 'plan', 'id');
+        return $this->belongsTo(Plan::class, 'plan_id', 'id');
     }
 
     public function offices(){

@@ -29,7 +29,7 @@
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $company->code }}</td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">{{ $company->slug }}</td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">
-                                        {{ $company->plan }}
+                                        {{ $company->plan?->nombre ?? 'Sin plan' }}
                                     </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">
                                         {{ $company->trial_ends_at ? \Carbon\Carbon::parse($company->trial_ends_at)->format('d/m/Y H:i') : '-' }}
@@ -50,7 +50,7 @@
                                            data-id="{{ $company->id }}"
                                            data-name="{{ $company->name }}"
                                            data-code="{{ $company->code }}"
-                                           data-plan="{{ $company->plan }}"
+                                           data-plan="{{ $company->plan_id }}"
                                            data-trial_ends_at="{{ $company->trial_ends_at ? \Carbon\Carbon::parse($company->trial_ends_at)->format('Y-m-d\TH:i') : '' }}"
                                            data-subscription_ends_at="{{ $company->subscription_ends_at ? \Carbon\Carbon::parse($company->subscription_ends_at)->format('Y-m-d\TH:i') : '' }}"
                                            data-is_active="{{ $company->is_active ? 1 : 0 }}">

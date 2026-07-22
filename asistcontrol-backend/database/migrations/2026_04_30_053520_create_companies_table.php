@@ -19,7 +19,7 @@ return new class extends Migration{
             $table->string('slug')->unique(); // Para URLs o subdominios: empresa-x
 
             // Plan / Suscripción
-            $table->integer('plan')->nullable();
+            $table->integer('plan_id')->nullable();
             $table->timestamp('trial_ends_at')->nullable(); // Para pruebas gratis
             $table->timestamp('subscription_ends_at')->nullable(); // Control de pagos
 

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('password');
 
             // Seguridad
-            $table->char('pin', 8); // PIN fijo de 8 dígitos
+            $table->text('pin')->unique(); // PIN fijo de 8 dígitos
             $table->string('employee_code')->unique(); // QR o código rápido
 
             // Firebase

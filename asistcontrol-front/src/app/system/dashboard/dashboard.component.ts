@@ -3,11 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../assets/sidebar/sidebar.component';
 
 @Component({
-  selector: 'app-index',
+  selector: 'app-dashboard',
   imports: [RouterOutlet, SidebarComponent],
-  templateUrl: './index.component.html',
-  styleUrl: './index.component.css'
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css'
 })
-export class IndexComponent {
+export class DashboardComponent {
 
 }

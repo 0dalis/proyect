@@ -18,7 +18,7 @@ class CompanyController extends Controller implements HasMiddleware{
 
     // Mostrar todas las empresas
     public function index(){
-        $companies = Company::all();
+        $companies = Company::with('plan')->get();
         $planes = Plan::all();
         return view('system.companies', compact('companies', 'planes'));
     }

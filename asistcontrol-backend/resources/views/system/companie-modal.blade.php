@@ -105,7 +105,7 @@
             $('#companyId').val($btn.data('id'));
             $('#companyName').val($btn.data('name'));
             $('#companyCode').val($btn.data('code'));
-            $('#companyPlan').val($btn.data('plan'));
+            $('#companyPlanId').val($btn.data('plan'));
             $('#companyIsActive').prop('checked', $btn.data('is_active') == 1);
 
             // Cargar fechas
