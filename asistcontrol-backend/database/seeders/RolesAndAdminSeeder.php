@@ -45,11 +45,7 @@ class RolesAndAdminSeeder extends Seeder{
             ['email' => 'admin@sistema.com'],
             [
                 'company_id' => $company->id,
-                'first_name' => 'Alejandro',
-                'last_name' => 'Admin',
                 'password' => 'password123',
-                'pin' => 12345678,
-                'employee_code' => 'SA-001',
                 'is_active' => true,
             ]
         );

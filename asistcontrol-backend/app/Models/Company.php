@@ -45,6 +45,10 @@ class Company extends Model{
         return $this->hasMany(Area::class);
     }
 
+    public function employees(){
+        return $this->hasMany(Employee::class);
+    }
+
     public function notifications(){
         return $this->hasMany(Notification::class);
     }

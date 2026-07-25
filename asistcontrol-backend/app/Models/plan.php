@@ -24,4 +24,9 @@ class Plan extends Model{
         'max_users' => 'integer',
         'public' => 'boolean',
     ];
+
+    public function companies()
+    {
+        return $this->hasMany(Company::class, 'plan_id');
+    }
 }

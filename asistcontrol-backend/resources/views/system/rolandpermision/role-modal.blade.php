@@ -121,6 +121,7 @@
             $btn.prop('disabled', true);
             var originalText = $btn.html();
             $btn.html('<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Guardando...');
+            if (window.AppLoader) AppLoader.show('Guardando rol...');
 
             $.ajax({
                 url: url,
@@ -132,7 +133,7 @@
                     permissions: permissions
                 },
                 success: function(response){
-                    // Mostrar toast de éxito
+                    if (window.AppLoader) AppLoader.hide();
                     Toastify({
                         text: response.message,
                         duration: 5000,
@@ -141,19 +142,18 @@
                         backgroundColor: "#4fbe87"
                     }).showToast();
 
-                    // Cerrar modal y recargar página
                     closeRoleModal();
                     setTimeout(function(){
                         location.reload();
-                    }, 500); // medio segundo para que se vea el toast
+                    }, 500);
                 },
                 error: function(xhr){
+                    if (window.AppLoader) AppLoader.hide();
                     var message = "Error al procesar la solicitud";
                     if(xhr.responseJSON && xhr.responseJSON.message){
                         message = xhr.responseJSON.message;
                     }
 
-                    // Mostrar toast de error
                     Toastify({
                         text: message,
                         duration: 5000,
@@ -165,7 +165,6 @@
                     closeRoleModal();
                 },
                 complete: function(){
-                    // Restaurar botón
                     $btn.prop('disabled', false);
                     $btn.html(originalText);
                 }

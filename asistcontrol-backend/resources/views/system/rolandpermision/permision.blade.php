@@ -107,6 +107,7 @@ $(document).ready(function() {
         $btn.prop('disabled', true);
         var originalText = $btn.html();
         $btn.html('<i class="bi bi-arrow-clockwise animate-spin mr-2"></i>Guardando...');
+        if (window.AppLoader) AppLoader.show('Guardando permiso...');
 
         $.ajax({
             url: url,
@@ -117,9 +118,9 @@ $(document).ready(function() {
                 name: name
             },
             success: function(response) {
+                if (window.AppLoader) AppLoader.hide();
                 closeModal();
 
-                // Toast con duración más larga
                 Toastify({
                     text: response.message,
                     duration: 5000,
@@ -128,9 +129,10 @@ $(document).ready(function() {
                     backgroundColor: "#4fbe87",
                 }).showToast();
 
-                location.reload(); // o actualizar tabla dinámicamente
+                location.reload();
             },
             error: function(xhr) {
+                if (window.AppLoader) AppLoader.hide();
                 var message = "Error al procesar la solicitud";
                 if(xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
@@ -144,7 +146,6 @@ $(document).ready(function() {
                 }).showToast();
             },
             complete: function() {
-                // Desbloquear botón y restaurar texto
                 $btn.prop('disabled', false);
                 $btn.html(originalText);
             }

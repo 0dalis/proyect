@@ -7,6 +7,8 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     // Mensajes de error
@@ -80,10 +82,8 @@ Route::get('/', function () {
 });
 Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
 
-    // Dashboard oculto
-    Route::get('dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    // Dashboard
+    Route::get('dashboard', [DashboardController::class, 'index'])                                 ->name('dashboard');
 
     // Perfil oculto
     Route::prefix('profile')->group(function () {
@@ -94,6 +94,10 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
     Route::get('users', [UserController::class, 'index'])                                       ->name('users.index');
     Route::post('users', [UserController::class, 'store'])                                      ->name('users.store');
     Route::post('usersupd', [UserController::class, 'update'])                                  ->name('users.update');
+
+    Route::get('employees', [EmployeeController::class, 'index'])                               ->name('employees.index');
+    Route::post('employees', [EmployeeController::class, 'store'])                              ->name('employees.store');
+    Route::post('employeesupd', [EmployeeController::class, 'update'])                          ->name('employees.update');
 
 
     Route::get('companies', [CompanyController::class, 'index'])                                ->name('companies.index');

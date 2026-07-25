@@ -135,12 +135,14 @@
 
             $btn.prop('disabled', true);
             $btnText.html('<i class="bi bi-arrow-repeat animate-spin mr-1"></i> Guardando...');
+            if (window.AppLoader) AppLoader.show('Guardando plan...');
 
             $.ajax({
                 url: url,
                 type: method,
                 data: data,
                 success: function (response) {
+                    if (window.AppLoader) AppLoader.hide();
                     Toastify({
                         text: response.message || 'Plan guardado correctamente',
                         duration: 3000,
@@ -152,6 +154,7 @@
                     setTimeout(() => location.reload(), 1000);
                 },
                 error: function (xhr) {
+                    if (window.AppLoader) AppLoader.hide();
                     let errorMessage = 'Error al guardar el plan';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;

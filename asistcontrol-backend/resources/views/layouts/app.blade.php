@@ -21,8 +21,70 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            @keyframes shimmer {
+                0% { background-position: -200px 0; }
+                100% { background-position: calc(200px + 100%) 0; }
+            }
+            .skeleton-shimmer {
+                background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+                background-size: 200px 100%;
+                animation: shimmer 1.5s ease-in-out infinite;
+            }
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(12px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .animate-fade-in-up {
+                animation: fadeInUp 0.4s ease-out forwards;
+            }
+            .loader-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(2px);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .loader-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid #e5e7eb;
+                border-top-color: #6366f1;
+                border-radius: 50%;
+                animation: loader-spin 0.7s linear infinite;
+            }
+            @keyframes loader-spin {
+                to { transform: rotate(360deg); }
+            }
+            /* NProgress-style top bar */
+            .page-loader-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 0%;
+                height: 3px;
+                background: linear-gradient(90deg, #6366f1, #8b5cf6);
+                z-index: 10000;
+                transition: width 0.3s ease;
+            }
+        </style>
     </head>
     <body class="font-sans antialiased">
+        <!-- Barra de progreso superior -->
+        <div id="pageLoaderBar" class="page-loader-bar" style="display:none;"></div>
+
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 
@@ -40,6 +102,88 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <!-- Overlay de carga global -->
+        <div id="globalLoader" class="loader-overlay" style="display:none;">
+            <div class="loader-spinner"></div>
+            <span class="text-sm text-neutral-500 font-medium">Cargando...</span>
+        </div>
+
         @stack('scripts')
+
+        <script>
+        // Loader global para peticiones AJAX y navegación
+        (function() {
+            const $bar = $('#pageLoaderBar');
+            const $loader = $('#globalLoader');
+            let activeRequests = 0;
+            let barTimer = null;
+            let progress = 0;
+
+            function showBar() {
+                progress = 0;
+                $bar.css({ width: '0%', display: 'block' });
+                simulateProgress();
+            }
+
+            function simulateProgress() {
+                if (progress < 90) {
+                    progress += (90 - progress) * 0.2 + Math.random() * 5;
+                    $bar.css('width', Math.min(progress, 90) + '%');
+                    barTimer = setTimeout(simulateProgress, 300);
+                }
+            }
+
+            function hideBar() {
+                progress = 100;
+                $bar.css('width', '100%');
+                clearTimeout(barTimer);
+                setTimeout(function() {
+                    $bar.css({ width: '0%', display: 'none' });
+                }, 200);
+            }
+
+            function showLoader(msg) {
+                if (msg) {
+                    $loader.find('span').text(msg);
+                } else {
+                    $loader.find('span').text('Cargando...');
+                }
+                $loader.fadeIn(150);
+            }
+
+            function hideLoader() {
+                $loader.fadeOut(150);
+            }
+
+            // Interceptar AJAX global (jQuery)
+            $(document).ajaxStart(function() {
+                activeRequests++;
+                showBar();
+            }).ajaxStop(function() {
+                activeRequests--;
+                if (activeRequests <= 0) {
+                    activeRequests = 0;
+                    hideBar();
+                }
+            });
+
+            // Interceptar clicks en enlaces para mostrar barra
+            $(document).on('click', 'a:not([target="_blank"]):not([download]):not([data-no-loader])', function(e) {
+                const href = $(this).attr('href');
+                if (href && href !== '#' && !href.startsWith('javascript:') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+                    showBar();
+                }
+            });
+
+            // Exponer API global
+            window.AppLoader = {
+                show: showLoader,
+                hide: hideLoader,
+                showBar: showBar,
+                hideBar: hideBar
+            };
+        })();
+        </script>
     </body>
 </html>

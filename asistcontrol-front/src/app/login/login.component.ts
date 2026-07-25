@@ -83,7 +83,7 @@ export class LoginComponent {
 
         this.showSuccess(`Bienvenido ${fullName}`);
 
-        this.router.navigate(['/welcome']);
+        this.router.navigate(['/asistcontrol']);
 
       },
 
