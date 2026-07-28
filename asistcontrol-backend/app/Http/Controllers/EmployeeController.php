@@ -130,7 +130,7 @@ class EmployeeController extends Controller implements HasMiddleware
                     'company_id' => $request->company_id,
                 ];
                 if ($request->filled('password')) {
-                    $updateUserData['password'] = bcrypt($request->password);
+                    $updateUserData['password'] = $request->password;
                 }
                 $employee->user->update($updateUserData);
 

@@ -84,7 +84,7 @@ class UserController extends Controller implements HasMiddleware
         $updateData = $request->only(['email', 'is_active']);
 
         if ($request->filled('password')) {
-            $updateData['password'] = bcrypt($request->password);
+            $updateData['password'] = $request->password;
         }
 
         if ($request->filled('company_code')) {

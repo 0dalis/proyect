@@ -24,7 +24,7 @@ class PublicController extends Controller{
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            if ($user && $user->is_blocked) {
+            if (!$user->is_active) {
                 Auth::logout();
                 return response()->json([
                     'message' => 'Usuario bloqueado. Contacte al administrador.',
@@ -35,12 +35,14 @@ class PublicController extends Controller{
 
             Cookie::queue('user_id', $user->id, 120, null, null, false, false, false, false);
 
+            $employee = $user->employee;
+
             return response()->json([
                 'message' => 'Sesión iniciada correctamente.',
                 'user' => [
                     'id' => $user->id,
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name,
+                    'first_name' => $employee?->first_name,
+                    'last_name' => $employee?->last_name,
                 ],
             ]);
         }
@@ -51,10 +53,11 @@ class PublicController extends Controller{
 
     public function getUserPermissions(Request $request){
         $user = $request->user();
+        $employee = $user->employee;
 
         return response()->json([
             'id' => $user->id,
-            'name' => $user->first_name . ' ' . $user->last_name,
+            'name' => $employee ? $employee->first_name . ' ' . $employee->last_name : $user->email,
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
         ]);
@@ -126,7 +129,7 @@ class PublicController extends Controller{
         }
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $isFirstTime = trim((string) $user->pin) === '';
+        $isFirstTime = trim((string) ($user->employee?->pin ?? '')) === '';
         
         return response()->json([
             'token'     => $token,

@@ -9,77 +9,17 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LandingController;
 
-Route::get('/', function () {
-    // Mensajes de error
-    $messages = [
-        ["message" => "Access Denied", "severity" => "high"],
-        ["message" => "Resource not found", "severity" => "medium"],
-        ["message" => "Service unavailable", "severity" => "critical"],
-        ["message" => "Unauthorized access", "severity" => "high"],
-        ["message" => "Invalid request format", "severity" => "low"],
-        ["message" => "Session expired", "severity" => "medium"],
-        ["message" => "Permission error", "severity" => "high"],
-        ["message" => "Connection timeout", "severity" => "medium"],
-        ["message" => "Operation not allowed", "severity" => "high"]
-    ];
+// ===== Landing Page (pública) =====
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/acceso', [LandingController::class, 'acceso'])->name('acceso');
+Route::get('/privacidad', [LandingController::class, 'privacidad'])->name('privacidad');
+Route::get('/terminos', [LandingController::class, 'terminos'])->name('terminos');
+Route::post('/contacto', [LandingController::class, 'contacto'])->name('landing.contacto');
+Route::post('/registro', [LandingController::class, 'registro'])->name('landing.registro');
 
-    // Servidores simulados
-    $servers = [
-        "Local Server Alpha",
-        "Node-7 Cluster",
-        "Mainframe-3",
-        "Backend Gateway",
-        "Proxy Server X",
-        "Database Node 12"
-    ];
-
-    // Ubicaciones simuladas
-    $locations = [
-        "New York, USA",
-        "London, UK",
-        "Tokyo, JP",
-        "Berlin, DE",
-        "Sydney, AU",
-        "Mexico City, MX"
-    ];
-
-    // Estados de sesión aleatorios
-    $sessionStates = [
-        "active",
-        "inactive",
-        "locked",
-        "expired",
-        "pending_verification"
-    ];
-
-    // Obtener IP real del visitante
-    $ip = request()->ip();
-
-    // Elegir datos aleatorios
-    $error = $messages[array_rand($messages)];
-    $server = $servers[array_rand($servers)];
-    $location = $locations[array_rand($locations)];
-    $sessionState = $sessionStates[array_rand($sessionStates)];
-    $time = now()->format('Y-m-d H:i:s');
-
-    // Crear JSON de respuesta
-    $response = [
-        "error" => $error['message'],
-        "code" => rand(400, 503),
-        "severity_level" => $error['severity'],
-        "details" => [
-            "server_state" => $server,
-            "local_time" => $time,
-            "location_detected" => $location,
-            "ip_access" => $ip,
-            "session_status" => $sessionState,
-            "suggested_action" => "Please contact your system supervisor or administrator to review permissions"
-        ]
-    ];
-
-    return response()->json($response, (int) $response['code']);
-});
+// ===== Panel de administración (requiere auth) =====
 Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
 
     // Dashboard

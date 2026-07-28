@@ -18,8 +18,8 @@ class Plan extends Model{
     ];
 
     protected $casts = [
-        'cost' => 'decimal:2',
-        'tax'  => 'decimal:2',
+        'precio' => 'decimal:2',
+        'iva'  => 'decimal:2',
         'min_users' => 'integer',
         'max_users' => 'integer',
         'public' => 'boolean',
