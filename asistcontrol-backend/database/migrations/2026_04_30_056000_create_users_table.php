@@ -18,6 +18,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
+            $table->string('activation_token', 64)->nullable()->index();
+            $table->timestamp('activation_token_expires_at')->nullable();
         });
     }
 

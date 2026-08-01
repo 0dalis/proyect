@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Laravel\Cashier\Billable; // 1. Importar el Trait de Cashier
 
-class Company extends Model{
-    use HasFactory;
+class Company extends Model
+{
+    use HasFactory, Billable; // 2. Agregar el Trait aquí
 
     protected $fillable = [
         'name',
@@ -20,51 +22,68 @@ class Company extends Model{
         'custom_styles_path',
         'logo_path',
         'is_active',
+        // Campos que Cashier administra automáticamente:
+        'stripe_id',
+        'pm_type',
+        'pm_last_four',
     ];
 
     protected $casts = [
         'has_dedicated_db' => 'boolean',
-        'is_active' => 'boolean',
-        'trial_ends_at' => 'datetime',
+        'is_active'        => 'boolean',
+        'trial_ends_at'    => 'datetime',
         'subscription_ends_at' => 'datetime',
     ];
 
-    public function plan(){
+    // --- Relaciones ---
+
+    public function plan() {
         return $this->belongsTo(Plan::class, 'plan_id', 'id');
     }
 
-    public function offices(){
+    public function offices() {
         return $this->hasMany(Office::class);
     }
 
-    public function users(){
+    public function users() {
         return $this->hasMany(User::class);
     }
 
-    public function areas(){
+    public function areas() {
         return $this->hasMany(Area::class);
     }
 
-    public function employees(){
+    public function employees() {
         return $this->hasMany(Employee::class);
     }
 
-    public function notifications(){
+    public function notifications() {
         return $this->hasMany(Notification::class);
     }
 
-    public function isActive(): bool{
+    // --- Métodos de Ayuda y Estado ---
+
+    public function isActive(): bool {
         return $this->is_active;
     }
 
-    public function isOnTrial(): bool{
-        return $this->trial_ends_at && now()->lt($this->trial_ends_at);
+    /**
+     * Revisa si la empresa está en periodo de prueba
+     * (Aprovechamos el motor de Cashier o tu campo local)
+     */
+    public function isOnTrial(): bool {
+        return $this->onGenericTrial() || ($this->trial_ends_at && now()->lt($this->trial_ends_at));
     }
 
-    public function hasActiveSubscription(): bool{
-        return $this->subscription_ends_at && now()->lt($this->subscription_ends_at);
+    /**
+     * Revisa si la empresa tiene suscripción activa a través de Stripe
+     */
+    public function hasActiveSubscription(): bool {
+        // 'default' es el nombre genérico de la suscripción en Cashier
+        return $this->subscribed('default') || ($this->subscription_ends_at && now()->lt($this->subscription_ends_at));
     }
-    protected static function booted(){
+
+    protected static function booted() {
         static::creating(function ($company) {
             if (!$company->slug) {
                 $company->slug = Str::slug($company->name);

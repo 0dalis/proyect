@@ -1,33 +1,35 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es" class="scroll-smooth antialiased selection:bg-brand-500 selection:text-white">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AsistControl — Control de Asistencia Inteligente</title>
     <meta name="description" content="Sistema SaaS de control de asistencia laboral con geolocalización, gestión de turnos, vacaciones y más.">
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800&display=swap" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
                     },
                     colors: {
                         brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                            950: '#172554',
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                            950: '#0f172a',
                         }
                     }
                 }
@@ -35,10 +37,19 @@
         }
     </script>
     <style>
+        /* Pattern Overlay */
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .dark .bg-grid-pattern {
+            background-image: radial-gradient(rgba(99, 102, 241, 0.12) 1px, transparent 1px);
+        }
+
         .reveal {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            transform: translateY(20px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .reveal.visible {
             opacity: 1;
@@ -48,317 +59,307 @@
         .reveal-delay-2 { transition-delay: 0.2s; }
         .reveal-delay-3 { transition-delay: 0.3s; }
         .reveal-delay-4 { transition-delay: 0.4s; }
-        .reveal-delay-5 { transition-delay: 0.5s; }
-        .reveal-delay-6 { transition-delay: 0.6s; }
-        .counter {
-            transition: all 1.5s ease-out;
-        }
+
         .faq-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+            transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), padding 0.35s ease;
         }
         .faq-item.active .faq-content {
-            max-height: 300px;
+            max-height: 250px;
         }
         .faq-item.active .faq-icon {
-            transform: rotate(45deg);
+            transform: rotate(180deg);
         }
         .faq-icon {
             transition: transform 0.3s ease;
         }
-        .nav-link {
-            position: relative;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #2563eb;
-            transition: width 0.3s ease;
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
     </style>
 </head>
-<body class="bg-white text-gray-900 font-sans antialiased">
+<body class="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
 
 <!-- ===== NAVBAR ===== -->
-<nav class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur border-b border-gray-100 z-50">
+<header class="fixed top-0 left-0 right-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 z-50 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
-            <a href="#" class="flex items-center gap-2">
-                <div class="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-200">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            <a href="#" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 bg-gradient-to-br from-brand-500 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                     </svg>
                 </div>
-                <span class="text-xl font-bold text-gray-900 tracking-tight">AsistControl</span>
+                <span class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Asist<span class="text-brand-600 dark:text-brand-400">Control</span></span>
             </a>
-            <div class="hidden md:flex items-center gap-8">
-                <a href="#servicios" class="nav-link text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Servicios</a>
-                <a href="#como-funciona" class="nav-link text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Cómo funciona</a>
-                <a href="#planes" class="nav-link text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Planes</a>
-                <a href="#testimonios" class="nav-link text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Testimonios</a>
-                <a href="{{ route('acceso') }}" class="inline-flex items-center px-4 py-2 border border-brand-600 text-brand-600 text-sm font-semibold rounded-xl hover:bg-brand-50 transition-colors">
-                    Acceso
+
+            <nav class="hidden md:flex items-center gap-8 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <a href="#servicios" class="hover:text-slate-900 dark:hover:text-white transition-colors">Servicios</a>
+                <a href="#como-funciona" class="hover:text-slate-900 dark:hover:text-white transition-colors">Cómo funciona</a>
+                <a href="#planes" class="hover:text-slate-900 dark:hover:text-white transition-colors">Planes</a>
+                <a href="#testimonios" class="hover:text-slate-900 dark:hover:text-white transition-colors">Testimonios</a>
+            </nav>
+
+            <div class="hidden md:flex items-center gap-3">
+                <a href="{{ route('acceso') }}" class="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-2 transition-colors">
+                    Iniciar Sesión
                 </a>
-                <a href="{{ route('acceso') }}#registro" class="inline-flex items-center px-5 py-2.5 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-all shadow-lg shadow-brand-200 hover:shadow-xl hover:shadow-brand-300 hover:-translate-y-0.5">
-                    Comenzar gratis
+                <a href="{{ route('acceso') }}#registro" class="inline-flex items-center justify-center px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg shadow-md shadow-brand-600/30 hover:shadow-brand-500/50 transition-all hover:-translate-y-0.5">
+                    Probar Gratis
                 </a>
+                <!-- Botón Toggle de Tema -->
+                <button id="themeToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all" title="Cambiar tema">
+                    <svg id="sunIcon" class="w-4 h-4 text-amber-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <svg id="moonIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                </button>
             </div>
+
             <!-- Mobile menu button -->
-            <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button id="mobileMenuBtn" class="md:hidden p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path id="menuIconOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     <path id="menuIconClose" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" class="hidden"/>
                 </svg>
             </button>
         </div>
+
         <!-- Mobile menu -->
-        <div id="mobileMenu" class="md:hidden hidden pb-4 space-y-2">
-            <a href="#servicios" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors">Servicios</a>
-            <a href="#como-funciona" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors">Cómo funciona</a>
-            <a href="#planes" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors">Planes</a>
-            <a href="#testimonios" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors">Testimonios</a>
-            <a href="{{ route('acceso') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-brand-600 hover:bg-brand-50 transition-colors">Acceso</a>
-            <a href="{{ route('acceso') }}#registro" class="block px-3 py-3 rounded-xl text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 transition-colors text-center">Comenzar gratis</a>
+        <div id="mobileMenu" class="md:hidden hidden pb-6 pt-2 border-t border-slate-200 dark:border-slate-800/60 space-y-3">
+            <a href="#servicios" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Servicios</a>
+            <a href="#como-funciona" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Cómo funciona</a>
+            <a href="#planes" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Planes</a>
+            <a href="#testimonios" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Testimonios</a>
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex flex-col gap-2">
+                <a href="{{ route('acceso') }}" class="block px-3 py-2 text-center text-sm font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg">Acceso</a>
+                <a href="{{ route('acceso') }}#registro" class="block px-3 py-2 text-center text-sm font-semibold text-white bg-brand-600 rounded-lg">Comenzar gratis</a>
+                <button id="themeToggleMobile" class="block px-3 py-2 text-center text-sm font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg">
+                    <span id="themeLabelMobile">Modo Oscuro</span>
+                </button>
+            </div>
         </div>
     </div>
-</nav>
+</header>
 
 <!-- ===== HERO ===== -->
-<section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-    <div class="max-w-7xl mx-auto">
-        <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div class="reveal">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-50 text-brand-700 text-xs font-semibold rounded-full mb-6 ring-1 ring-brand-100">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
-                    </span>
-                    Prueba gratis por 14 días
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-grid-pattern">
+    <!-- Glow Background Effects -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-brand-600/10 dark:bg-brand-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+
+            <div class="lg:col-span-7 text-center lg:text-left reveal">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-medium text-brand-600 dark:text-brand-300 mb-6">
+                    <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-pulse"></span>
+                    Versión 2.0 — Gestión Inteligente de Personal
                 </div>
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.1] tracking-tight">
-                    Controla la asistencia
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-brand-500">sin complicaciones</span>
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1]">
+                    Gestión de asistencia <br class="hidden sm:inline"/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-brand-500 to-indigo-600 dark:from-brand-300 dark:via-brand-400 dark:to-indigo-300">moderna y automatizada</span>
                 </h1>
-                <p class="mt-6 text-lg text-gray-500 leading-relaxed max-w-xl">
-                    Digitaliza las entradas y salidas de tu equipo con geolocalización, turnos inteligentes, vacaciones y reportes en tiempo real desde cualquier dispositivo.
+
+                <p class="mt-6 text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                    Controla marcajes con geolocalización GPS, gestiona turnos rotativos y automatiza reportes de nómina sin depender de checadores físicos.
                 </p>
-                <div class="mt-8 flex flex-col sm:flex-row gap-4">
-                    <a href="{{ route('acceso') }}#registro" class="group inline-flex items-center justify-center px-6 py-3.5 bg-brand-600 text-white font-semibold rounded-xl hover:bg-brand-700 transition-all shadow-lg shadow-brand-200 hover:shadow-xl hover:shadow-brand-300 hover:-translate-y-0.5">
-                        Probar gratis 14 días
-                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+
+                <div class="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                    <a href="{{ route('acceso') }}#registro" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm rounded-lg shadow-lg shadow-brand-600/25 transition-all hover:-translate-y-0.5">
+                        Empezar prueba gratis ({{ $daysTrial }} días)
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
-                    <a href="#servicios" class="inline-flex items-center justify-center px-6 py-3.5 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all">
-                        Explorar servicios
+                    <a href="#servicios" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 font-semibold text-sm rounded-lg transition-all">
+                        Ver características
                     </a>
                 </div>
-                <div class="mt-8 flex items-center gap-8">
-                    <div class="flex -space-x-3">
-                        <div class="w-9 h-9 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
-                        <div class="w-9 h-9 bg-brand-500 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
-                        <div class="w-9 h-9 bg-purple-500 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
-                        <div class="w-9 h-9 bg-amber-500 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
+
+                <div class="mt-10 pt-8 border-t border-slate-200 dark:border-slate-900 flex items-center justify-center lg:justify-start gap-6">
+                    <div class="flex -space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 border-2 border-white dark:border-slate-950 flex items-center justify-center text-xs text-brand-600 dark:text-brand-300 font-bold">JD</div>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 border-2 border-white dark:border-slate-950 flex items-center justify-center text-xs text-emerald-600 dark:text-emerald-300 font-bold">MR</div>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 border-2 border-white dark:border-slate-950 flex items-center justify-center text-xs text-purple-600 dark:text-purple-300 font-bold">AL</div>
                     </div>
-                    <div>
-                        <p class="text-sm font-semibold text-gray-700">+500 empresas</p>
-                        <p class="text-xs text-gray-400">confían en nosotros</p>
-                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        <strong class="text-slate-700 dark:text-slate-200 font-semibold">+500 empresas</strong> optimizan sus operaciones diariamente.
+                    </p>
                 </div>
             </div>
-            <div class="reveal reveal-delay-1 hidden lg:block">
-                <div class="relative">
-                    <div class="absolute -inset-4 bg-gradient-to-br from-brand-400/20 via-brand-300/10 to-transparent rounded-3xl blur-2xl"></div>
-                    <div class="relative bg-white border border-gray-200/80 rounded-2xl shadow-2xl shadow-gray-200/50 p-1">
-                        <div class="bg-gradient-to-br from-brand-600 to-brand-700 rounded-t-xl p-4 flex items-center gap-3">
-                            <div class="w-3 h-3 bg-red-400/80 rounded-full"></div>
-                            <div class="w-3 h-3 bg-yellow-400/80 rounded-full"></div>
-                            <div class="w-3 h-3 bg-emerald-400/80 rounded-full"></div>
-                            <span class="text-xs text-white/80 ml-2 font-medium">Dashboard — Panel de control</span>
+
+            <!-- Previsualización de Dashboard UI -->
+            <div class="lg:col-span-5 reveal reveal-delay-1">
+                <div class="relative mx-auto max-w-md lg:max-w-none">
+                    <div class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-brand-500 to-indigo-600 opacity-20 blur-xl"></div>
+                    <div class="relative bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+
+                        <!-- Header de la ventana -->
+                        <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
+                            </div>
+                            <span class="text-[11px] font-mono text-slate-500">app.asistcontrol.com/live</span>
                         </div>
+
+                        <!-- Métricas Mockup -->
                         <div class="p-5 space-y-4">
                             <div class="grid grid-cols-2 gap-3">
-                                <div class="bg-gradient-to-br from-brand-50 to-blue-50 rounded-xl p-4 border border-brand-100/50">
-                                    <div class="flex items-center justify-between">
-                                        <p class="text-xs font-semibold text-brand-700">Activos hoy</p>
-                                        <span class="text-emerald-600 text-xs font-bold bg-emerald-50 px-1.5 py-0.5 rounded">+12%</span>
-                                    </div>
-                                    <p class="text-2xl font-bold text-gray-900 mt-2">247</p>
-                                </div>
-                                <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-100/50">
-                                    <p class="text-xs font-semibold text-emerald-700">A tiempo</p>
-                                    <p class="text-2xl font-bold text-gray-900 mt-2">94%</p>
-                                    <div class="mt-2 w-full bg-emerald-100 rounded-full h-1.5">
-                                        <div class="bg-emerald-500 h-1.5 rounded-full" style="width:94%"></div>
+                                <div class="p-3.5 bg-slate-950/50 border border-slate-800/80 rounded-lg">
+                                    <span class="text-xs text-slate-400">Personal Activo</span>
+                                    <div class="flex items-baseline justify-between mt-1">
+                                        <span class="text-xl font-bold text-white">247</span>
+                                        <span class="text-[10px] text-emerald-400 bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-800/40">98% Asistencia</span>
                                     </div>
                                 </div>
-                                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100/50">
-                                    <p class="text-xs font-semibold text-amber-700">Retardos</p>
-                                    <p class="text-2xl font-bold text-gray-900 mt-2">8</p>
-                                </div>
-                                <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border border-purple-100/50">
-                                    <p class="text-xs font-semibold text-purple-700">Solicitudes</p>
-                                    <p class="text-2xl font-bold text-gray-900 mt-2">5</p>
-                                    <span class="text-xs text-purple-500 font-medium">3 pendientes</span>
+                                <div class="p-3.5 bg-slate-950/50 border border-slate-800/80 rounded-lg">
+                                    <span class="text-xs text-slate-400">Puntualidad</span>
+                                    <div class="flex items-baseline justify-between mt-1">
+                                        <span class="text-xl font-bold text-white">94.2%</span>
+                                        <span class="text-[10px] text-brand-300 bg-brand-950/50 px-1.5 py-0.5 rounded border border-brand-800/40">Excelente</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Últimos marcajes</span>
-                                    <span class="text-xs text-brand-600 font-medium cursor-pointer hover:underline">Ver todo</span>
-                                </div>
-                                <div class="space-y-2.5">
-                                    <div class="flex items-center justify-between text-sm bg-white rounded-lg p-2.5 border border-gray-100">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 text-xs font-bold">ML</div>
-                                            <span class="font-medium text-gray-700">María López</span>
+
+                            <!-- Feed en vivo -->
+                            <div class="p-3.5 bg-slate-950/50 border border-slate-800/80 rounded-lg">
+                                <span class="text-[11px] font-semibold tracking-wider uppercase text-slate-500 block mb-3">Registros recientes (GPS Validado)</span>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-xs p-2 bg-slate-900/80 rounded border border-slate-800/50">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-6 h-6 rounded bg-emerald-500/10 text-emerald-400 font-mono font-bold text-[10px] flex items-center justify-center">ML</div>
+                                            <span class="text-slate-300 font-medium">María López</span>
                                         </div>
-                                        <span class="text-emerald-600 text-xs font-semibold bg-emerald-50 px-2 py-0.5 rounded">08:00</span>
+                                        <span class="font-mono text-emerald-400 text-[11px]">08:00:12 AM</span>
                                     </div>
-                                    <div class="flex items-center justify-between text-sm bg-white rounded-lg p-2.5 border border-gray-100">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-7 h-7 bg-brand-100 rounded-lg flex items-center justify-center text-brand-600 text-xs font-bold">CR</div>
-                                            <span class="font-medium text-gray-700">Carlos Ruiz</span>
+                                    <div class="flex items-center justify-between text-xs p-2 bg-slate-900/80 rounded border border-slate-800/50">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-6 h-6 rounded bg-brand-500/10 text-brand-400 font-mono font-bold text-[10px] flex items-center justify-center">CR</div>
+                                            <span class="text-slate-300 font-medium">Carlos Ruiz</span>
                                         </div>
-                                        <span class="text-emerald-600 text-xs font-semibold bg-emerald-50 px-2 py-0.5 rounded">08:01</span>
+                                        <span class="font-mono text-brand-400 text-[11px]">08:01:45 AM</span>
                                     </div>
-                                    <div class="flex items-center justify-between text-sm bg-white rounded-lg p-2.5 border border-gray-100">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-7 h-7 bg-red-100 rounded-lg flex items-center justify-center text-red-600 text-xs font-bold">AG</div>
-                                            <span class="font-medium text-gray-700">Ana García</span>
+                                    <div class="flex items-center justify-between text-xs p-2 bg-slate-900/80 rounded border border-slate-800/50">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-6 h-6 rounded bg-amber-500/10 text-amber-400 font-mono font-bold text-[10px] flex items-center justify-center">AG</div>
+                                            <span class="text-slate-300 font-medium">Ana García</span>
                                         </div>
-                                        <span class="text-red-600 text-xs font-semibold bg-red-50 px-2 py-0.5 rounded">08:22</span>
+                                        <span class="font-mono text-amber-400 text-[11px]">08:15:02 AM (Retardo)</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
 
-<!-- ===== ESTADÍSTICAS ===== -->
-<section class="py-16 bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+<!-- ===== METRICAS NUMÉRICAS ===== -->
+<section class="py-12 border-y border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/40 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div class="reveal">
-                <div class="text-4xl sm:text-5xl font-black text-white tabular-nums" data-target="500" data-suffix="+">0+</div>
-                <p class="mt-2 text-brand-200 text-sm font-medium">Empresas activas</p>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white font-mono" data-target="500" data-suffix="+">0+</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Empresas activas</p>
             </div>
             <div class="reveal reveal-delay-1">
-                <div class="text-4xl sm:text-5xl font-black text-white tabular-nums" data-target="12000" data-suffix="+">0+</div>
-                <p class="mt-2 text-brand-200 text-sm font-medium">Empleados registrados</p>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white font-mono" data-target="12000" data-suffix="+">0+</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Empleados monitoreados</p>
             </div>
             <div class="reveal reveal-delay-2">
-                <div class="text-4xl sm:text-5xl font-black text-white tabular-nums" data-target="1000" data-suffix="K+">0K+</div>
-                <p class="mt-2 text-brand-200 text-sm font-medium">Marcajes procesados</p>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white font-mono" data-target="1000" data-suffix="K+">0K+</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Marcajes procesados</p>
             </div>
             <div class="reveal reveal-delay-3">
-                <div class="text-4xl sm:text-5xl font-black text-white" data-target="99.9" data-suffix="%" data-decimal="true">0%</div>
-                <p class="mt-2 text-brand-200 text-sm font-medium">Uptime garantizado</p>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white font-mono" data-target="99.9" data-suffix="%" data-decimal="true">0%</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Disponibilidad del servicio</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ===== SERVICIOS ===== -->
-<section id="servicios" class="py-24 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
-            <span class="text-brand-600 text-sm font-bold uppercase tracking-wider reveal">Servicios</span>
-            <h2 class="mt-3 text-3xl sm:text-4xl font-black text-gray-900 reveal reveal-delay-1">
-                Todo lo que necesitas para tu equipo
-            </h2>
-            <p class="mt-4 text-lg text-gray-500 max-w-2xl mx-auto reveal reveal-delay-2">
-                Centraliza el control de asistencia, turnos y permisos en un solo lugar.
+<!-- ===== SERVICIOS / BENTO GRID ===== -->
+<section id="servicios" class="py-24 bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Funcionalidades Principales</h2>
+            <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
+                Todo lo que necesitas para un control eficiente
+            </p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-4 reveal reveal-delay-2">
+                Elimina fraudes de asistencia, automatiza incidencias y simplifica los reportes de nómina en minutos.
             </p>
         </div>
+
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Servicio 1 -->
-            <div class="reveal reveal-delay-1 group bg-white rounded-2xl p-8 border border-gray-100 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-50 transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+            <!-- Card 1 -->
+            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal">
+                <div class="w-10 h-10 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-3">Geolocalización GPS</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">
-                    Valida que tus empleados registren asistencia desde la ubicación de la oficina. Define radios de tolerancia por sucursal y evita marcajes fraudulentos.
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Geolocalización GPS</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                    Valida marcajes dentro del rango geográfico permitido. Define radio de tolerancia por sucursal para evitar registros fuera de zona.
                 </p>
             </div>
 
-            <!-- Servicio 2 -->
-            <div class="reveal reveal-delay-2 group bg-white rounded-2xl p-8 border border-gray-100 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-50 transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+            <!-- Card 2 -->
+            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-1">
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-3">Turnos inteligentes</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">
-                    Define horarios de entrada, salida, tolerancias y comida por sucursal. El sistema calcula automáticamente retardos, horas extra y salidas anticipadas.
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Turnos Inteligentes</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                    Configura horarios flexibles o rotativos. El sistema calcula automáticamente retardos, horas extra y salidas antes de tiempo.
                 </p>
             </div>
 
-            <!-- Servicio 3 -->
-            <div class="reveal reveal-delay-3 group bg-white rounded-2xl p-8 border border-gray-100 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-50 transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
+            <!-- Card 3 -->
+            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-2">
+                <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-3">Solicitudes y permisos</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">
-                    Tus empleados solicitan vacaciones, permisos o justifican inasistencias desde la app. Los supervisores aprueban o rechazan con un clic.
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Permisos e Incidencias</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                    Permite a los colaboradores solicitar vacaciones o enviar justificantes con fotografías de incapacidades directamente desde la App.
                 </p>
             </div>
 
-            <!-- Servicio 4 -->
-            <div class="reveal reveal-delay-1 group bg-white rounded-2xl p-8 border border-gray-100 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-50 transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
-                    </svg>
+            <!-- Card 4 -->
+            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-3">Reportes y dashboard</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">
-                    Visualiza asistencia diaria, retardos y horas trabajadas en tiempo real. Exporta reportes detallados a Excel para nómina y RH.
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Reportes Exportables</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                    Genera pre-nóminas consolidadas en formato Excel o CSV listos para ser importados en tu sistema contable.
                 </p>
             </div>
 
-            <!-- Servicio 5 -->
-            <div class="reveal reveal-delay-2 group bg-white rounded-2xl p-8 border border-gray-100 hover:border-rose-200 hover:shadow-xl hover:shadow-rose-50 transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
+            <!-- Card 5 -->
+            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-1">
+                <div class="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-3">Notificaciones push</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">
-                    Envía avisos a toda la empresa, por área o a empleados específicos directamente a la app móvil desde el panel de administración.
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Notificaciones Push</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                    Comunica avisos organizacionales a todo el personal o grupos específicos en tiempo real a través de la aplicación móvil.
                 </p>
             </div>
 
-            <!-- Servicio 6 -->
-            <div class="reveal reveal-delay-3 group bg-white rounded-2xl p-8 border border-gray-100 hover:border-cyan-200 hover:shadow-xl hover:shadow-cyan-50 transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
+            <!-- Card 6 -->
+            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-2">
+                <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-3">Kiosco y PIN seguro</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">
-                    Modo kiosco para que los empleados marquen entrada y salida con su código o PIN desde una tableta en recepción.
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Modo Kiosco y PIN</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                    Convierte cualquier tableta en una estación fija de recepción para marcaje rápido mediante código de empleado único.
                 </p>
             </div>
         </div>
@@ -366,189 +367,150 @@
 </section>
 
 <!-- ===== CÓMO FUNCIONA ===== -->
-<section id="como-funciona" class="py-24 bg-gray-50 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
-            <span class="text-brand-600 text-sm font-bold uppercase tracking-wider reveal">Cómo funciona</span>
-            <h2 class="mt-3 text-3xl sm:text-4xl font-black text-gray-900 reveal reveal-delay-1">
-                Empieza en 4 pasos
-            </h2>
-            <p class="mt-4 text-lg text-gray-500 max-w-2xl mx-auto reveal reveal-delay-2">
-                Configura tu empresa en minutos, sin instalaciones complicadas.
+<section id="como-funciona" class="py-24 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Implementación Ágil</h2>
+            <p class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
+                Paso a paso sin complicaciones
             </p>
         </div>
-        <div class="relative">
-            <!-- Timeline line -->
-            <div class="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2 z-0"></div>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-                <!-- Paso 1 -->
-                <div class="reveal reveal-delay-1 text-center">
-                    <div class="w-16 h-16 bg-white rounded-2xl shadow-lg border border-gray-200 flex items-center justify-center mx-auto mb-5 group hover:border-brand-300 hover:shadow-xl transition-all duration-300">
-                        <span class="text-2xl font-black text-brand-600">1</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Registra tu empresa</h3>
-                    <p class="text-gray-500 text-sm">Crea tu cuenta en 2 minutos. Elige tu plan y obtén 14 días de prueba gratis.</p>
-                </div>
 
-                <!-- Paso 2 -->
-                <div class="reveal reveal-delay-2 text-center">
-                    <div class="w-16 h-16 bg-white rounded-2xl shadow-lg border border-gray-200 flex items-center justify-center mx-auto mb-5 group hover:border-brand-300 hover:shadow-xl transition-all duration-300">
-                        <span class="text-2xl font-black text-brand-600">2</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Configura sucursales</h3>
-                    <p class="text-gray-500 text-sm">Define oficinas, áreas y turnos. Ajusta geocercas y tolerancias de horario.</p>
-                </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="reveal">
+                <div class="font-mono text-2xl font-bold text-brand-600 dark:text-brand-400 mb-2">01</div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Crea tu cuenta</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Regístrate en menos de 2 minutos sin ingresar tarjetas de crédito.</p>
+            </div>
 
-                <!-- Paso 3 -->
-                <div class="reveal reveal-delay-3 text-center">
-                    <div class="w-16 h-16 bg-white rounded-2xl shadow-lg border border-gray-200 flex items-center justify-center mx-auto mb-5 group hover:border-brand-300 hover:shadow-xl transition-all duration-300">
-                        <span class="text-2xl font-black text-brand-600">3</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Invita a tu equipo</h3>
-                    <p class="text-gray-500 text-sm">Registra empleados, asigna roles y comparte el código de empresa para la app móvil.</p>
-                </div>
+            <div class="reveal reveal-delay-1">
+                <div class="font-mono text-2xl font-bold text-brand-600 dark:text-brand-400 mb-2">02</div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Define Sucursales</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Establece ubicaciones GPS, límites de geocerca y tolerancias de entrada.</p>
+            </div>
 
-                <!-- Paso 4 -->
-                <div class="reveal reveal-delay-4 text-center">
-                    <div class="w-16 h-16 bg-white rounded-2xl shadow-lg border border-gray-200 flex items-center justify-center mx-auto mb-5 group hover:border-brand-300 hover:shadow-xl transition-all duration-300">
-                        <span class="text-2xl font-black text-brand-600">4</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Monitorea en vivo</h3>
-                    <p class="text-gray-500 text-sm">Visualiza asistencias, retardos y reportes desde el dashboard en tiempo real.</p>
-                </div>
+            <div class="reveal reveal-delay-2">
+                <div class="font-mono text-2xl font-bold text-brand-600 dark:text-brand-400 mb-2">03</div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Alta de Empleados</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Importa la lista de colaboradores e invítalos a descargar la App móvil.</p>
+            </div>
+
+            <div class="reveal reveal-delay-3">
+                <div class="font-mono text-2xl font-bold text-brand-600 dark:text-brand-400 mb-2">04</div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Control Total</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Monitorea en tiempo real las asistencias e incidencias operativas.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ===== PLANES ===== -->
-<section id="planes" class="py-24 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
-            <span class="text-brand-600 text-sm font-bold uppercase tracking-wider reveal">Planes</span>
-            <h2 class="mt-3 text-3xl sm:text-4xl font-black text-gray-900 reveal reveal-delay-1">
-                Elige tu plan
-            </h2>
-            <p class="mt-4 text-lg text-gray-500 max-w-2xl mx-auto reveal reveal-delay-2">
-                Todos incluyen 14 días de prueba gratis. Sin tarjeta de crédito. Cancela cuando quieras.
+<section id="planes" class="py-24 bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Precios Transparentes</h2>
+            <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
+                Planes adaptados a tu escala
             </p>
         </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            @if($planes->isEmpty())
-                <div class="lg:col-span-3 text-center py-16">
-                    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    </div>
-                    <p class="text-gray-400 text-lg font-medium">Próximamente publicaremos nuestros planes.</p>
-                    <p class="text-gray-400 text-sm mt-1">Mientras tanto, contáctanos.</p>
-                </div>
-            @else
+
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
+            @if(isset($planes) && $planes->isNotEmpty())
                 @foreach($planes as $plan)
-                    <div class="reveal reveal-delay-{{ $loop->index + 1 }} relative bg-white rounded-2xl border {{ $loop->first ? 'border-brand-200 shadow-2xl shadow-brand-100 scale-[1.03] z-10' : 'border-gray-200 shadow-sm' }} p-8 flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div class="reveal reveal-delay-{{ $loop->index + 1 }} relative bg-white dark:bg-slate-900/60 border {{ $loop->first ? 'border-brand-500 shadow-xl shadow-brand-500/10' : 'border-slate-200 dark:border-slate-800' }} rounded-xl p-8 flex flex-col justify-between transition-colors duration-300">
                         @if($loop->first)
-                            <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-bold rounded-full shadow-lg shadow-brand-200">
-                                Más popular
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-brand-600 text-white text-[10px] uppercase tracking-wider font-bold rounded-full">
+                                Recomendado
                             </div>
                         @endif
-                        <div class="mb-6">
-                            <h3 class="text-xl font-bold text-gray-900">{{ $plan->nombre }}</h3>
-                            <p class="text-sm text-gray-500 mt-1">{{ $plan->tipo }}</p>
+
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $plan->nombre }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ $plan->tipo }}</p>
+
+                            <div class="my-6">
+                                <span class="text-4xl font-extrabold font-mono text-slate-900 dark:text-white">${{ number_format($plan->precio, 2) }}</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">/ mes</span>
+                                @if($plan->iva > 0)
+                                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">+ IVA ({{ $plan->iva }}%)</p>
+                                @endif
+                            </div>
+
+                            <ul class="space-y-3 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-800/80 pt-6 mb-8">
+                                <li class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Hasta {{ $plan->max_users ?? 'ilimitados' }} usuarios
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Geolocalización GPS
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    App iOS y Android
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Soporte técnico
+                                </li>
+                            </ul>
                         </div>
-                        <div class="mb-6">
-                            <span class="text-4xl font-black text-gray-900">${{ number_format($plan->precio, 2) }}</span>
-                            <span class="text-gray-400 text-sm font-medium">/mes</span>
-                            @if($plan->iva > 0)
-                                <p class="text-xs text-gray-400 mt-1">+ IVA ({{ $plan->iva }}%)</p>
-                            @endif
-                        </div>
-                        <ul class="space-y-3 mb-8 flex-1">
-                            <li class="flex items-start gap-2 text-sm text-gray-600">
-                                <svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                Hasta {{ $plan->max_users ?? 'ilimitados' }} usuarios
-                            </li>
-                            <li class="flex items-start gap-2 text-sm text-gray-600">
-                                <svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                Sucursales ilimitadas
-                            </li>
-                            <li class="flex items-start gap-2 text-sm text-gray-600">
-                                <svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                App móvil iOS y Android
-                            </li>
-                            <li class="flex items-start gap-2 text-sm text-gray-600">
-                                <svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                Geolocalización y geocercas
-                            </li>
-                            <li class="flex items-start gap-2 text-sm text-gray-600">
-                                <svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                Soporte por chat 24/7
-                            </li>
-                        </ul>
-                        <a href="{{ route('acceso') }}#registro" class="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-semibold text-sm transition-all {{ $loop->first ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200 hover:shadow-xl' : 'border-2 border-gray-200 text-gray-700 hover:border-brand-300 hover:text-brand-600' }}">
-                            {{ $loop->first ? 'Comenzar ahora' : 'Elegir plan' }}
+
+                        <a href="{{ route('acceso') }}#registro" class="w-full py-2.5 text-center font-semibold text-xs rounded-lg transition-all {{ $loop->first ? 'bg-brand-600 hover:bg-brand-500 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200' }}">
+                            Seleccionar Plan
                         </a>
                     </div>
                 @endforeach
+            @else
+                <!-- Fallback si no hay planes cargados -->
+                <div class="col-span-3 text-center py-12 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Consulta con nuestro equipo comercial para un plan a la medida.</p>
+                </div>
             @endif
         </div>
     </div>
 </section>
 
 <!-- ===== TESTIMONIOS ===== -->
-<section id="testimonios" class="py-24 bg-gray-50 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
-            <span class="text-brand-600 text-sm font-bold uppercase tracking-wider reveal">Testimonios</span>
-            <h2 class="mt-3 text-3xl sm:text-4xl font-black text-gray-900 reveal reveal-delay-1">
-                Lo que dicen nuestros clientes
-            </h2>
+<section id="testimonios" class="py-24 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Casos de Éxito</h2>
+            <p class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
+                Respaldado por equipos de alto rendimiento
+            </p>
         </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="reveal reveal-delay-1 bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div class="flex items-center gap-1 mb-4">
-                    <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                </div>
-                <p class="text-gray-600 text-sm leading-relaxed mb-6">"Desde que usamos AsistControl, eliminamos las hojas de registro manuales. Ahora todo está digitalizado y podemos ver quién llegó tarde en tiempo real."</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white font-bold text-sm">CG</div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="p-6 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-xl reveal transition-colors duration-300">
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed italic">"Digitalizar la asistencia redujo en un 90% el tiempo que destinábamos a la revisión manual de retardos antes de procesar la nómina."</p>
+                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800/60 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 font-bold text-xs flex items-center justify-center">CG</div>
                     <div>
-                        <p class="text-sm font-bold text-gray-900">Carlos García</p>
-                        <p class="text-xs text-gray-400">Director RH, LogiTrans S.A.</p>
+                        <p class="text-xs font-bold text-slate-900 dark:text-white">Carlos García</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500">Director RH, LogiTrans</p>
                     </div>
                 </div>
             </div>
 
-            <div class="reveal reveal-delay-2 bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div class="flex items-center gap-1 mb-4">
-                    @for ($i = 0; $i < 5; $i++)
-                        <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    @endfor
-                </div>
-                <p class="text-gray-600 text-sm leading-relaxed mb-6">"La geolocalización nos ayudó a resolver el problema de empleados que marcaban desde fuera de la oficina. Ahora tenemos control total de 12 sucursales."</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm">MR</div>
+            <div class="p-6 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-xl reveal reveal-delay-1 transition-colors duration-300">
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed italic">"El control de geolocalización fue clave para coordinar a nuestro equipo de campo distribuido en múltiples puntos de la ciudad."</p>
+                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800/60 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold text-xs flex items-center justify-center">MR</div>
                     <div>
-                        <p class="text-sm font-bold text-gray-900">Mariana Ruiz</p>
-                        <p class="text-xs text-gray-400">CEO, Grupo Retail Express</p>
+                        <p class="text-xs font-bold text-slate-900 dark:text-white">Mariana Ruiz</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500">Operaciones, Retail Express</p>
                     </div>
                 </div>
             </div>
 
-            <div class="reveal reveal-delay-3 bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div class="flex items-center gap-1 mb-4">
-                    @for ($i = 0; $i < 5; $i++)
-                        <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    @endfor
-                </div>
-                <p class="text-gray-600 text-sm leading-relaxed mb-6">"La app móvil es súper intuitiva. Mis empleados la descargaron y empezaron a usarla sin capacitación. El panel de reportes me ahorra horas cada semana."</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">AM</div>
+            <div class="p-6 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-xl reveal reveal-delay-2 transition-colors duration-300">
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed italic">"La interfaz es impecable y la adopción por parte del personal fue inmediata. Sin necesidad de capacitaciones complejas."</p>
+                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800/60 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold text-xs flex items-center justify-center">AM</div>
                     <div>
-                        <p class="text-sm font-bold text-gray-900">Alejandro Méndez</p>
-                        <p class="text-xs text-gray-400">Gerente General, TechSolutions MX</p>
+                        <p class="text-xs font-bold text-slate-900 dark:text-white">Alejandro Méndez</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500">TechSolutions MX</p>
                     </div>
                 </div>
             </div>
@@ -557,32 +519,28 @@
 </section>
 
 <!-- ===== FAQ ===== -->
-<section class="py-24 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-3xl mx-auto">
+<section class="py-24 bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="text-brand-600 text-sm font-bold uppercase tracking-wider reveal">FAQ</span>
-            <h2 class="mt-3 text-3xl sm:text-4xl font-black text-gray-900 reveal reveal-delay-1">
-                Preguntas frecuentes
-            </h2>
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Dudas Comunes</h2>
+            <p class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">Preguntas Frecuentes</p>
         </div>
+
         <div class="space-y-3">
             @php $faqs = [
-                ['q' => '¿Necesito instalar algo en mis computadoras?', 'a' => 'No. AsistControl es 100% en la nube. Solo necesitas un navegador web para el panel administrativo. Tus empleados descargan la app móvil gratuita.'],
-                ['q' => '¿Funciona sin conexión a internet?', 'a' => 'La app móvil permite registrar marcajes offline que se sincronizan automáticamente cuando el dispositivo recupera conexión.'],
-                ['q' => '¿Puedo cambiar de plan después?', 'a' => 'Sí. Puedes subir o bajar de plan en cualquier momento desde tu panel. Los cambios se aplican al instante y el cobro se ajusta proporcionalmente.'],
-                ['q' => '¿Cómo registran asistencia mis empleados?', 'a' => 'Cada empleado descarga la app, inicia sesión con el código de tu empresa y registra su entrada/salida con un toque. El sistema valida ubicación GPS automáticamente.'],
-                ['q' => '¿Tienen app móvil?', 'a' => 'Sí. La app está disponible para iOS y Android de forma gratuita para todos los empleados. Incluye marcajes, solicitudes, notificaciones y más.'],
-                ['q' => '¿Qué pasa al terminar los 14 días de prueba?', 'a' => 'Te avisaremos antes de que termine tu prueba. Si decides continuar, eliges un plan y agregas tu método de pago. Si no, tu cuenta se desactiva sin compromiso.'],
+                ['q' => '¿Requiere instalación de equipo especial?', 'a' => 'No. Funciona 100% en la nube desde cualquier navegador web y mediante aplicaciones móviles nativas para iOS y Android.'],
+                ['q' => '¿Permite marcajes sin conexión a internet?', 'a' => 'Sí. La App almacena los registros de forma local con la hora y ubicación cifradas, sincronizándolos en cuanto detecte conexión.'],
+                ['q' => '¿Se adapta a horarios rotativos?', 'a' => 'Completamente. Puedes definir múltiples turnos, tolerancias de entrada y reglas de descansos según la estructura de tu empresa.'],
             ]; @endphp
 
             @foreach($faqs as $index => $faq)
-                <div class="faq-item reveal reveal-delay-{{ $index + 1 }} bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-brand-200 transition-colors">
-                    <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" onclick="this.parentElement.classList.toggle('active')">
-                        <span class="text-sm font-semibold text-gray-900 pr-4">{{ $faq['q'] }}</span>
-                        <svg class="faq-icon w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <div class="faq-item reveal bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-colors duration-300">
+                    <button class="faq-toggle w-full flex items-center justify-between px-5 py-4 text-left">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ $faq['q'] }}</span>
+                        <svg class="faq-icon w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div class="faq-content">
-                        <p class="px-6 pb-5 text-sm text-gray-500 leading-relaxed">{{ $faq['a'] }}</p>
+                        <p class="px-5 pb-4 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{{ $faq['a'] }}</p>
                     </div>
                 </div>
             @endforeach
@@ -590,126 +548,102 @@
     </div>
 </section>
 
-<!-- ===== CTA FINAL ===== -->
-<section class="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900">
-    <div class="max-w-3xl mx-auto text-center">
-        <h2 class="text-3xl sm:text-4xl font-black text-white reveal">
-            ¿Listo para digitalizar el control de asistencia?
-        </h2>
-        <p class="mt-4 text-lg text-brand-200 reveal reveal-delay-1">
-            Únete a más de 500 empresas que ya confían en AsistControl. Comienza tu prueba gratis hoy.
-        </p>
-        <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center reveal reveal-delay-2">
-            <a href="{{ route('acceso') }}#registro" class="inline-flex items-center justify-center px-8 py-4 bg-white text-brand-700 font-bold rounded-xl hover:bg-gray-50 transition-all shadow-2xl hover:shadow-white/30 hover:-translate-y-0.5">
-                Crear cuenta gratis
-                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-            </a>
-            <a href="{{ route('acceso') }}" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-all">
-                Contactar a ventas
-            </a>
-        </div>
-    </div>
-</section>
-
 <!-- ===== FOOTER ===== -->
-<footer class="bg-gray-900 text-gray-400 py-16 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
-            <div class="lg:col-span-2">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                        </svg>
-                    </div>
-                    <span class="text-lg font-bold text-white">AsistControl</span>
-                </div>
-                <p class="text-sm leading-relaxed max-w-sm">Sistema inteligente de control de asistencia laboral. Diseñado para empresas que buscan eficiencia, transparencia y control total sobre la asistencia de su equipo.</p>
-                <p class="text-xs text-gray-500 mt-4">Desarrollado por <span class="text-gray-400 font-semibold">JALY SYSTEMS</span></p>
-            </div>
-            <div>
-                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Producto</h4>
-                <ul class="space-y-2.5 text-sm">
-                    <li><a href="#servicios" class="hover:text-white transition-colors">Servicios</a></li>
-                    <li><a href="#planes" class="hover:text-white transition-colors">Planes</a></li>
-                    <li><a href="#como-funciona" class="hover:text-white transition-colors">Cómo funciona</a></li>
-                    <li><a href="{{ route('acceso') }}" class="hover:text-white transition-colors">Acceso</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Legal</h4>
-                <ul class="space-y-2.5 text-sm">
-                    <li><a href="{{ route('privacidad') }}" class="hover:text-white transition-colors">Política de privacidad</a></li>
-                    <li><a href="{{ route('terminos') }}" class="hover:text-white transition-colors">Términos y condiciones</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contacto</h4>
-                <ul class="space-y-2.5 text-sm">
-                    <li class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        contacto@asistcontrol.com
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                        +52 55 0000 0000
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        Ciudad de México
-                    </li>
-                </ul>
-            </div>
+<footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 py-12 text-xs text-slate-400 dark:text-slate-500 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 bg-brand-600 rounded flex items-center justify-center text-white font-bold text-xs">A</div>
+            <span class="text-sm font-bold text-slate-600 dark:text-slate-300">AsistControl</span>
         </div>
-        <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p class="text-sm">&copy; {{ date('Y') }} JALY SYSTEMS. Todos los derechos reservados.</p>
-            <p class="text-xs text-gray-500">AsistControl es un producto de JALY SYSTEMS.</p>
+        <p>&copy; {{ date('Y') }} JALY SYSTEMS. Todos los derechos reservados.</p>
+        <div class="flex gap-6">
+            <a href="{{ route('privacidad') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Privacidad</a>
+            <a href="{{ route('terminos') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Términos</a>
         </div>
     </div>
 </footer>
 
 <script>
-// ===== MOBILE MENU =====
-document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-    document.getElementById('mobileMenu').classList.toggle('hidden');
-    document.getElementById('menuIconOpen').classList.toggle('hidden');
-    document.getElementById('menuIconClose').classList.toggle('hidden');
+// ===== MODO CLARO / OSCURO =====
+const $html = $('html');
+const $sunIcon = $('#sunIcon');
+const $moonIcon = $('#moonIcon');
+const $themeLabelMobile = $('#themeLabelMobile');
+
+function applyTheme(isDark) {
+    if (isDark) {
+        $html.addClass('dark');
+        $sunIcon.removeClass('hidden');
+        $moonIcon.addClass('hidden');
+        $themeLabelMobile.text('Modo Claro');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        $html.removeClass('dark');
+        $sunIcon.addClass('hidden');
+        $moonIcon.removeClass('hidden');
+        $themeLabelMobile.text('Modo Oscuro');
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+const savedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    applyTheme(true);
+} else {
+    applyTheme(false);
+}
+
+$('#themeToggle').on('click', function() {
+    applyTheme(!$html.hasClass('dark'));
 });
 
-// ===== SCROLL REVEAL (IntersectionObserver) =====
+$('#themeToggleMobile').on('click', function() {
+    applyTheme(!$html.hasClass('dark'));
+});
+
+// ===== MOBILE MENU =====
+$('#mobileMenuBtn').on('click', function() {
+    $('#mobileMenu').toggleClass('hidden');
+    $('#menuIconOpen').toggleClass('hidden');
+    $('#menuIconClose').toggleClass('hidden');
+});
+
+// ===== SCROLL REVEAL =====
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('visible');
-            // Animación de contadores
-            if (entry.target.querySelector('[data-target]')) {
+            if ($(entry.target).find('[data-target]').length) {
                 animateCounters(entry.target);
             }
         }
     });
-}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+}, { threshold: 0.1 });
 
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+$('.reveal').each(function() {
+    observer.observe(this);
+});
 
 // ===== COUNTER ANIMATION =====
 function animateCounters(container) {
-    const counters = container.querySelectorAll('[data-target]');
-    counters.forEach(counter => {
-        if (counter.dataset.animated) return;
-        counter.dataset.animated = true;
-        const target = parseFloat(counter.dataset.target);
-        const suffix = counter.dataset.suffix || '';
-        const decimal = counter.dataset.decimal === 'true';
-        const duration = 2000;
+    const $counters = $(container).find('[data-target]');
+    $counters.each(function() {
+        const $counter = $(this);
+        if ($counter.data('animated')) return;
+        $counter.data('animated', true);
+        const target = parseFloat($counter.data('target'));
+        const suffix = $counter.data('suffix') || '';
+        const decimal = $counter.data('decimal') === true;
+        const duration = 1500;
         const start = performance.now();
 
         function update(now) {
             const elapsed = now - start;
             const progress = Math.min(elapsed / duration, 1);
-            // Easing ease-out
             const eased = 1 - Math.pow(1 - progress, 3);
             const current = target * eased;
-            counter.textContent = decimal ? current.toFixed(1) + suffix : Math.floor(current) + suffix;
+            $counter.text(decimal ? current.toFixed(1) + suffix : Math.floor(current) + suffix);
             if (progress < 1) requestAnimationFrame(update);
         }
         requestAnimationFrame(update);
@@ -717,28 +651,11 @@ function animateCounters(container) {
 }
 
 // ===== FAQ TOGGLE =====
-document.querySelectorAll('.faq-toggle').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const item = this.parentElement;
-        const wasActive = item.classList.contains('active');
-        // Cerrar todos
-        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
-        // Abrir si no estaba activo
-        if (!wasActive) item.classList.add('active');
-    });
-});
-
-// ===== SMOOTH SCROLL con offset del nav =====
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            e.preventDefault();
-            const offset = 80; // altura del nav
-            const top = target.getBoundingClientRect().top + window.scrollY - offset;
-            window.scrollTo({ top, behavior: 'smooth' });
-        }
-    });
+$('.faq-toggle').on('click', function() {
+    const $item = $(this).parent();
+    const wasActive = $item.hasClass('active');
+    $('.faq-item').removeClass('active');
+    if (!wasActive) $item.addClass('active');
 });
 </script>
 </body>

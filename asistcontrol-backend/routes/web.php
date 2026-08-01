@@ -10,6 +10,9 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
+use App\Mail\ActivarCuentaMail;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 // ===== Landing Page (pública) =====
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -18,7 +21,20 @@ Route::get('/privacidad', [LandingController::class, 'privacidad'])->name('priva
 Route::get('/terminos', [LandingController::class, 'terminos'])->name('terminos');
 Route::post('/contacto', [LandingController::class, 'contacto'])->name('landing.contacto');
 Route::post('/registro', [LandingController::class, 'registro'])->name('landing.registro');
+Route::get('/activar-cuenta/{id}', [LandingController::class, 'activarCuenta'])->name('activar.cuenta');
 
+Route::get('/preview-email', function () {
+    // Tomamos el primer usuario existente o creamos una instancia rápida en memoria (sin guardar en base de datos)
+    $user = User::first() ?? new User([
+        'id' => 1,
+        'nombre' => 'Juan',
+        'apellido' => 'Pérez',
+        'nombre_empresa' => 'Mi Empresa S.A.',
+        'email' => 'juan@empresa.com',
+    ]);
+
+    return new ActivarCuentaMail($user);
+});
 // ===== Panel de administración (requiere auth) =====
 Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
 
@@ -56,7 +72,7 @@ Route::middleware('auth')->prefix('api/web/services/1')->group(function () {
     Route::post('permissionsupd', [PermissionController::class, 'update'])                      ->name('permissions.update');
     Route::delete('permissions', [PermissionController::class, 'destroy'])                      ->name('permissions.destroy');
 
-    
+
     Route::get('planes', [PlanController::class, 'index'])                                      ->name('planes.index');
     Route::post('planes', [PlanController::class, 'store'])                                     ->name('planes.store');
     Route::put('planes', [PlanController::class, 'update'])                                     ->name('planes.update');
