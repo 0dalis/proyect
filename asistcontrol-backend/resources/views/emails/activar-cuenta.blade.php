@@ -143,7 +143,7 @@
                     <tr>
                         <td style="background-color: #f3f7ef; padding: 24px 36px; text-align: center; border-top: 1px solid #e1e9e0;">
                             <p style="font-size: 11px; color: #64748b; margin: 0 0 6px 0; line-height: 1.5;">
-                                Has recibido este correo porque tu empresa registró una cuenta en <strong>AsistControl</strong>.
+                                Has recibido este correo porque tu empresa registró una cuenta en <a href="{{ route('landing') }}" target="_blank" style="color: #546B30; text-decoration: underline; font-weight: 600;">AsistControl</a>.
                             </p>
 
                             <!-- Aclaración de seguridad y borrado automático -->
