@@ -11,20 +11,20 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\URL;
 
-class ActivarCuentaMail extends Mailable implements ShouldQueue{
+class ActivarCuentaMail extends Mailable {
     use Queueable, SerializesModels;
 
     public User $user;
     public string $verificationUrl;
+    public string $nombreCompleto;
+    public string $nombreEmpresa;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(User $user)
+    public function __construct(User $user, string $nombreCompleto, string $nombreEmpresa)
     {
         $this->user = $user;
+        $this->nombreCompleto = $nombreCompleto;
+        $this->nombreEmpresa = $nombreEmpresa;
 
-        // Generar URL firmada temporal con 24 horas de validez
         $this->verificationUrl = URL::temporarySignedRoute(
             'activar.cuenta',
             now()->addHours(24),

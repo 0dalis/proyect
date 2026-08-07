@@ -57,7 +57,9 @@
                                         data-precio="{{ $plan->precio }}"
                                         data-iva="{{ $plan->iva }}"
                                         data-min_users="{{ $plan->min_users }}"
-                                        data-max_users="{{ $plan->max_users }}">
+                                        data-max_users="{{ $plan->max_users }}"
+                                        data-caracteristicas="{{ is_array($plan->caracteristicas) ? implode("\n", $plan->caracteristicas) : '' }}"
+                                        data-stripe_price_id="{{ $plan->stripe_price_id }}">
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>
                                     </td>

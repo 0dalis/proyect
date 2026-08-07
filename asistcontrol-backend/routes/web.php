@@ -19,9 +19,12 @@ Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::get('/acceso', [LandingController::class, 'acceso'])->name('acceso');
 Route::get('/privacidad', [LandingController::class, 'privacidad'])->name('privacidad');
 Route::get('/terminos', [LandingController::class, 'terminos'])->name('terminos');
+Route::get('/sistema', [LandingController::class, 'sistema'])->name('sistema');
+Route::get('/planes-detalle', [LandingController::class, 'planesDetalle'])->name('planes-detalle');
 Route::post('/contacto', [LandingController::class, 'contacto'])->name('landing.contacto');
 Route::post('/registro', [LandingController::class, 'registro'])->name('landing.registro');
 Route::get('/activar-cuenta/{id}', [LandingController::class, 'activarCuenta'])->name('activar.cuenta');
+Route::post('/verificar-cuenta/{id}', [LandingController::class, 'verificarCuenta'])->name('verificar.cuenta');
 
 Route::get('/preview-email', function () {
     // Tomamos el primer usuario existente o creamos una instancia rápida en memoria (sin guardar en base de datos)

@@ -20,12 +20,15 @@ class Recaptcha implements ValidationRule
             return;
         }
 
-        // Consultar la API de Google reCAPTCHA
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret'   => config('services.recaptcha.secret'),
-            'response' => $value,
-            'remoteip' => request()->ip(),
-        ]);
+        $response = Http::asForm()
+            ->withOptions([
+                'verify' => base_path('cacert.pem'),
+            ])
+            ->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret'   => config('services.recaptcha.secret'),
+                'response' => $value,
+                'remoteip' => request()->ip(),
+            ]);
 
         $data = $response->json();
 

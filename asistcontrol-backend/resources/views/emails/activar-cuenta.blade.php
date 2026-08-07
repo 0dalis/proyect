@@ -67,11 +67,11 @@
 
                             <!-- Saludo Personalizado -->
                             <p style="font-size: 16px; line-height: 1.6; margin: 0 0 16px 0; color: #1e2711; font-weight: 700;">
-                                Hola, <span style="color: #546B30;">{{ $user->nombre }} {{ $user->apellido }}</span>
+                                Hola, <span style="color: #546B30;">{{ $nombreCompleto }}</span>
                             </p>
 
                             <p style="font-size: 14px; line-height: 1.7; color: #4a5568; margin: 0 0 28px 0; font-weight: 400;">
-                                Nos alegra integrar a <strong style="color: #1e2711; font-weight: 600;">{{ $user->nombre_empresa }}</strong> a nuestra plataforma. Tu cuenta de administrador ha sido creada exitosamente. Para comenzar a gestionar a tus colaboradores y activar la plataforma, confirma tu dirección de correo electrónico a continuación:
+                                Nos alegra integrar a <strong style="color: #1e2711; font-weight: 600;">{{ $nombreEmpresa }}</strong> a nuestra plataforma. Tu cuenta de administrador ha sido creada exitosamente. Para comenzar a gestionar a tus colaboradores y activar la plataforma, confirma tu dirección de correo electrónico a continuación:
                             </p>
 
                             <!-- Call to Action Principal (Degradado Verde Base a Sombra) -->

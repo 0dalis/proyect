@@ -14,6 +14,8 @@ class Plan extends Model{
         'iva',
         'min_users',
         'max_users',
+        'caracteristicas',
+        'stripe_price_id',
         'public',
     ];
 
@@ -22,6 +24,7 @@ class Plan extends Model{
         'iva'  => 'decimal:2',
         'min_users' => 'integer',
         'max_users' => 'integer',
+        'caracteristicas' => 'array',
         'public' => 'boolean',
     ];
 

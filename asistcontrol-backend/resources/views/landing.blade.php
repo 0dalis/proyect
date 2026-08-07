@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800&display=swap" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -93,8 +96,10 @@
 
             <nav class="hidden md:flex items-center gap-8 text-xs font-medium text-slate-500 dark:text-slate-400">
                 <a href="#servicios" class="hover:text-slate-900 dark:hover:text-white transition-colors">Servicios</a>
+                <a href="{{ route('sistema') }}" class="hover:text-slate-900 dark:hover:text-white transition-colors">Sistema</a>
                 <a href="#como-funciona" class="hover:text-slate-900 dark:hover:text-white transition-colors">Cómo funciona</a>
                 <a href="#planes" class="hover:text-slate-900 dark:hover:text-white transition-colors">Planes</a>
+                <a href="{{ route('planes-detalle') }}" class="hover:text-slate-900 dark:hover:text-white transition-colors">Comparativa</a>
                 <a href="#testimonios" class="hover:text-slate-900 dark:hover:text-white transition-colors">Testimonios</a>
             </nav>
 
@@ -128,8 +133,10 @@
         <!-- Mobile menu -->
         <div id="mobileMenu" class="md:hidden hidden pb-6 pt-2 border-t border-slate-200 dark:border-slate-800/60 space-y-3">
             <a href="#servicios" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Servicios</a>
+            <a href="{{ route('sistema') }}" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Sistema — Visión detallada</a>
             <a href="#como-funciona" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Cómo funciona</a>
             <a href="#planes" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Planes</a>
+            <a href="{{ route('planes-detalle') }}" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Comparativa de planes</a>
             <a href="#testimonios" class="block px-3 py-2 rounded-md text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white">Testimonios</a>
             <div class="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex flex-col gap-2">
                 <a href="{{ route('acceso') }}" class="block px-3 py-2 text-center text-sm font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg">Acceso</a>
@@ -145,15 +152,15 @@
 <!-- ===== HERO ===== -->
 <section class="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-grid-pattern">
     <!-- Glow Background Effects -->
-    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-brand-600/10 dark:bg-brand-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-brand-600/5 dark:bg-brand-600/10 rounded-full blur-[150px] pointer-events-none"></div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
 
             <div class="lg:col-span-7 text-center lg:text-left reveal">
                 <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-medium text-brand-600 dark:text-brand-300 mb-6">
-                    <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-pulse"></span>
-                    Versión 2.0 — Gestión Inteligente de Personal
+                    <span class="flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                    Plataforma Activa — Gestión Inteligente de Personal
                 </div>
 
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1]">
@@ -190,8 +197,8 @@
             <!-- Previsualización de Dashboard UI -->
             <div class="lg:col-span-5 reveal reveal-delay-1">
                 <div class="relative mx-auto max-w-md lg:max-w-none">
-                    <div class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-brand-500 to-indigo-600 opacity-20 blur-xl"></div>
-                    <div class="relative bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+                    <div class="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-brand-500/40 to-indigo-600/40 opacity-30 blur-md"></div>
+                    <div class="relative bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-xl">
 
                         <!-- Header de la ventana -->
                         <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between">
@@ -287,81 +294,87 @@
 <section id="servicios" class="py-24 bg-white dark:bg-slate-950 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Funcionalidades Principales</h2>
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Funcionalidades</h2>
             <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
-                Todo lo que necesitas para un control eficiente
+                Control de asistencia integral
             </p>
             <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-4 reveal reveal-delay-2">
-                Elimina fraudes de asistencia, automatiza incidencias y simplifica los reportes de nómina en minutos.
+                Elimine fraudes de asistencia, automatice incidencias y simplifique los reportes de nómina en minutos.
             </p>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <!-- Card 1 -->
-            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal">
-                <div class="w-10 h-10 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <div class="group p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-lg hover:border-brand-300 dark:hover:border-brand-800 transition-colors duration-200 reveal">
+                <div class="w-9 h-9 rounded-md bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-900 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Geolocalización GPS</h3>
-                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Geolocalización GPS</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Valida marcajes dentro del rango geográfico permitido. Define radio de tolerancia por sucursal para evitar registros fuera de zona.
                 </p>
             </div>
 
             <!-- Card 2 -->
-            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-1">
-                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="group p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-lg hover:border-brand-300 dark:hover:border-brand-800 transition-colors duration-200 reveal reveal-delay-1">
+                <div class="w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Turnos Inteligentes</h3>
-                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Turnos Inteligentes</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Configura horarios flexibles o rotativos. El sistema calcula automáticamente retardos, horas extra y salidas antes de tiempo.
                 </p>
             </div>
 
             <!-- Card 3 -->
-            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-2">
-                <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <div class="group p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-lg hover:border-brand-300 dark:hover:border-brand-800 transition-colors duration-200 reveal reveal-delay-2">
+                <div class="w-9 h-9 rounded-md bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Permisos e Incidencias</h3>
-                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Permisos e Incidencias</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Permite a los colaboradores solicitar vacaciones o enviar justificantes con fotografías de incapacidades directamente desde la App.
                 </p>
             </div>
 
             <!-- Card 4 -->
-            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal">
-                <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <div class="group p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-lg hover:border-brand-300 dark:hover:border-brand-800 transition-colors duration-200 reveal">
+                <div class="w-9 h-9 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Reportes Exportables</h3>
-                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Reportes Exportables</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Genera pre-nóminas consolidadas en formato Excel o CSV listos para ser importados en tu sistema contable.
                 </p>
             </div>
 
             <!-- Card 5 -->
-            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-1">
-                <div class="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <div class="group p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-lg hover:border-brand-300 dark:hover:border-brand-800 transition-colors duration-200 reveal reveal-delay-1">
+                <div class="w-9 h-9 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Notificaciones Push</h3>
-                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Notificaciones Push</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Comunica avisos organizacionales a todo el personal o grupos específicos en tiempo real a través de la aplicación móvil.
                 </p>
             </div>
 
             <!-- Card 6 -->
-            <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 reveal reveal-delay-2">
-                <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+            <div class="group p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-lg hover:border-brand-300 dark:hover:border-brand-800 transition-colors duration-200 reveal reveal-delay-2">
+                <div class="w-9 h-9 rounded-md bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-100 dark:border-cyan-900 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Modo Kiosco y PIN</h3>
-                <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Modo Kiosco y PIN</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Convierte cualquier tableta en una estación fija de recepción para marcaje rápido mediante código de empleado único.
                 </p>
             </div>
+        </div>
+        <div class="text-center mt-8">
+            <a href="{{ route('sistema') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300 transition-colors">
+                Conocer más sobre el sistema
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </a>
         </div>
     </div>
 </section>
@@ -370,9 +383,9 @@
 <section id="como-funciona" class="py-24 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-16">
-            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Implementación Ágil</h2>
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Proceso de Implementación</h2>
             <p class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
-                Paso a paso sin complicaciones
+                Comience en minutos
             </p>
         </div>
 
@@ -405,69 +418,154 @@
 </section>
 
 <!-- ===== PLANES ===== -->
-<section id="planes" class="py-24 bg-white dark:bg-slate-950 transition-colors duration-300">
+<section id="planes" class="py-24 bg-white dark:bg-slate-950 transition-colors duration-300 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-16">
-            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Precios Transparentes</h2>
+            <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Planes</h2>
             <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
-                Planes adaptados a tu escala
+                Invierta solo en lo que necesita
             </p>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
-            @if(isset($planes) && $planes->isNotEmpty())
-                @foreach($planes as $plan)
-                    <div class="reveal reveal-delay-{{ $loop->index + 1 }} relative bg-white dark:bg-slate-900/60 border {{ $loop->first ? 'border-brand-500 shadow-xl shadow-brand-500/10' : 'border-slate-200 dark:border-slate-800' }} rounded-xl p-8 flex flex-col justify-between transition-colors duration-300">
-                        @if($loop->first)
-                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-brand-600 text-white text-[10px] uppercase tracking-wider font-bold rounded-full">
-                                Recomendado
-                            </div>
-                        @endif
+        @if(isset($planes) && $planes->isNotEmpty())
+            <div x-data="{
+                activeSlide: 0,
+                totalSlides: {{ $planes->count() }},
 
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $plan->nombre }}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ $plan->tipo }}</p>
+                next() {
+                    this.activeSlide = (this.activeSlide + 1) % this.totalSlides;
+                },
+                prev() {
+                    this.activeSlide = (this.activeSlide - 1 + this.totalSlides) % this.totalSlides;
+                },
+                goTo(index) {
+                    this.activeSlide = index;
+                },
+                getStyle(index) {
+                    let total = this.totalSlides;
+                    let offset = index - this.activeSlide;
 
-                            <div class="my-6">
-                                <span class="text-4xl font-extrabold font-mono text-slate-900 dark:text-white">${{ number_format($plan->precio, 2) }}</span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">/ mes</span>
-                                @if($plan->iva > 0)
-                                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">+ IVA ({{ $plan->iva }}%)</p>
+                    if (offset > total / 2) offset -= total;
+                    if (offset < -total / 2) offset += total;
+
+                    const absOffset = Math.abs(offset);
+
+                    if (absOffset > 2) {
+                        return 'opacity: 0; transform: translate3d(0, 0, -600px) scale(0.4); pointer-events: none; z-index: 0;';
+                    }
+
+                    const isMobile = window.innerWidth < 640;
+                    const translateX = offset * (isMobile ? 220 : 340);
+                    const translateZ = -absOffset * 180;
+                    const rotateY = offset * -22;
+                    const scale = 1 - (absOffset * 0.12);
+                    const opacity = 1 - (absOffset * 0.35);
+                    const zIndex = 30 - Math.round(absOffset * 10);
+
+                    return `
+                        transform: translate3d(${translateX}px, 0, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale});
+                        opacity: ${opacity};
+                        z-index: ${zIndex};
+                    `;
+                }
+            }"
+            class="relative py-8 select-none">
+
+                <!-- Botón Anterior -->
+                <button @click="prev()"
+                        class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-xl flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-110 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-500 transition-all duration-300"
+                        aria-label="Anterior">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+
+                <!-- Botón Siguiente -->
+                <button @click="next()"
+                        class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-xl flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-110 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-500 transition-all duration-300"
+                        aria-label="Siguiente">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- Escenario 3D del Carrusel -->
+                <div class="relative h-[560px] sm:h-[580px] w-full flex items-center justify-center" style="perspective: 1200px; transform-style: preserve-3d;">
+                    @foreach($planes as $plan)
+                        <div :style="getStyle({{ $loop->index }})"
+                             @click="goTo({{ $loop->index }})"
+                             class="carousel-card absolute w-[300px] sm:w-[360px] transition-all duration-500 ease-out will-change-transform">
+
+                            <div class="relative bg-white dark:bg-slate-900 border rounded-xl p-8 flex flex-col justify-between h-[520px] transition-all duration-300"
+                                 :class="activeSlide === {{ $loop->index }}
+                                     ? 'border-brand-500 shadow-lg shadow-brand-500/10 ring-1 ring-brand-500/40'
+                                     : 'border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700'">
+
+                                @if($loop->index === 2)
+                                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 text-[10px] uppercase tracking-wider font-semibold rounded-md">
+                                        Recomendado
+                                    </div>
                                 @endif
+
+                                <div>
+                                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ $plan->nombre }}</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ $plan->tipo }}</p>
+
+                                    <div class="my-6">
+                                        <span class="text-4xl font-extrabold font-mono text-slate-900 dark:text-white">${{ number_format($plan->precio, 2) }}</span>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">/ mes</span>
+                                        @if($plan->iva > 0)
+                                            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">+ IVA ({{ $plan->iva }}%)</p>
+                                        @endif
+                                    </div>
+
+                                    <ul class="space-y-2.5 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-800 pt-5">
+                                        <li class="flex items-center gap-2.5">
+                                            <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Hasta {{ $plan->max_users ?? 'ilimitados' }} usuarios</span>
+                                        </li>
+                                        @if(is_array($plan->caracteristicas))
+                                            @foreach($plan->caracteristicas as $feature)
+                                                <li class="flex items-center gap-2.5">
+                                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    <span>{{ $feature }}</span>
+                                                </li>
+                                            @endforeach
+                                        @endif
+                                    </ul>
+                                </div>
+
+                                <a href="{{ route('acceso') }}#registro"
+                                   class="w-full py-2.5 text-center font-semibold text-xs rounded-lg transition-all duration-200"
+                                   :class="activeSlide === {{ $loop->index }}
+                                       ? 'bg-brand-600 hover:bg-brand-500 text-white shadow-sm shadow-brand-600/20'
+                                       : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'">
+                                    Seleccionar Plan
+                                </a>
                             </div>
-
-                            <ul class="space-y-3 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-800/80 pt-6 mb-8">
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    Hasta {{ $plan->max_users ?? 'ilimitados' }} usuarios
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    Geolocalización GPS
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    App iOS y Android
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    Soporte técnico
-                                </li>
-                            </ul>
                         </div>
-
-                        <a href="{{ route('acceso') }}#registro" class="w-full py-2.5 text-center font-semibold text-xs rounded-lg transition-all {{ $loop->first ? 'bg-brand-600 hover:bg-brand-500 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200' }}">
-                            Seleccionar Plan
-                        </a>
-                    </div>
-                @endforeach
-            @else
-                <!-- Fallback si no hay planes cargados -->
-                <div class="col-span-3 text-center py-12 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Consulta con nuestro equipo comercial para un plan a la medida.</p>
+                    @endforeach
                 </div>
-            @endif
-        </div>
+
+                <!-- Indicadores (Dots) -->
+                <div class="flex justify-center items-center gap-2 mt-8">
+                    @foreach($planes as $plan)
+                        <button @click="goTo({{ $loop->index }})"
+                                class="h-2.5 rounded-full transition-all duration-300"
+                                :class="activeSlide === {{ $loop->index }} ? 'bg-brand-600 w-8 shadow-md shadow-brand-500/50' : 'bg-slate-300 dark:bg-slate-700 w-2.5 hover:bg-slate-400 dark:hover:bg-slate-600'"
+                                aria-label="Ir al plan {{ $loop->index + 1 }}">
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="text-center mt-6">
+                <a href="{{ route('planes-detalle') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300 transition-colors">
+                    Ver comparativa detallada de planes
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        @else
+            <div class="text-center py-12 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800">
+                <p class="text-sm text-slate-500 dark:text-slate-400">Consulta con nuestro equipo comercial para un plan a la medida.</p>
+            </div>
+        @endif
     </div>
 </section>
 
@@ -477,7 +575,7 @@
         <div class="text-center max-w-2xl mx-auto mb-16">
             <h2 class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-widest uppercase reveal">Casos de Éxito</h2>
             <p class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-2 reveal reveal-delay-1">
-                Respaldado por equipos de alto rendimiento
+                Empresas que confían en nosotros
             </p>
         </div>
 
@@ -557,6 +655,8 @@
         </div>
         <p>&copy; {{ date('Y') }} JALY SYSTEMS. Todos los derechos reservados.</p>
         <div class="flex gap-6">
+            <a href="{{ route('sistema') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Sistema</a>
+            <a href="{{ route('planes-detalle') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Planes</a>
             <a href="{{ route('privacidad') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Privacidad</a>
             <a href="{{ route('terminos') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Términos</a>
         </div>
@@ -649,6 +749,32 @@ function animateCounters(container) {
         requestAnimationFrame(update);
     });
 }
+
+// ===== TOAST DE BIENVENIDA POST-REGISTRO =====
+$(function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('bienvenido') === '1') {
+        if (window.history && window.history.replaceState) {
+            const url = new URL(window.location);
+            url.searchParams.delete('bienvenido');
+            window.history.replaceState({}, '', url);
+        }
+        Toastify({
+            text: 'Bienvenido a AsistControl. Revisa tu correo para continuar con el registro.',
+            duration: 8000,
+            gravity: 'top',
+            position: 'right',
+            stopOnFocus: true,
+            style: {
+                background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
+                borderRadius: '8px',
+                fontSize: '13px',
+                padding: '14px 22px',
+                boxShadow: '0 8px 24px rgba(79, 70, 229, 0.3)'
+            }
+        }).showToast();
+    }
+});
 
 // ===== FAQ TOGGLE =====
 $('.faq-toggle').on('click', function() {

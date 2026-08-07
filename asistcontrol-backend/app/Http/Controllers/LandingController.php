@@ -74,7 +74,7 @@ class LandingController extends Controller{
         $daysTrial = (int) env('DAYS_TRIAL');
 
         DB::transaction(function () use ($validated, $daysTrial) {
-            $planPremium = Plan::where('slug', 'premium')->first();
+            $planPremium = Plan::find(3);
 
             // A) Empresa inactiva
             $company = Company::create([
@@ -99,9 +99,9 @@ class LandingController extends Controller{
                 'activation_token_expires_at' => now()->addHours(24),
             ]);
 
-            // D) Rol de dueño
+            // D) Asignar roles: owner (2) + admin (4)
             if (method_exists($user, 'assignRole')) {
-                $user->assignRole('owner');
+                $user->assignRole([2, 4]);
             }
 
             // E) Empleado dueño
@@ -115,7 +115,8 @@ class LandingController extends Controller{
             ]);
 
             // F) Correo con link de activación
-            Mail::to($user->email)->queue(new ActivarCuentaMail($user));
+            $nombreCompleto = $validated['nombre'] . ' ' . $validated['apellido'];
+            Mail::to($user->email)->send(new ActivarCuentaMail($user, $nombreCompleto, $validated['nombre_empresa']));
         });
 
         return response()->json([
@@ -137,19 +138,97 @@ class LandingController extends Controller{
     public function terminos(){
         return view('legal.terminos');
     }
+
+    public function sistema(){
+        $daysTrial = config('app.days_trial');
+        $planes = Plan::where('public', true)->orderBy('precio')->get();
+
+        return view('sistema-detalle', compact('daysTrial', 'planes'));
+    }
+
+    public function planesDetalle(){
+        $daysTrial = config('app.days_trial');
+        $planes = Plan::where('public', true)->orderBy('precio')->get();
+
+        return view('planes-detalle', compact('daysTrial', 'planes'));
+    }
+
     public function activarCuenta(Request $request, $id){
-        // Validar que la firma sea válida y no haya expirado (24h)
         if (! $request->hasValidSignature()) {
-            abort(401, 'El enlace de activación es inválido o ha expirado.');
+            return redirect()->route('landing');
         }
-        $user = User::findOrFail($id);
-        // Si la cuenta aún no ha sido verificada
-        if (! $user->email_verified_at) {
-            $user->email_verified_at = now();
-            // $user->status = 'activo'; // Si manejas un campo de estado personalizado
-            $user->save();
+
+        $user = User::with('employee', 'company')->find($id);
+
+        if (! $user || ! $user->activation_token) {
+            return redirect()->route('landing');
         }
-        // Redirigir con mensaje de éxito (puedes ajustar la ruta según tu app)
-        return redirect()->route('login')->with('success', '¡Tu cuenta ha sido activada correctamente! Ya puedes iniciar sesión.');
+
+        if ($user->activation_token_expires_at && now()->gt($user->activation_token_expires_at)) {
+            return redirect()->route('landing');
+        }
+
+        if ($user->email_verified_at && $user->is_active) {
+            return redirect()->route('login')->with('success', 'Tu cuenta ya ha sido activada. Inicia sesión para comenzar.');
+        }
+
+        $nombreCompleto  = ($user->employee?->first_name ?? '') . ' ' . ($user->employee?->last_name ?? '');
+        $nombreEmpresa   = $user->company?->name ?? '';
+        $daysTrial       = config('app.days_trial');
+        $activationToken = $user->activation_token;
+
+        return view('activar-perfil', compact('user', 'nombreCompleto', 'nombreEmpresa', 'daysTrial', 'activationToken'));
+    }
+
+    public function verificarCuenta(Request $request, $id){
+        $request->validate([
+            'recaptcha_token'  => ['required', new Recaptcha()],
+            'activation_token' => 'required|string|size:64',
+        ]);
+
+        $user = User::with('employee', 'company')->findOrFail($id);
+
+        if (! $user->activation_token || $request->activation_token !== $user->activation_token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token de activación inválido. Utiliza el enlace enviado a tu correo.',
+            ]);
+        }
+
+        if ($user->email_verified_at && $user->is_active) {
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Tu cuenta ya ha sido activada previamente.',
+                'redirect' => route('login'),
+            ]);
+        }
+
+        if ($user->activation_token_expires_at && now()->gt($user->activation_token_expires_at)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El periodo de activación ha expirado. Contacta a soporte para recibir asistencia.',
+            ]);
+        }
+
+        DB::transaction(function () use ($user) {
+            $user->update([
+                'email_verified_at'           => now(),
+                'is_active'                   => true,
+                'activation_token'            => null,
+                'activation_token_expires_at' => null,
+            ]);
+
+            $user->company()->update(['is_active' => true]);
+
+            if ($user->employee) {
+                $user->employee()->update(['is_active' => true]);
+            }
+        });
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Perfil verificado exitosamente. Redirigiendo al inicio de sesión...',
+            'redirect' => route('login'),
+        ]);
     }
 }

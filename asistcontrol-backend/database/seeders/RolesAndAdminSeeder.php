@@ -18,6 +18,7 @@ class RolesAndAdminSeeder extends Seeder{
             ['name' => 'AsistControl Global'],
             [
                 'code' => 'AC-GLOBAL',
+                'slug' => 'asistcontrol-global',
                 'has_dedicated_db' => false,
                 'is_active' => true,
             ]
@@ -35,9 +36,9 @@ class RolesAndAdminSeeder extends Seeder{
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // 3. Crear Roles
+        // 3. Crear Roles por defecto
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
-        Role::firstOrCreate(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'owner']);
         Role::firstOrCreate(['name' => 'empleado']);
 
         // 4. Crear el Super Admin (AÑADIDO EL PIN)

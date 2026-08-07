@@ -13,11 +13,13 @@ class User extends Authenticatable
     use HasApiTokens, Notifiable, HasRoles;
 
     protected $fillable = [
-        'company_id',   // Empresa a la que pertenece la cuenta administrativa
-        'email',        // Correo con el que se loguea
-        'password',     // Contraseña
-        'is_active',    // Permite o bloquea el acceso al panel
-        'device_token', // Para notificaciones push
+        'company_id',
+        'email',
+        'password',
+        'is_active',
+        'device_token',
+        'activation_token',
+        'activation_token_expires_at',
     ];
 
     protected $hidden = [

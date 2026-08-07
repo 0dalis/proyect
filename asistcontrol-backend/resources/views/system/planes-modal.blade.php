@@ -58,6 +58,18 @@
                                        placeholder="Vacío = ilimitado">
                             </div>
                         </div>
+                        <div>
+                            <label for="caracteristicas_text" class="block text-sm font-medium text-neutral-700 mb-1">Características (una por línea)</label>
+                            <textarea id="caracteristicas_text" name="caracteristicas_text" rows="5"
+                                      class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
+                                      placeholder="Ej:&#10;Hasta 35 usuarios&#10;3 oficinas con GPS&#10;Foto en check-in/out&#10;Reportes PDF + Excel&#10;Soporte 24h"></textarea>
+                        </div>
+                        <div>
+                            <label for="stripe_price_id" class="block text-sm font-medium text-neutral-700 mb-1">Stripe Price ID</label>
+                            <input type="text" id="stripe_price_id" name="stripe_price_id"
+                                   class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
+                                   placeholder="price_xxxxxxxxxxxxx">
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end border-t border-neutral-100 space-x-3 pt-4">
@@ -106,6 +118,8 @@
             $('#iva').val($btn.data('iva'));
             $('#min_users').val($btn.data('min_users'));
             $('#max_users').val($btn.data('max_users'));
+            $('#caracteristicas_text').val($btn.data('caracteristicas'));
+            $('#stripe_price_id').val($btn.data('stripe_price_id'));
 
             $('#planModal').removeClass('hidden');
             setTimeout(() => {

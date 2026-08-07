@@ -19,7 +19,16 @@ class PlanController extends Controller
             'iva'        => 'required|numeric|min:0|max:100',
             'min_users'  => 'required|integer|min:1',
             'max_users'  => 'nullable|integer|min:1|gte:min_users',
+            'caracteristicas_text' => 'nullable|string',
+            'stripe_price_id' => 'nullable|string|max:255',
         ]);
+
+        if (!empty($validated['caracteristicas_text'])) {
+            $validated['caracteristicas'] = array_values(array_filter(
+                array_map('trim', explode("\n", $validated['caracteristicas_text']))
+            ));
+        }
+        unset($validated['caracteristicas_text']);
 
         Plan::create($validated);
 
@@ -39,7 +48,16 @@ class PlanController extends Controller
             'iva'        => 'required|numeric|min:0|max:100',
             'min_users'  => 'required|integer|min:1',
             'max_users'  => 'nullable|integer|min:1|gte:min_users',
+            'caracteristicas_text' => 'nullable|string',
+            'stripe_price_id' => 'nullable|string|max:255',
         ]);
+
+        if (array_key_exists('caracteristicas_text', $validated)) {
+            $validated['caracteristicas'] = array_values(array_filter(
+                array_map('trim', explode("\n", $validated['caracteristicas_text']))
+            ));
+        }
+        unset($validated['caracteristicas_text']);
 
         $plan->update($validated);
 

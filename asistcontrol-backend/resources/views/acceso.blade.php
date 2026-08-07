@@ -7,6 +7,7 @@
     <meta name="description" content="Contacta a AsistControl o registra tu empresa y comienza tu prueba gratis de 14 días.">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -197,22 +198,14 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 bg-grid-light relative overflow-x-hidden transition-colors duration-300">
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 pt-20 bg-grid-light relative overflow-x-hidden transition-colors duration-300">
+
+    @include('partials.public-navbar')
 
     <!-- Glows de fondo -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-brand-500/10 dark:bg-brand-600/15 rounded-full blur-[140px] pointer-events-none"></div>
 
     <div class="w-full max-w-5xl flex flex-col items-center relative z-10">
-
-        <!-- Header Brand -->
-        <a href="{{ route('landing') }}" class="flex items-center gap-2.5 mb-6 group">
-            <div class="w-8 h-8 bg-gradient-to-br from-brand-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                </svg>
-            </div>
-            <span class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Asist<span class="text-brand-600 dark:text-brand-400">Control</span></span>
-        </a>
 
         <!-- Switcher para Pantallas Chicas (Mobile Tabs) -->
         <div class="flex md:hidden w-full max-w-sm bg-slate-200 dark:bg-slate-900 p-1 border border-slate-300 dark:border-slate-800 rounded-lg mb-4">
@@ -370,27 +363,9 @@
 
         </div>
 
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-6">
-            <a href="{{ route('landing') }}" class="hover:text-slate-900 dark:hover:text-slate-200 transition-colors inline-flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Volver al sitio principal
-            </a>
-        </p>
-
     </div>
 
 <script>
-    // ===== LÓGICA MODO CLARO / OSCURO (lee localStorage) =====
-    $(function() {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-            $('html').addClass('dark');
-        } else {
-            $('html').removeClass('dark');
-        }
-    });
-    // ===== MOSTRAR / OCULTAR CONTRASEÑA =====
     $(function() {
         $('#togglePassword').on('click', function() {
             const $input = $('#passwordInput');
@@ -548,23 +523,28 @@
                 grecaptcha.execute('{{ config("services.recaptcha.site_key") }}', { action: 'registro' })
                     .then(async function(token) {
                         $('#recaptchaToken').val(token);
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                         try {
                             const formData = new FormData(form);
-                            const data = Object.fromEntries(formData);
+                            const data = {};
+                            formData.forEach((value, key) => {
+                                if (key !== '_token') data[key] = value;
+                            });
                             const res = await fetch('{{ route("landing.registro") }}', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'X-CSRF-TOKEN': csrfToken,
                                     'Accept': 'application/json'
                                 },
                                 body: JSON.stringify(data)
                             });
                             const json = await res.json();
-                            $msg.attr('class', 'text-xs rounded-lg p-2.5 ' + (json.success ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'));
-                            $msg.removeClass('hidden').text(json.message);
                             if (json.success) {
-                                form.reset();
+                                window.location.href = '{{ route("landing") }}?bienvenido=1';
+                            } else {
+                                $msg.attr('class', 'text-xs rounded-lg p-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20');
+                                $msg.removeClass('hidden').text(json.message);
                             }
                         } catch(err) {
                             $msg.attr('class', 'text-xs rounded-lg p-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20');
