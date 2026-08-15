@@ -18,8 +18,10 @@ export class LoginComponent {
 
   email = '';
   password = '';
+  showPassword = false;
 
   isLoading = false;
+  currentYear = new Date().getFullYear();
 
   constructor(
     private publicservices: PublicServicesService,
@@ -83,7 +85,13 @@ export class LoginComponent {
 
         this.showSuccess(`Bienvenido ${fullName}`);
 
-        this.router.navigate(['/asistcontrol']);
+        if (response.company_inactive) {
+          localStorage.setItem('company_inactive', 'true');
+          this.router.navigate(['/completecompany']);
+        } else {
+          localStorage.removeItem('company_inactive');
+          this.router.navigate(['/asistcontrol']);
+        }
 
       },
 

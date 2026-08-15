@@ -7,7 +7,11 @@ export const redirectIfAuthGuard: CanActivateFn = (route, state) => {
   const isLoggedIn = localStorage.getItem('is_logged_in') === 'true';
 
   if (isLoggedIn) {
-    router.navigate(['/asistcontrol']);
+    if (localStorage.getItem('company_inactive') === 'true') {
+      router.navigate(['/completecompany']);
+    } else {
+      router.navigate(['/asistcontrol']);
+    }
     return false;
   }
 

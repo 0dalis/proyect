@@ -29,7 +29,7 @@ class CompanyController extends Controller implements HasMiddleware{
 
         $validated = $request->validate([
             'name'                 => 'required|string|max:255',
-            'code'                 => 'required|string|max:50|unique:companies,code',
+            'code'                 => 'required|string|max:50|regex:/^AC-[A-Z0-9]{6}$/|unique:companies,code',
             'plan_id'              => 'required|exists:plans,id',
             'trial_ends_at'        => 'nullable|date',
             'subscription_ends_at' => 'nullable|date',
@@ -52,7 +52,7 @@ class CompanyController extends Controller implements HasMiddleware{
 
         $validated = $request->validate([
             'name'                 => 'required|string|max:255',
-            'code'                 => 'required|string|max:50|unique:companies,code,' . $company->id,
+            'code'                 => 'required|string|max:50|regex:/^AC-[A-Z0-9]{6}$/|unique:companies,code,' . $company->id,
             'plan_id'              => 'required|exists:plans,id',
             'trial_ends_at'        => 'nullable|date',
             'subscription_ends_at' => 'nullable|date',

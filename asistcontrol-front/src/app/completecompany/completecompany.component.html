@@ -1,0 +1,99 @@
+<div class="completecompany-wrapper">
+  <div class="setup-page">
+
+    <div class="fixed inset-0 bg-grid-pattern pointer-events-none"></div>
+
+    <div class="relative z-10 flex min-h-screen flex-col w-full">
+      <header class="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-700 rounded-lg flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+          </div>
+          <span class="text-lg font-bold text-slate-800">
+            Asist<span class="text-orange-600">Control</span>
+          </span>
+          <span class="text-xs text-slate-400 ml-2">· Configuración inicial</span>
+        </div>
+        <button (click)="onLogout()"
+          class="text-xs text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </button>
+      </header>
+
+      <div class="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
+        <div class="flex items-center justify-center mb-8">
+          <div class="flex items-center gap-2">
+            <ng-container *ngFor="let step of steps; let i = index">
+              <button
+                [disabled]="step.num > currentStep"
+                (click)="goToStep(step.num)"
+                class="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-200"
+                [ngClass]="{
+                  'bg-orange-600 text-white shadow-md shadow-orange-500/20': step.num === currentStep,
+                  'bg-green-100 text-green-700 cursor-pointer hover:bg-green-200': step.num < currentStep,
+                  'bg-slate-100 text-slate-400 cursor-not-allowed': step.num > currentStep
+                }">
+                <i *ngIf="step.num < currentStep" class="bi bi-check-circle text-sm"></i>
+                <i *ngIf="step.num === currentStep" [class]="step.icon + ' text-sm'"></i>
+                <span *ngIf="step.num > currentStep" class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">{{ step.num }}</span>
+                {{ step.label }}
+              </button>
+              <span *ngIf="i < steps.length - 1" class="w-8 h-px bg-slate-300"></span>
+            </ng-container>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!isLoading">
+          <div class="bg-white border border-slate-200/80 rounded-2xl shadow-lg shadow-slate-200/70 p-6">
+            <app-step1-profile
+              *ngIf="currentStep === 1"
+              [company]="company"
+              (updated)="onProfileUpdated($event)"
+              (next)="goToStep(2)"
+              (skip)="goToStep(2)">
+            </app-step1-profile>
+
+            <app-step2-offices
+              *ngIf="currentStep === 2"
+              [limits]="limits"
+              (next)="goToStep(3)"
+              (back)="goToStep(1)">
+            </app-step2-offices>
+
+            <app-step3-areas
+              *ngIf="currentStep === 3"
+              [limits]="limits"
+              (next)="goToStep(4)"
+              (back)="goToStep(2)">
+            </app-step3-areas>
+
+            <app-step4-employees
+              *ngIf="currentStep === 4"
+              [limits]="limits"
+              (back)="goToStep(3)">
+            </app-step4-employees>
+          </div>
+
+          <div *ngIf="currentStep === 4" class="mt-6 text-center">
+            <button
+              (click)="completeSetup()"
+              [disabled]="isCompleting"
+              class="px-8 py-3 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-500 shadow-lg shadow-green-500/30 transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60">
+              <i class="bi bi-check2-circle mr-2"></i>
+              {{ isCompleting ? 'Finalizando...' : 'Finalizar configuración y activar empresa' }}
+            </button>
+          </div>
+        </ng-container>
+
+        <div *ngIf="isLoading" class="flex items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

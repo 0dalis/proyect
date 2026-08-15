@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Mail\ActivarCuentaMail;
 
 class PublicController extends Controller{
 
@@ -24,10 +27,13 @@ class PublicController extends Controller{
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            if (!$user->is_active) {
+            $allowedRoles = ['admin', 'owner', 'super-admin'];
+
+            if (!$user->hasAnyRole($allowedRoles)) {
                 Auth::logout();
+                $request->session()->invalidate();
                 return response()->json([
-                    'message' => 'Usuario bloqueado. Contacte al administrador.',
+                    'message' => 'No tienes los permisos necesarios para acceder al sistema.',
                 ], 403);
             }
 
@@ -36,30 +42,79 @@ class PublicController extends Controller{
             Cookie::queue('user_id', $user->id, 120, null, null, false, false, false, false);
 
             $employee = $user->employee;
+            $company  = $user->company;
 
-            return response()->json([
+            $response = [
                 'message' => 'Sesión iniciada correctamente.',
                 'user' => [
                     'id' => $user->id,
                     'first_name' => $employee?->first_name,
                     'last_name' => $employee?->last_name,
                 ],
-            ]);
+            ];
+
+            if ($company && !$company->is_active) {
+                $response['company_inactive'] = true;
+            }
+
+            return response()->json($response);
         }
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && Hash::check($request->password, $user->password)) {
+
+            if (!$user->is_active) {
+                $tokenExpiro = !$user->activation_token_expires_at
+                    || now()->gt($user->activation_token_expires_at);
+
+                if ($tokenExpiro) {
+                    $nuevoToken = Str::random(64);
+                    $user->update([
+                        'activation_token'            => $nuevoToken,
+                        'activation_token_expires_at' => now()->addHours(24),
+                    ]);
+
+                    $employee       = $user->employee;
+                    $nombreCompleto = ($employee?->first_name ?? '') . ' ' . ($employee?->last_name ?? '');
+                    $nombreEmpresa  = $user->company?->name ?? '';
+
+                    Mail::to($user->email)->send(
+                        new ActivarCuentaMail($user, trim($nombreCompleto), $nombreEmpresa)
+                    );
+
+                    return response()->json([
+                        'message' => 'Tu cuenta no está activa. Hemos reenviado el correo de verificación a tu email.',
+                    ], 403);
+                }
+
+                return response()->json([
+                    'message' => 'Tu cuenta aún no ha sido activada. Revisa tu correo electrónico para activarla.',
+                ], 403);
+            }
+
+            return response()->json([
+                'message' => 'No tienes los permisos necesarios para acceder al sistema.',
+            ], 403);
+        }
+
         return response()->json([
-            'message' => 'Las credenciales proporcionadas son incorrectas o el usuario está inactivo.',
+            'message' => 'Las credenciales proporcionadas son incorrectas.',
         ], 401);
     }
 
     public function getUserPermissions(Request $request){
         $user = $request->user();
         $employee = $user->employee;
+        $company = $user->company;
 
         return response()->json([
             'id' => $user->id,
             'name' => $employee ? $employee->first_name . ' ' . $employee->last_name : $user->email,
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
+            'company_inactive' => $company && !$company->is_active,
+            'setup_step' => $company ? $company->setup_step : null,
         ]);
     }
 

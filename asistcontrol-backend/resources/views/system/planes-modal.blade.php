@@ -3,7 +3,7 @@
         <div class="fixed inset-0 bg-neutral-900/60 transition-opacity duration-300 backdrop-blur-sm"></div>
         <div class="flex min-h-screen items-center justify-center p-4">
             <div id="planModalBox"
-                 class="relative w-full max-w-lg transform rounded-xl bg-white p-5 text-left align-middle shadow-xl transition-all duration-300 ease-out scale-95 opacity-0 border border-neutral-200">
+                 class="relative w-full max-w-2xl transform rounded-xl bg-white p-5 text-left align-middle shadow-xl transition-all duration-300 ease-out scale-95 opacity-0 border border-neutral-200">
 
                 <div class="flex items-center justify-between border-b border-neutral-100 pb-4">
                     <h3 id="planModalTitle" class="text-lg font-semibold text-neutral-900">Nuevo Plan</h3>
@@ -35,14 +35,28 @@
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="precio" class="block text-sm font-medium text-neutral-700 mb-1">Precio ($)</label>
+                                <label for="precio" class="block text-sm font-medium text-neutral-700 mb-1">Precio mensual ($)</label>
                                 <input type="number" id="precio" name="precio" step="0.01" min="0"
                                        class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
                             </div>
                             <div>
+                                <label for="annual_price" class="block text-sm font-medium text-neutral-700 mb-1">Precio anual ($)</label>
+                                <input type="number" id="annual_price" name="annual_price" step="0.01" min="0"
+                                       class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
+                                       placeholder="Auto-calc (mensual × 11)">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
                                 <label for="iva" class="block text-sm font-medium text-neutral-700 mb-1">IVA (%)</label>
                                 <input type="number" id="iva" name="iva" step="0.01" min="0" max="100"
                                        class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label for="max_offices" class="block text-sm font-medium text-neutral-700 mb-1">Máx. oficinas</label>
+                                <input type="number" id="max_offices" name="max_offices" min="1"
+                                       class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
+                                       placeholder="Vacío = ilimitado">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -58,17 +72,43 @@
                                        placeholder="Vacío = ilimitado">
                             </div>
                         </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="per_extra_user_price" class="block text-sm font-medium text-neutral-700 mb-1">Precio por usuario extra ($/mes)</label>
+                                <input type="number" id="per_extra_user_price" name="per_extra_user_price" step="0.01" min="0"
+                                       class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label for="per_extra_office_price" class="block text-sm font-medium text-neutral-700 mb-1">Precio por oficina extra ($/mes)</label>
+                                <input type="number" id="per_extra_office_price" name="per_extra_office_price" step="0.01" min="0"
+                                       class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm">
+                            </div>
+                        </div>
                         <div>
                             <label for="caracteristicas_text" class="block text-sm font-medium text-neutral-700 mb-1">Características (una por línea)</label>
-                            <textarea id="caracteristicas_text" name="caracteristicas_text" rows="5"
+                            <textarea id="caracteristicas_text" name="caracteristicas_text" rows="4"
                                       class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
                                       placeholder="Ej:&#10;Hasta 35 usuarios&#10;3 oficinas con GPS&#10;Foto en check-in/out&#10;Reportes PDF + Excel&#10;Soporte 24h"></textarea>
                         </div>
                         <div>
-                            <label for="stripe_price_id" class="block text-sm font-medium text-neutral-700 mb-1">Stripe Price ID</label>
-                            <input type="text" id="stripe_price_id" name="stripe_price_id"
-                                   class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
-                                   placeholder="price_xxxxxxxxxxxxx">
+                            <label for="features_text" class="block text-sm font-medium text-neutral-700 mb-1">Features / ventajas del plan (una por línea)</label>
+                            <textarea id="features_text" name="features_text" rows="4"
+                                      class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
+                                      placeholder="Ej:&#10;attendance&#10;bonus_calculation&#10;salary_calculation&#10;vacations&#10;geofencing&#10;mobile_app"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="stripe_price_id" class="block text-sm font-medium text-neutral-700 mb-1">Stripe Price ID (mensual)</label>
+                                <input type="text" id="stripe_price_id" name="stripe_price_id"
+                                       class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
+                                       placeholder="price_xxxxxxxxxxxxx">
+                            </div>
+                            <div>
+                                <label for="stripe_annual_price_id" class="block text-sm font-medium text-neutral-700 mb-1">Stripe Price ID (anual)</label>
+                                <input type="text" id="stripe_annual_price_id" name="stripe_annual_price_id"
+                                       class="block w-full rounded-lg border border-neutral-300 bg-white text-neutral-900 focus:border-indigo-600 focus:ring-indigo-600 focus:ring-1 px-3 py-2 shadow-sm text-sm"
+                                       placeholder="price_xxxxxxxxxxxxx">
+                            </div>
                         </div>
                     </div>
 
@@ -104,6 +144,15 @@
             }, 10);
         });
 
+        // Auto-calcular precio anual = mensual × 11 (descuento 1 mes)
+        $('#precio').on('input change', function () {
+            const mensual = parseFloat($(this).val());
+            if (!isNaN(mensual) && mensual > 0) {
+                const anual = (mensual * 11).toFixed(2);
+                $('#annual_price').val(anual);
+            }
+        });
+
         // Abrir modal editar
         $(document).on('click', '.editPlan', function (e) {
             e.preventDefault();
@@ -115,11 +164,17 @@
             $('#nombre').val($btn.data('nombre'));
             $('#tipo').val($btn.data('tipo'));
             $('#precio').val($btn.data('precio'));
+            $('#annual_price').val($btn.data('annual_price'));
             $('#iva').val($btn.data('iva'));
             $('#min_users').val($btn.data('min_users'));
             $('#max_users').val($btn.data('max_users'));
+            $('#max_offices').val($btn.data('max_offices'));
+            $('#per_extra_user_price').val($btn.data('per_extra_user_price'));
+            $('#per_extra_office_price').val($btn.data('per_extra_office_price'));
             $('#caracteristicas_text').val($btn.data('caracteristicas'));
+            $('#features_text').val($btn.data('features'));
             $('#stripe_price_id').val($btn.data('stripe_price_id'));
+            $('#stripe_annual_price_id').val($btn.data('stripe_annual_price_id'));
 
             $('#planModal').removeClass('hidden');
             setTimeout(() => {

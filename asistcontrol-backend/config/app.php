@@ -125,4 +125,8 @@ return [
 
     'days_trial' => env('DAYS_TRIAL'),
 
+    'default_plan_id' => env('DEFAULT_PLAN_ID', 3),
+
+    'whatsapp_number' => env('WHATSAPP_NUMBER'),
+
 ];

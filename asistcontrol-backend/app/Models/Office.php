@@ -42,6 +42,11 @@ class Office extends Model
         return $this->hasMany(Shift::class);
     }
 
+    public function employees()
+    {
+        return $this->hasMany(Employee::class);
+    }
+
     public function attendances()
     {
         return $this->hasMany(Attendance::class);

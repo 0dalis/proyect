@@ -1,6 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { PublicServicesService } from '../../services/public/public-services.service';
+import { InactivityService } from '../../services/public/inactivity.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,6 +12,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
+  private auth = inject(PublicServicesService);
+  private inactivity = inject(InactivityService);
+
   isOpen = false;
   gestionExpanded = false;
   configExpanded = false;
@@ -36,6 +41,9 @@ export class SidebarComponent {
   }
 
   onLogout() {
-    console.log('Cerrar sesión');
+    this.inactivity.stopWatching();
+    localStorage.removeItem('is_logged_in');
+    localStorage.removeItem('company_inactive');
+    this.auth.logout().subscribe();
   }
 }

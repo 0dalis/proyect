@@ -94,6 +94,9 @@ return [
 
     'middleware' => [
         'web',
+        'auth',
+        'check.inactivity',
+        'role:super-admin',
         Authorize::class,
     ],
 

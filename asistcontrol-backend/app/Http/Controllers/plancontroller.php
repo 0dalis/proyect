@@ -16,11 +16,17 @@ class PlanController extends Controller
             'nombre'     => 'required|string|max:255',
             'tipo'       => 'nullable|string|max:100',
             'precio'     => 'required|numeric|min:0',
+            'annual_price' => 'nullable|numeric|min:0',
+            'per_extra_user_price' => 'nullable|numeric|min:0',
+            'per_extra_office_price' => 'nullable|numeric|min:0',
             'iva'        => 'required|numeric|min:0|max:100',
             'min_users'  => 'required|integer|min:1',
             'max_users'  => 'nullable|integer|min:1|gte:min_users',
+            'max_offices' => 'nullable|integer|min:1',
             'caracteristicas_text' => 'nullable|string',
+            'features_text' => 'nullable|string',
             'stripe_price_id' => 'nullable|string|max:255',
+            'stripe_annual_price_id' => 'nullable|string|max:255',
         ]);
 
         if (!empty($validated['caracteristicas_text'])) {
@@ -29,6 +35,13 @@ class PlanController extends Controller
             ));
         }
         unset($validated['caracteristicas_text']);
+
+        if (!empty($validated['features_text'])) {
+            $validated['features'] = array_values(array_filter(
+                array_map('trim', explode("\n", $validated['features_text']))
+            ));
+        }
+        unset($validated['features_text']);
 
         Plan::create($validated);
 
@@ -45,11 +58,17 @@ class PlanController extends Controller
             'nombre'     => 'required|string|max:255',
             'tipo'       => 'nullable|string|max:100',
             'precio'     => 'required|numeric|min:0',
+            'annual_price' => 'nullable|numeric|min:0',
+            'per_extra_user_price' => 'nullable|numeric|min:0',
+            'per_extra_office_price' => 'nullable|numeric|min:0',
             'iva'        => 'required|numeric|min:0|max:100',
             'min_users'  => 'required|integer|min:1',
             'max_users'  => 'nullable|integer|min:1|gte:min_users',
+            'max_offices' => 'nullable|integer|min:1',
             'caracteristicas_text' => 'nullable|string',
+            'features_text' => 'nullable|string',
             'stripe_price_id' => 'nullable|string|max:255',
+            'stripe_annual_price_id' => 'nullable|string|max:255',
         ]);
 
         if (array_key_exists('caracteristicas_text', $validated)) {
@@ -58,6 +77,13 @@ class PlanController extends Controller
             ));
         }
         unset($validated['caracteristicas_text']);
+
+        if (array_key_exists('features_text', $validated)) {
+            $validated['features'] = array_values(array_filter(
+                array_map('trim', explode("\n", $validated['features_text']))
+            ));
+        }
+        unset($validated['features_text']);
 
         $plan->update($validated);
 

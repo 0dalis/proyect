@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use App\Rules\Recaptcha;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ActivarCuentaMail;
+use App\Mail\CuentaActivadaMail;
 
 class LandingController extends Controller{
     public function index(){
@@ -24,21 +25,17 @@ class LandingController extends Controller{
     public function contacto(Request $request){
         $validated = $request->validate([
             'nombre'    => 'required|string|max:255',
-            'empresa'   => 'required|string|max:255',
-            'email'     => 'required|email|max:255',
-            'telefono'  => 'nullable|string|max:30',
-            'mensaje'   => 'required|string|max:2000',
-            'plan_interes' => 'nullable|string|max:100',
+            'telefono'  => 'required|string|max:30',
+            'mensaje'   => 'nullable|string|max:2000',
         ]);
 
-        // Guardar en contactos
         DB::table('contactos')->insert([
             'nombre'       => $validated['nombre'],
-            'empresa'      => $validated['empresa'],
-            'email'        => $validated['email'],
-            'telefono'     => $validated['telefono'] ?? null,
-            'mensaje'      => $validated['mensaje'],
-            'plan_interes' => $validated['plan_interes'] ?? null,
+            'empresa'      => 'WhatsApp Contacto',
+            'email'        => 'whatsapp@contacto.local',
+            'telefono'     => $validated['telefono'],
+            'mensaje'      => $validated['mensaje'] ?? '',
+            'plan_interes' => null,
             'created_at'   => now(),
             'updated_at'   => now(),
         ]);
@@ -73,13 +70,15 @@ class LandingController extends Controller{
 
         $daysTrial = (int) env('DAYS_TRIAL');
 
-        DB::transaction(function () use ($validated, $daysTrial) {
-            $planPremium = Plan::find(3);
+        $defaultPlanId = config('app.default_plan_id', 3);
+
+        DB::transaction(function () use ($validated, $daysTrial, $defaultPlanId) {
+            $planPremium = Plan::find($defaultPlanId);
 
             // A) Empresa inactiva
             $company = Company::create([
                 'name'          => $validated['nombre_empresa'],
-                'code'          => Str::upper(Str::random(8)),
+                'code'          => Company::generateUniqueCode(),
                 'slug'          => Str::slug($validated['nombre_empresa'] . '-' . Str::random(4)),
                 'plan_id'       => $planPremium?->id,
                 'trial_ends_at' => now()->addDays($daysTrial),
@@ -169,7 +168,7 @@ class LandingController extends Controller{
         }
 
         if ($user->email_verified_at && $user->is_active) {
-            return redirect()->route('login')->with('success', 'Tu cuenta ya ha sido activada. Inicia sesión para comenzar.');
+            return redirect()->away('http://localhost:4200/login')->with('success', 'Tu cuenta ya ha sido activada. Inicia sesión para comenzar.');
         }
 
         $nombreCompleto  = ($user->employee?->first_name ?? '') . ' ' . ($user->employee?->last_name ?? '');
@@ -199,7 +198,7 @@ class LandingController extends Controller{
             return response()->json([
                 'success'  => true,
                 'message'  => 'Tu cuenta ya ha sido activada previamente.',
-                'redirect' => route('login'),
+                'redirect' => 'http://localhost:4200/login',
             ]);
         }
 
@@ -218,17 +217,24 @@ class LandingController extends Controller{
                 'activation_token_expires_at' => null,
             ]);
 
-            $user->company()->update(['is_active' => true]);
-
             if ($user->employee) {
                 $user->employee()->update(['is_active' => true]);
             }
         });
 
+        $daysTrial = (int) config('app.days_trial', 60);
+        $defaultPlanId = config('app.default_plan_id', 3);
+        $plan = Plan::find($defaultPlanId);
+        $nombrePlan = $plan?->nombre ?? 'Premium';
+        $nombreCompleto = ($user->employee?->first_name ?? '') . ' ' . ($user->employee?->last_name ?? '');
+        $nombreEmpresa = $user->company?->name ?? '';
+
+        Mail::to($user->email)->send(new CuentaActivadaMail($user, $nombreCompleto, $nombreEmpresa, $daysTrial, $nombrePlan));
+
         return response()->json([
             'success'  => true,
             'message'  => 'Perfil verificado exitosamente. Redirigiendo al inicio de sesión...',
-            'redirect' => route('login'),
+            'redirect' => 'http://localhost:4200/login',
         ]);
     }
 }

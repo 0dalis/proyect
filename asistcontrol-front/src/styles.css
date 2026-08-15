@@ -1,5 +1,174 @@
 @import "tailwindcss";
 @import "toastify-js/src/toastify.css";
+@import "leaflet/dist/leaflet.css";
+
+/* Estilos compartidos para formularios del wizard de configuración */
+.setup-page .form-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  color: #111827;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.setup-page .form-input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+  background-color: #ffffff;
+}
+
+.setup-page .form-input.border-red-400 {
+  border-color: #ef4444;
+}
+
+.setup-page .form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 0.375rem;
+}
+
+.setup-page .form-error {
+  font-size: 0.6875rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+}
+
+.setup-page .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: white;
+  background: #f97316;
+  border: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.setup-page .btn-primary:hover:not(:disabled) {
+  background: #ea580c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.setup-page .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.setup-page .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #475569;
+  background: white;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.setup-page .btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.setup-page .btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #dc2626;
+  background: transparent;
+  border: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.setup-page .btn-danger:hover {
+  background: #fef2f2;
+}
+
+.setup-page .table-container {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+}
+
+.setup-page table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.setup-page th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.setup-page td {
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.setup-page tr:last-child td {
+  border-bottom: none;
+}
+
+.setup-page tr:hover td {
+  background: #fff7ed;
+}
+
+.setup-page .badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.setup-page .badge-success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.setup-page .badge-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.setup-page .badge-slate {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.setup-page .step-container {
+  padding: 0;
+}
 
 @theme {
   /* Mapeamos tus variables de TS a nombres de Tailwind */

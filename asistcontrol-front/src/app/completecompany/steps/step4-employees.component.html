@@ -1,0 +1,148 @@
+<div class="step-container">
+  <div class="step-header">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+        <i class="bi bi-people text-xl text-orange-500"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-slate-800">Empleados</h3>
+        <p class="text-xs text-slate-500">Registra a los empleados que usarán el sistema de asistencia</p>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!isLoading && !showForm">
+    <div *ngIf="employeeLimit !== null && employees.length >= employeeLimit" class="mb-4 bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-start gap-2">
+      <i class="bi bi-info-circle text-slate-400 mt-0.5"></i>
+      <p class="text-xs text-slate-500">{{ overLimitMessage }}</p>
+    </div>
+
+    <div *ngIf="employees.length > 0" class="mb-4">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Código</th>
+              <th>Oficina</th>
+              <th>Área</th>
+              <th>App</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of employees"
+                [ngClass]="isLocked(emp) ? 'opacity-50 bg-slate-50' : ''">
+              <td class="font-medium">{{ emp.first_name }} {{ emp.last_name }}</td>
+              <td class="font-mono text-[10px]">{{ emp.employee_code }}</td>
+              <td>{{ emp.office?.name || '—' }}</td>
+              <td>{{ emp.area?.name || '—' }}</td>
+              <td>
+                <span class="badge" [ngClass]="emp.user_id ? 'badge-success' : 'badge-slate'">
+                  {{ emp.user_id ? 'App' : 'Manual' }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button (click)="openEdit(emp)" [disabled]="isLocked(emp)" class="text-orange-500 hover:text-orange-700 text-xs mr-2 disabled:opacity-30 disabled:cursor-not-allowed">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button (click)="deleteEmployee(emp)" class="btn-danger">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="employees.length === 0" class="text-center py-8 text-slate-400">
+      <i class="bi bi-people text-3xl"></i>
+      <p class="mt-2 text-sm">No hay empleados registrados</p>
+    </div>
+
+    <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+      <button (click)="back.emit()" class="btn-secondary">
+        <i class="bi bi-arrow-left text-sm"></i> Anterior
+      </button>
+      <button (click)="openCreate()" [disabled]="!canCreate" class="btn-primary disabled:opacity-40 disabled:cursor-not-allowed">
+        <i class="bi bi-plus text-sm"></i> Agregar empleado
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="showForm">
+    <form (ngSubmit)="submitForm()" class="max-w-lg">
+      <h4 class="text-sm font-semibold text-slate-700 mb-4">
+        {{ editingId ? 'Editar empleado' : 'Nuevo empleado' }}
+      </h4>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Nombre *</label>
+          <input [(ngModel)]="form.first_name" name="first_name" type="text" required placeholder="Ej: Juan" class="form-input" [ngClass]="{ 'border-red-400': errors.first_name }">
+          <p *ngIf="errors.first_name" class="form-error">{{ errors.first_name[0] }}</p>
+        </div>
+        <div>
+          <label class="form-label">Apellido *</label>
+          <input [(ngModel)]="form.last_name" name="last_name" type="text" required placeholder="Ej: Pérez" class="form-input" [ngClass]="{ 'border-red-400': errors.last_name }">
+          <p *ngIf="errors.last_name" class="form-error">{{ errors.last_name[0] }}</p>
+        </div>
+        <div>
+          <label class="form-label">Código de empleado *</label>
+          <input [(ngModel)]="form.employee_code" name="employee_code" type="text" required placeholder="Ej: EMP001" class="form-input" [ngClass]="{ 'border-red-400': errors.employee_code }">
+          <p *ngIf="errors.employee_code" class="form-error">{{ errors.employee_code[0] }}</p>
+        </div>
+        <div>
+          <label class="form-label">Oficina *</label>
+          <select [(ngModel)]="form.office_id" name="office_id" required class="form-input" [ngClass]="{ 'border-red-400': errors.office_id }">
+            <option [ngValue]="null" disabled>Seleccionar...</option>
+            <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+          </select>
+          <p *ngIf="errors.office_id" class="form-error">{{ errors.office_id[0] }}</p>
+        </div>
+        <div>
+          <label class="form-label">Área *</label>
+          <select [(ngModel)]="form.area_id" name="area_id" required class="form-input" [ngClass]="{ 'border-red-400': errors.area_id }">
+            <option [ngValue]="null" disabled>Seleccionar...</option>
+            <option *ngFor="let a of areas" [ngValue]="a.id">{{ a.name }}</option>
+          </select>
+          <p *ngIf="errors.area_id" class="form-error">{{ errors.area_id[0] }}</p>
+        </div>
+      </div>
+
+      <div class="mt-5 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" [(ngModel)]="form.has_app_access" name="has_app_access"
+            class="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-400">
+          <span class="text-sm font-medium text-slate-700">Acceso a la aplicación móvil</span>
+        </label>
+        <p class="text-xs text-slate-400 mt-1 ml-7">Actívalo si el empleado usará la app para registrar asistencia.</p>
+      </div>
+
+      <ng-container *ngIf="form.has_app_access">
+        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+          <div>
+            <label class="form-label">Email *</label>
+            <input [(ngModel)]="form.email" name="email" type="email" placeholder="empleado@empresa.com" class="form-input" [ngClass]="{ 'border-red-400': errors.email }">
+            <p *ngIf="errors.email" class="form-error">{{ errors.email[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">{{ editingId ? 'Nueva contraseña' : 'Contraseña *' }}</label>
+            <input [(ngModel)]="form.password" name="password" type="password" placeholder="{{ editingId ? '•••••••• (dejar vacío para no cambiar)' : 'Mínimo 8 caracteres' }}" class="form-input" [ngClass]="{ 'border-red-400': errors.password }">
+            <p *ngIf="errors.password" class="form-error">{{ errors.password[0] }}</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="flex gap-2 mt-6">
+        <button type="submit" [disabled]="isSubmitting" class="btn-primary">
+          <i *ngIf="!isSubmitting" class="bi bi-check2 text-sm"></i>
+          {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button type="button" (click)="cancelForm()" class="btn-secondary">Cancelar</button>
+      </div>
+    </form>
+  </ng-container>
+
+  <div *ngIf="isLoading" class="text-center py-10 text-slate-400">Cargando...</div>
+</div>

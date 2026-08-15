@@ -1,0 +1,79 @@
+<div class="step-container">
+  <div class="step-header">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+        <i class="bi bi-diagram-3 text-xl text-orange-500"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-slate-800">Áreas / Departamentos</h3>
+        <p class="text-xs text-slate-500">Define las áreas o departamentos de tu empresa (ej: RH, Ventas, Operaciones)</p>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!isLoading && !showForm">
+    <div *ngIf="areas.length > 0" class="mb-4">
+      <div class="max-w-md">
+        <div *ngFor="let area of areas"
+          class="flex items-center justify-between px-4 py-3 border border-slate-100 rounded-lg mb-2 hover:bg-slate-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+            <span class="text-sm font-medium text-slate-700">{{ area.name }}</span>
+            <span class="badge" [ngClass]="area.is_active ? 'badge-success' : 'badge-slate'">
+              {{ area.is_active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button (click)="openEdit(area)" class="text-slate-400 hover:text-orange-500 transition-colors text-xs px-2">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button (click)="deleteArea(area)" class="btn-danger">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="areas.length === 0" class="text-center py-8 text-slate-400">
+      <i class="bi bi-diagram-3 text-3xl"></i>
+      <p class="mt-2 text-sm">No hay áreas registradas</p>
+    </div>
+
+    <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+      <button (click)="back.emit()" class="btn-secondary">
+        <i class="bi bi-arrow-left text-sm"></i> Anterior
+      </button>
+      <div class="flex gap-2">
+        <button (click)="openCreate()" class="btn-secondary">
+          <i class="bi bi-plus text-sm"></i> Agregar área
+        </button>
+        <button (click)="continue()" class="btn-primary">
+          Continuar <i class="bi bi-arrow-right text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="showForm">
+    <form (ngSubmit)="submitForm()" class="max-w-md">
+      <h4 class="text-sm font-semibold text-slate-700 mb-4">
+        {{ editingId ? 'Editar área' : 'Nueva área' }}
+      </h4>
+      <div>
+        <label class="form-label">Nombre del área *</label>
+        <input [(ngModel)]="formName" name="name" type="text" required placeholder="Ej: Recursos Humanos" class="form-input" [ngClass]="{ 'border-red-400': errors.name }">
+        <p *ngIf="errors.name" class="form-error">{{ errors.name[0] }}</p>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button type="submit" [disabled]="isSubmitting" class="btn-primary">
+          <i *ngIf="!isSubmitting" class="bi bi-check2 text-sm"></i>
+          {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button type="button" (click)="cancelForm()" class="btn-secondary">Cancelar</button>
+      </div>
+    </form>
+  </ng-container>
+
+  <div *ngIf="isLoading" class="text-center py-10 text-slate-400">Cargando...</div>
+</div>

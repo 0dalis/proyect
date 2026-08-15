@@ -63,6 +63,28 @@ class Company extends Model
 
     // --- Métodos de Ayuda y Estado ---
 
+    /**
+     * Genera un código de empresa único con formato AC-XXXXXX.
+     * Usa un alfabeto sin caracteres ambiguos (excluye O, 0, I, 1, L)
+     * y reintenta hasta obtener uno que no exista en la base de datos.
+     */
+    public static function generateUniqueCode(): string
+    {
+        $alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        $maxAttempts = 20;
+
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            $code = 'AC-' . substr(str_shuffle($alphabet), 0, 6);
+
+            if (!static::where('code', $code)->exists()) {
+                return $code;
+            }
+        }
+
+        // Fallback poco probable: uniqid con base32 asegura unicidad casi absoluta.
+        return 'AC-' . strtoupper(substr(str_replace(['O', 'I', 'L'], 'X', base_convert((string) uniqid(), 16, 36)), 0, 6));
+    }
+
     public function isActive(): bool {
         return $this->is_active;
     }

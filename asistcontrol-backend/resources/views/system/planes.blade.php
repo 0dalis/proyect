@@ -18,6 +18,10 @@
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min usuarios</th>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max usuarios</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max oficinas</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio anual</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Extra usuario</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Extra oficina</th>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Público</th>   {{-- NUEVA COLUMNA --}}
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                             </tr>
@@ -34,6 +38,18 @@
                                     </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm">
                                         @if($plan->max_users) {{ $plan->max_users }} @else <i class="bi bi-infinity text-lg"></i> @endif
+                                    </td>
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                        @if($plan->max_offices) {{ $plan->max_offices }} @else <i class="bi bi-infinity text-lg"></i> @endif
+                                    </td>
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                        @if($plan->annual_price) $ {{ $plan->annual_price }} @else — @endif
+                                    </td>
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                        @if($plan->per_extra_user_price) $ {{ $plan->per_extra_user_price }} @else — @endif
+                                    </td>
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                        @if($plan->per_extra_office_price) $ {{ $plan->per_extra_office_price }} @else — @endif
                                     </td>
 
                                     {{-- CELDA DEL TOGGLE --}}
@@ -58,8 +74,14 @@
                                         data-iva="{{ $plan->iva }}"
                                         data-min_users="{{ $plan->min_users }}"
                                         data-max_users="{{ $plan->max_users }}"
+                                        data-max_offices="{{ $plan->max_offices }}"
+                                        data-annual_price="{{ $plan->annual_price }}"
+                                        data-per_extra_user_price="{{ $plan->per_extra_user_price }}"
+                                        data-per_extra_office_price="{{ $plan->per_extra_office_price }}"
                                         data-caracteristicas="{{ is_array($plan->caracteristicas) ? implode("\n", $plan->caracteristicas) : '' }}"
-                                        data-stripe_price_id="{{ $plan->stripe_price_id }}">
+                                        data-features="{{ is_array($plan->features) ? (array_is_list($plan->features) ? implode("\n", $plan->features) : implode("\n", array_keys(array_filter($plan->features)))) : '' }}"
+                                        data-stripe_price_id="{{ $plan->stripe_price_id }}"
+                                        data-stripe_annual_price_id="{{ $plan->stripe_annual_price_id }}">
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>
                                     </td>

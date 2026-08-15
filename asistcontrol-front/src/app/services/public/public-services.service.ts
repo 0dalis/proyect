@@ -33,6 +33,8 @@ export class PublicServicesService {
   logout(): Observable<any> {
     return this.http.post(`${this.API_URL}/web/logout`, {}, this.httpOptions).pipe(
       tap(() => {
+        localStorage.removeItem('is_logged_in');
+        localStorage.removeItem('company_inactive');
         this.router.navigate(['/login']);
       })
     );
