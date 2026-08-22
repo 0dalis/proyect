@@ -35,6 +35,7 @@ export class PublicServicesService {
       tap(() => {
         localStorage.removeItem('is_logged_in');
         localStorage.removeItem('company_inactive');
+        localStorage.removeItem('last_activity');
         this.router.navigate(['/login']);
       })
     );

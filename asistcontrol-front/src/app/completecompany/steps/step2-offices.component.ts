@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { CompanySetupService } from '../../services/public/company-setup.service';
+import { CompleteProfileService } from '../../services/public/completeprofile.services';
 import * as Highcharts from 'highcharts/highmaps';
 import mexicoMap from '@highcharts/map-collection/countries/mx/mx-all.topo.json';
 import * as L from 'leaflet';
+import tzlookup from 'tz-lookup';
 
 import Toastify from 'toastify-js';
 
@@ -53,15 +54,24 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('stateMapEl') stateMapEl!: ElementRef<HTMLDivElement>;
   @ViewChild('officeMapEl') officeMapEl!: ElementRef<HTMLDivElement>;
 
+  officeLimitData: any = null;
+
   offices: any[] = [];
   isLoading = true;
   showForm = false;
   editingId: number | null = null;
-  form = { name: '', code: '', latitude: 0, longitude: 0, radius_meters: RADIUS_DEFAULT, timezone: 'America/Mexico_City' };
+  form = { name: '', code: '', latitude: 0, longitude: 0, radius_meters: RADIUS_DEFAULT, timezone: 'UTC', country: '' };
   isSubmitting = false;
   errors: any = {};
 
   formStage: 'map' | 'estado' | 'leaflet' = 'map';
+
+  isInternational = false;
+  userLocation: { lat: number; lng: number } | null = null;
+  userCountry: string | null = null;
+  private isInternationalPinMoved = false;
+  private countryForCoords: { lat: number; lng: number } | null = null;
+  private countryDebounce: any = null;
 
   mexicoData: any[] | null = null;
   selectedState: any = null;
@@ -82,14 +92,18 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   private radiusPin: L.Marker | null = null;
   private radiusCircle: L.Circle | null = null;
 
-  constructor(private setupService: CompanySetupService, private http: HttpClient) {}
+  constructor(private completeProfileService: CompleteProfileService, private http: HttpClient) {}
 
   get officeLimit(): number | null {
-    return this.limits?.office_limit ?? null;
+    return this.officeLimitData?.office_limit ?? this.limits?.office_limit ?? null;
   }
 
   get canCreate(): boolean {
-    return this.limits?.can_create_office ?? true;
+    return this.officeLimitData?.can_create ?? this.limits?.can_create_office ?? true;
+  }
+
+  get availableOffices(): number | null {
+    return this.officeLimitData?.available ?? null;
   }
 
   get overLimitMessage(): string {
@@ -109,11 +123,16 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   isLocked(office: any): boolean {
     const limit = this.officeLimit;
     if (limit === null) return false;
-    return this.offices.findIndex((o) => o.id === office.id) >= limit;
+    const allowedIds = [...this.offices]
+      .sort((a, b) => a.id - b.id)
+      .slice(0, limit)
+      .map((o) => o.id);
+    return !allowedIds.includes(office.id);
   }
 
   ngOnInit(): void {
     this.loadOffices();
+    this.loadOfficeLimit();
   }
 
   ngAfterViewInit(): void {
@@ -122,12 +141,22 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.searchAbort) this.searchAbort.abort();
+    if (this.countryDebounce) clearTimeout(this.countryDebounce);
     this.destroyOfficeMap();
+  }
+
+  loadOfficeLimit(): void {
+    this.completeProfileService.getOfficeLimit().subscribe({
+      next: (res: any) => {
+        this.officeLimitData = res;
+      },
+      error: () => {}
+    });
   }
 
   loadOffices(): void {
     this.isLoading = true;
-    this.setupService.getOffices().subscribe({
+    this.completeProfileService.getOffices().subscribe({
       next: (res: any) => {
         this.offices = res.offices;
         this.isLoading = false;
@@ -255,10 +284,32 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   openCreate(): void {
     this.editingId = null;
-    this.form = { name: '', code: '', latitude: 0, longitude: 0, radius_meters: RADIUS_DEFAULT, timezone: 'America/Mexico_City' };
+    this.form = { name: '', code: '', latitude: 0, longitude: 0, radius_meters: RADIUS_DEFAULT, timezone: 'UTC', country: '' };
     this.errors = {};
+    this.countryForCoords = null;
+    if (this.countryDebounce) clearTimeout(this.countryDebounce);
+    this.countryDebounce = null;
     this.showForm = true;
     this.enterMapStage();
+    this.requestUserLocation();
+  }
+
+  private requestUserLocation(): void {
+    this.userLocation = null;
+    this.userCountry = null;
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos: GeolocationPosition) => {
+        this.userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        if (this.isInternational && this.formStage === 'leaflet' && !this.isInternationalPinMoved) {
+          this.moveMainPin(pos.coords.latitude, pos.coords.longitude);
+        }
+      },
+      () => {
+        this.userLocation = null;
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+    );
   }
 
   openEdit(office: any): void {
@@ -267,13 +318,15 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.editingId = office.id;
+    this.isInternational = false;
     this.form = {
       name: office.name,
       code: office.code || '',
       latitude: office.latitude,
       longitude: office.longitude,
       radius_meters: office.radius_meters,
-      timezone: office.timezone || 'America/Mexico_City'
+      timezone: office.timezone || 'UTC',
+      country: office.country || ''
     };
     this.errors = {};
     this.selectedState = null;
@@ -287,6 +340,7 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   enterMapStage(): void {
     this.formStage = 'map';
+    this.isInternational = false;
     this.selectedState = null;
     this.selectedMunicipio = null;
     this.selectedMunicipioName = '';
@@ -308,13 +362,76 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   enterLeafletStage(): void {
+    this.form.country = 'Mexico';
     this.formStage = 'leaflet';
     setTimeout(() => this.initOfficeMap(), 50);
+  }
+
+  openInternationalFlow(): void {
+    this.isInternational = true;
+    this.isInternationalPinMoved = false;
+    this.selectedMunicipio = null;
+    this.selectedMunicipioName = '';
+    this.formStage = 'leaflet';
+    setTimeout(() => this.initOfficeMap(), 50);
+    if (this.userLocation) {
+      this.refreshCountry(this.userLocation.lat, this.userLocation.lng);
+    }
+  }
+
+  private applyTimezoneFromCoords(lat: number, lng: number): void {
+    this.form.timezone = tzlookup(lat, lng) || 'UTC';
+  }
+
+  private onOfficePositionChanged(lat: number, lng: number): void {
+    this.form.latitude = +lat.toFixed(6);
+    this.form.longitude = +lng.toFixed(6);
+    this.applyTimezoneFromCoords(lat, lng);
+    this.scheduleCountryDetection(lat, lng);
+  }
+
+  private scheduleCountryDetection(lat: number, lng: number): void {
+    if (!this.isInternational) return;
+    if (this.countryForCoords && this.countryForCoords.lat === lat && this.countryForCoords.lng === lng) return;
+    if (this.countryDebounce) clearTimeout(this.countryDebounce);
+    this.countryDebounce = setTimeout(() => {
+      this.countryDebounce = null;
+      this.refreshCountry(lat, lng);
+    }, 600);
+  }
+
+  private async refreshCountry(lat: number, lng: number): Promise<void> {
+    this.countryForCoords = { lat, lng };
+    const country = await this.detectCountry(lat, lng);
+    if (country) {
+      this.userCountry = country;
+      this.form.country = country;
+    }
+  }
+
+  private async detectCountry(lat: number, lng: number): Promise<string | null> {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000);
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=es`;
+      const res: any = await fetch(url, { signal: controller.signal, headers: { 'Accept-Language': 'es' } }).then((r) => r.json());
+      clearTimeout(timer);
+      const country: string | undefined = res?.address?.country;
+      return country && country.trim() ? country : null;
+    } catch {
+      return null;
+    }
   }
 
   backFromLeaflet(): void {
     if (this.editingId) {
       this.cancelForm();
+      return;
+    }
+    if (this.isInternational) {
+      this.isInternational = false;
+      this.formStage = 'map';
+      setTimeout(() => this.initMap(), 50);
       return;
     }
     this.formStage = 'estado';
@@ -323,11 +440,15 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   cancelForm(): void {
     this.showForm = false;
     this.editingId = null;
+    this.isInternational = false;
     this.selectedState = null;
     this.selectedMunicipio = null;
     this.selectedMunicipioName = '';
     this.searchQuery = '';
     this.searchResults = [];
+    if (this.countryDebounce) clearTimeout(this.countryDebounce);
+    this.countryDebounce = null;
+    this.countryForCoords = null;
     this.destroyOfficeMap();
   }
 
@@ -355,9 +476,16 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.destroyOfficeMap();
 
     const hasOffice = this.editingId !== null && this.form.latitude !== 0;
-    const center = hasOffice
-      ? [this.form.latitude, this.form.longitude]
-      : [this.selectedMunicipio?.ubicacion.latitud ?? 19.4326, this.selectedMunicipio?.ubicacion.longitud ?? -99.1332];
+    let center: [number, number];
+    if (hasOffice) {
+      center = [this.form.latitude, this.form.longitude];
+    } else if (this.isInternational) {
+      center = this.userLocation
+        ? [this.userLocation.lat, this.userLocation.lng]
+        : [19.4326, -99.1332];
+    } else {
+      center = [this.selectedMunicipio?.ubicacion.latitud ?? 19.4326, this.selectedMunicipio?.ubicacion.longitud ?? -99.1332];
+    }
 
     this.officeMap = L.map(el, { zoomControl: true }).setView(center as [number, number], 14);
 
@@ -405,13 +533,14 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.syncRadiusPins();
     this.form.latitude = +center[0].toFixed(6);
     this.form.longitude = +center[1].toFixed(6);
+    this.applyTimezoneFromCoords(center[0], center[1]);
     this.radiusDisplay = Math.round(this.currentRadius);
   }
 
   private onMainPinMoved(): void {
+    if (this.isInternational) this.isInternationalPinMoved = true;
     const p = this.mainPin!.getLatLng();
-    this.form.latitude = +p.lat.toFixed(6);
-    this.form.longitude = +p.lng.toFixed(6);
+    this.onOfficePositionChanged(p.lat, p.lng);
     const c = [p.lat, p.lng] as [number, number];
     const h = this.radiusPin!.getLatLng();
     this.currentBearing = this.bearingDeg(c, [h.lat, h.lng]);
@@ -443,8 +572,7 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.mainPin || !this.officeMap) return;
     this.mainPin.setLatLng([lat, lng]);
     this.officeMap.panTo([lat, lng]);
-    this.form.latitude = +lat.toFixed(6);
-    this.form.longitude = +lng.toFixed(6);
+    this.onOfficePositionChanged(lat, lng);
     this.syncRadiusPins();
   }
 
@@ -458,7 +586,8 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.searchAbort = new AbortController();
-    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&countrycodes=mx&q=${encodeURIComponent(q)}`;
+    const countryParam = this.isInternational ? '' : '&countrycodes=mx';
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6${countryParam}&q=${encodeURIComponent(q)}`;
     fetch(url, {
       signal: this.searchAbort.signal,
       headers: { 'Accept-Language': 'es' }
@@ -527,15 +656,74 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   private toRad(v: number): number { return v * Math.PI / 180; }
   private toDeg(v: number): number { return v * 180 / Math.PI; }
 
-  // ---------- Persistencia (Fase 2 — pendiente) ----------
+  // ---------- Persistencia ----------
 
-  submitForm(): void {
+  async submitForm(): Promise<void> {
     if (this.isSubmitting) return;
     if (this.form.latitude === 0 && this.form.longitude === 0) {
       this.showError('Coloca el pin sobre tu oficina.');
       return;
     }
-    this.showInfo('Guardado de oficinas disponible en la siguiente fase.');
+    if (!this.form.name || !this.form.name.trim()) {
+      this.errors = { ...this.errors, name: 'El nombre de la oficina es obligatorio.' };
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.errors = {};
+
+    if (!this.editingId && !this.canCreate) {
+      this.isSubmitting = false;
+      this.showError(this.overLimitMessage);
+      return;
+    }
+
+    if (this.isInternational) {
+      const country = await this.detectCountry(this.form.latitude, this.form.longitude);
+      if (country) {
+        this.userCountry = country;
+        this.form.country = country;
+      }
+    }
+
+    const data: any = {
+      name: this.form.name.trim(),
+      code: this.form.code?.trim() || null,
+      latitude: this.form.latitude,
+      longitude: this.form.longitude,
+      radius_meters: Math.round(this.form.radius_meters),
+      timezone: this.form.timezone || 'UTC',
+      country: this.form.country || null
+    };
+
+    const request = this.editingId
+      ? this.completeProfileService.updateOffice(this.editingId, data)
+      : this.completeProfileService.createOffice(data);
+
+    request.subscribe({
+      next: () => {
+        this.showForm = false;
+        this.editingId = null;
+        this.isSubmitting = false;
+        this.isInternational = false;
+        this.selectedState = null;
+        this.selectedMunicipio = null;
+        this.selectedMunicipioName = '';
+        this.searchQuery = '';
+        this.searchResults = [];
+        this.destroyOfficeMap();
+        this.loadOffices();
+        this.loadOfficeLimit();
+        this.showSuccess('Oficina guardada.');
+      },
+      error: (err: any) => {
+        this.isSubmitting = false;
+        if (err.error?.errors) {
+          this.errors = err.error.errors;
+        }
+        this.showError(err.error?.message || 'Error al guardar.');
+      }
+    });
   }
 
   continue(): void {
@@ -547,21 +735,22 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   deleteOffice(office: any): void {
+    if (this.offices.length <= 1) {
+      this.showError('Debes mantener al menos una oficina.');
+      return;
+    }
     if (!confirm(`¿Eliminar la oficina "${office.name}"?`)) return;
 
-    this.setupService.deleteOffice(office.id).subscribe({
+    this.completeProfileService.deleteOffice(office.id).subscribe({
       next: () => {
         this.loadOffices();
+        this.loadOfficeLimit();
         this.showSuccess('Oficina eliminada.');
       },
       error: (err: any) => {
         this.showError(err.error?.message || 'Error al eliminar.');
       }
     });
-  }
-
-  private showInfo(msg: string): void {
-    Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: '#0284c7' } }).showToast();
   }
 
   private showSuccess(msg: string): void {

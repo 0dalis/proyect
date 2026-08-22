@@ -16,6 +16,7 @@ class Company extends Model
         'code',
         'slug',
         'plan_id',
+        'setup_step',
         'trial_ends_at',
         'subscription_ends_at',
         'has_dedicated_db',

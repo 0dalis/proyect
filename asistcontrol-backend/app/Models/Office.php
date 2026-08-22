@@ -18,6 +18,7 @@ class Office extends Model
         'longitude',
         'radius_meters',
         'timezone',
+        'country',
     ];
 
     protected $casts = [

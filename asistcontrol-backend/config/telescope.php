@@ -42,7 +42,7 @@ return [
     |
     */
 
-    'path' => 'api/web/services/1/telescope', // antes era 'telescope'
+    'path' => 'intern/web/services/1/telescope',
 
     /*
     |--------------------------------------------------------------------------
@@ -94,9 +94,7 @@ return [
 
     'middleware' => [
         'web',
-        'auth',
-        'check.inactivity',
-        'role:super-admin',
+        'admin.panel',
         Authorize::class,
     ],
 

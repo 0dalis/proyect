@@ -1,11 +1,122 @@
+/* ---------- Tarjetas ---------- */
+
+.dash-card {
+  background-color: var(--color-surface);
+  border: 1px solid rgba(120, 127, 140, 0.15);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 8px 24px -12px rgba(0, 0, 0, 0.08);
+}
+
 .stat-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.12);
+  border-color: rgba(120, 127, 140, 0.28);
 }
+
+/* ---------- Iconos de estadísticas ---------- */
+
+.stat-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon-primary {
+  background: color-mix(in srgb, var(--color-primary-medium) 12%, transparent);
+  color: var(--color-primary-medium);
+}
+
+.stat-icon-teal {
+  background: color-mix(in srgb, var(--color-accent-teal) 12%, transparent);
+  color: var(--color-accent-teal);
+}
+
+.stat-icon-success {
+  background: color-mix(in srgb, var(--color-success-green) 12%, transparent);
+  color: var(--color-success-green);
+}
+
+.stat-icon-danger {
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+  color: #ef4444;
+}
+
+/* ---------- Avatar de iniciales ---------- */
+
+.avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-primary-medium);
+  background: color-mix(in srgb, var(--color-primary-medium) 12%, transparent);
+  flex-shrink: 0;
+}
+
+/* ---------- Badge / chip ---------- */
+
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-primary-medium);
+  background: color-mix(in srgb, var(--color-primary-medium) 10%, transparent);
+  white-space: nowrap;
+}
+
+/* ---------- Estados vacíos ---------- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--color-text-body);
+  font-size: 0.75rem;
+  text-align: center;
+  opacity: 0.75;
+}
+
+/* ---------- Skeleton ---------- */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(120, 127, 140, 0.1) 25%,
+    rgba(120, 127, 140, 0.22) 37%,
+    rgba(120, 127, 140, 0.1) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* ---------- Animación de entrada ---------- */
 
 @keyframes fadeIn {
   from {
@@ -14,7 +125,7 @@
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 

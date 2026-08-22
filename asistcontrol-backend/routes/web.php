@@ -28,7 +28,7 @@ Route::get('/activar-cuenta/{id}', [LandingController::class, 'activarCuenta'])-
 Route::post('/verificar-cuenta/{id}', [LandingController::class, 'verificarCuenta'])->name('verificar.cuenta');
 
 // ===== Panel de administración (requiere auth) =====
-Route::middleware(['auth', 'check.inactivity', 'role:super-admin'])->prefix('api/web/services/1')->group(function () {
+Route::middleware(['admin.panel'])->prefix('intern/web/services/1')->group(function () {
 
     // Dashboard
     Route::get('dashboard', [DashboardController::class, 'index'])                                 ->name('dashboard');
@@ -71,7 +71,7 @@ Route::middleware(['auth', 'check.inactivity', 'role:super-admin'])->prefix('api
     Route::patch('/planes/toggle', [PlanController::class, 'togglePublic'])                     ->name('planes.toggle');
 
 });
-/*Route::middleware(['auth', 'role:super-admin'])->prefix('api/web/services/1')->group(function () {
+/*Route::middleware(['admin.panel'])->prefix('intern/web/services/1')->group(function () {
 
     // Dashboard oculto
     Route::get('dashboard', function () {

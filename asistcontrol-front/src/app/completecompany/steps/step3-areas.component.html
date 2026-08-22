@@ -5,7 +5,7 @@
         <i class="bi bi-diagram-3 text-xl text-orange-500"></i>
       </div>
       <div>
-        <h3 class="text-lg font-bold text-slate-800">Áreas / Departamentos</h3>
+        <h3 class="text-lg font-bold text-slate-800">Áreas / Departamentos <span class="text-xs font-normal text-slate-400">(opcional)</span></h3>
         <p class="text-xs text-slate-500">Define las áreas o departamentos de tu empresa (ej: RH, Ventas, Operaciones)</p>
       </div>
     </div>
@@ -38,6 +38,7 @@
     <div *ngIf="areas.length === 0" class="text-center py-8 text-slate-400">
       <i class="bi bi-diagram-3 text-3xl"></i>
       <p class="mt-2 text-sm">No hay áreas registradas</p>
+      <p class="mt-1 text-xs text-slate-400 max-w-sm mx-auto">Las áreas son opcionales: puedes continuar y agregarlas después. Sirven para definir gerentes de área y delegar responsabilidades como autorizar retardos o permisos de empleados.</p>
     </div>
 
     <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">

@@ -28,7 +28,7 @@ class StripeWebhookController extends CashierWebhookController
         $response = parent::handleCustomerSubscriptionCreated($payload);
 
         $this->syncCompanyPlan($payload);
-
+ 
         return $response;
     }
 

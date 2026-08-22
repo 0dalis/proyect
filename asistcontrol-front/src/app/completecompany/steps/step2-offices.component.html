@@ -17,6 +17,13 @@
       <p class="text-xs text-slate-500">{{ overLimitMessage }}</p>
     </div>
 
+    <div *ngIf="officeLimit !== null && availableOffices !== null && availableOffices > 0" class="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center gap-2">
+      <i class="bi bi-diagram-3 text-orange-400"></i>
+      <p class="text-xs text-orange-700">
+        Tu plan permite hasta <b>{{ officeLimit }}</b> oficina{{ officeLimit === 1 ? '' : 's' }}. Te quedan <b>{{ availableOffices }}</b> disponible{{ availableOffices === 1 ? '' : 's' }}.
+      </p>
+    </div>
+
     <div *ngIf="offices.length > 0" class="mb-4">
       <div class="table-container">
         <table>
@@ -86,6 +93,9 @@
         <p class="mt-3 text-xs text-slate-500">
           <i class="bi bi-hand-index mr-1"></i> Haz clic en el estado donde se ubicará tu oficina.
         </p>
+        <button type="button" (click)="openInternationalFlow()" class="mt-4 w-full btn-secondary">
+          <i class="bi bi-globe-americas text-sm"></i> Mi oficina está en otro país
+        </button>
         <div class="mt-4 flex gap-2">
           <button type="button" (click)="cancelForm()" class="btn-secondary">Volver</button>
         </div>
@@ -133,8 +143,42 @@
           <div>
             <p class="text-sm text-slate-500">Ubicación de la oficina</p>
             <p class="text-base font-bold text-slate-800">
-              {{ selectedMunicipio ? selectedMunicipio.municipio : (editingId ? 'Oficina existente' : '—') }}
+              <ng-container *ngIf="selectedMunicipio">
+                {{ selectedMunicipio.municipio }}
+              </ng-container>
+              <ng-container *ngIf="!selectedMunicipio && editingId">
+                Oficina existente
+              </ng-container>
+              <ng-container *ngIf="!selectedMunicipio && !editingId && isInternational">
+                {{ userCountry ? 'Otro país — ' + userCountry : 'Otro país' }}
+              </ng-container>
             </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 mb-3">
+          <div>
+            <label class="form-label">Nombre de la oficina</label>
+            <input
+              [(ngModel)]="form.name"
+              name="name"
+              type="text"
+              required
+              placeholder="Ej: Sucursal Centro"
+              class="form-input"
+              [ngClass]="{ 'border-red-400': errors.name }">
+            <p *ngIf="errors.name" class="mt-1 text-[11px] text-red-500">{{ errors.name }}</p>
+          </div>
+          <div>
+            <label class="form-label">Código <span class="text-slate-400">(opcional)</span></label>
+            <input
+              [(ngModel)]="form.code"
+              name="code"
+              type="text"
+              placeholder="Ej: CDMX-01"
+              class="form-input"
+              [ngClass]="{ 'border-red-400': errors.code }">
+            <p *ngIf="errors.code" class="mt-1 text-[11px] text-red-500">{{ errors.code }}</p>
           </div>
         </div>
 
@@ -172,6 +216,10 @@
             <p class="font-mono text-xs text-slate-700">
               {{ form.latitude }}, {{ form.longitude }}
             </p>
+            <p class="text-[10px] text-slate-400 mt-1">
+              <i class="bi bi-clock mr-1"></i> Zona horaria: {{ form.timezone }}
+            </p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Se detecta desde la ubicación del pin</p>
           </div>
           <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
             <p class="text-[10px] uppercase tracking-wide text-orange-400 mb-1">Radio de asistencia</p>

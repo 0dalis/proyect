@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CompanySetupService } from '../../services/public/company-setup.service';
+import { CompleteProfileService } from '../../services/public/completeprofile.services';
 
 import Toastify from 'toastify-js';
 
@@ -23,7 +23,7 @@ export class Step1ProfileComponent implements OnInit {
   isSubmitting = false;
   errors: any = {};
 
-  constructor(private setupService: CompanySetupService) {}
+  constructor(private completeProfileService: CompleteProfileService) {}
 
   ngOnInit(): void {
     this.name = this.company.name || '';
@@ -34,7 +34,7 @@ export class Step1ProfileComponent implements OnInit {
     this.isSubmitting = true;
     this.errors = {};
 
-    this.setupService.updateProfile({ name: this.name }).subscribe({
+    this.completeProfileService.updateProfile({ name: this.name }).subscribe({
       next: (res: any) => {
         this.updated.emit(res.company);
         this.showSuccess('Perfil de empresa actualizado.');

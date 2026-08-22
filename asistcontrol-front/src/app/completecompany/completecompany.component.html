@@ -72,18 +72,10 @@
             <app-step4-employees
               *ngIf="currentStep === 4"
               [limits]="limits"
-              (back)="goToStep(3)">
+              [completing]="isCompleting"
+              (back)="goToStep(3)"
+              (finish)="completeSetup()">
             </app-step4-employees>
-          </div>
-
-          <div *ngIf="currentStep === 4" class="mt-6 text-center">
-            <button
-              (click)="completeSetup()"
-              [disabled]="isCompleting"
-              class="px-8 py-3 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-500 shadow-lg shadow-green-500/30 transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60">
-              <i class="bi bi-check2-circle mr-2"></i>
-              {{ isCompleting ? 'Finalizando...' : 'Finalizar configuración y activar empresa' }}
-            </button>
           </div>
         </ng-container>
 

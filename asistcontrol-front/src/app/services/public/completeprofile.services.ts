@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class CompanySetupService {
+export class CompleteProfileService {
 
   private API_URL = environment.apiUrl;
   private BASE = `${this.API_URL}/web/company-setup`;
@@ -18,6 +18,10 @@ export class CompanySetupService {
 
   getLimits(): Observable<any> {
     return this.http.get(`${this.BASE}/limits`, this.httpOptions);
+  }
+
+  getOfficeLimit(): Observable<any> {
+    return this.http.get(`${this.BASE}/office-limit`, this.httpOptions);
   }
 
   updateProfile(data: any): Observable<any> {
@@ -58,6 +62,10 @@ export class CompanySetupService {
 
   getEmployees(): Observable<any> {
     return this.http.get(`${this.BASE}/employees`, this.httpOptions);
+  }
+
+  generateEmployeeCode(): Observable<any> {
+    return this.http.post(`${this.BASE}/employees/generate-code`, {}, this.httpOptions);
   }
 
   createEmployee(data: any): Observable<any> {

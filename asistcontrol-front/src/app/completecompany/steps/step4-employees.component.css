@@ -1,1 +1,39 @@
 .step-container { padding: 0; }
+
+.tooltip-bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: max-content;
+  max-width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  z-index: 50;
+  text-align: center;
+}
+
+.tooltip-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1e293b;
+}
+
+.group:hover .tooltip-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}

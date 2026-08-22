@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CompanySetupService } from '../services/public/company-setup.service';
+import { CompleteProfileService } from '../services/public/completeprofile.services';
 import { PublicServicesService } from '../services/public/public-services.service';
 import { Step1ProfileComponent } from './steps/step1-profile.component';
 import { Step2OfficesComponent } from './steps/step2-offices.component';
@@ -39,7 +39,7 @@ export class CompletecompanyComponent implements OnInit {
   ];
 
   constructor(
-    private setupService: CompanySetupService,
+    private completeProfileService: CompleteProfileService,
     private publicService: PublicServicesService,
     private router: Router
   ) {}
@@ -50,7 +50,7 @@ export class CompletecompanyComponent implements OnInit {
 
   private loadStatus(): void {
     this.isLoading = true;
-    this.setupService.getStatus().subscribe({
+    this.completeProfileService.getStatus().subscribe({
       next: (res: any) => {
         this.company = res.company;
         this.currentStep = Math.min(res.setup_step, 4);
@@ -62,7 +62,7 @@ export class CompletecompanyComponent implements OnInit {
       }
     });
 
-    this.setupService.getLimits().subscribe({
+    this.completeProfileService.getLimits().subscribe({
       next: (res: any) => {
         this.limits = res;
       },
@@ -73,14 +73,14 @@ export class CompletecompanyComponent implements OnInit {
   goToStep(step: number): void {
     if (step < 1 || step > 4 || step === this.currentStep) return;
     if (step > this.currentStep) {
-      this.setupService.nextStep(this.currentStep).subscribe({
+      this.completeProfileService.nextStep(this.currentStep).subscribe({
         next: (res: any) => {
           this.currentStep = res.setup_step;
         },
         error: () => this.showError('Error al avanzar de paso.')
       });
     } else {
-      this.setupService.previousStep(this.currentStep).subscribe({
+      this.completeProfileService.previousStep(this.currentStep).subscribe({
         next: (res: any) => {
           this.currentStep = res.setup_step;
         },
@@ -96,7 +96,7 @@ export class CompletecompanyComponent implements OnInit {
 
   completeSetup(): void {
     this.isCompleting = true;
-    this.setupService.completeSetup().subscribe({
+    this.completeProfileService.completeSetup().subscribe({
       next: (res: any) => {
         localStorage.removeItem('company_inactive');
         this.showSuccess(res.message);

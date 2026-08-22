@@ -19,7 +19,7 @@
     <div class="flex flex-col justify-between flex-1 overflow-y-auto overflow-x-hidden px-3 py-4">
         <nav class="space-y-1">
             <div class="group">
-                <a routerLink="/welcome/dashboard"
+                <a routerLink="/asistcontrol/dashboard"
                    routerLinkActive="bg-primary-light/10 text-primary-medium"
                    class="flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                     <i class="bi bi-house-door text-base min-w-[24px] text-center"></i>
@@ -43,7 +43,7 @@
                 </button>
 
                 <div [class.submenu-abierto]="gestionExpanded && isSidebarHovered"
-                     style="--total: 3;"
+                     style="--total: 4;"
                      class="submenu-contenedor mt-1 ml-4 flex flex-col">
                     <a routerLink="/welcome/users" style="--i: 0;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                         <i class="bi bi-people text-sm min-w-[20px] text-center"></i>
@@ -56,6 +56,10 @@
                     <a routerLink="/welcome/permissions" style="--i: 2;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                         <i class="bi bi-person-badge text-sm min-w-[20px] text-center"></i>
                         <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Gerentes</span>
+                    </a>
+                    <a routerLink="/asistcontrol/shifts" style="--i: 3;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-calendar-clock text-sm min-w-[20px] text-center"></i>
+                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Horarios</span>
                     </a>
                 </div>
             </div>

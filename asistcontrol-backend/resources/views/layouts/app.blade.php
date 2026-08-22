@@ -184,6 +184,54 @@
                 hideBar: hideBar
             };
         })();
+
+        // ===== Cierre de sesión por inactividad =====
+        (function() {
+            var TIMEOUT = {{ (int) config('session.lifetime', 60) }} * 60 * 1000;
+            var logoutTimer = null;
+            var activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+
+            function submitLogout() {
+                var csrf = document.querySelector('meta[name="csrf-token"]');
+                var token = csrf ? csrf.getAttribute('content') : '';
+                fetch('{{ route('logout') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                }).finally(function () {
+                    window.location.href = '{{ route('login') }}';
+                });
+            }
+
+            function onInactivity() {
+                Swal.fire({
+                    title: 'Sesión expirada',
+                    text: 'Su sesión ha expirado por inactividad. Por favor, inicie sesión nuevamente.',
+                    icon: 'warning',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                }).then(function () {
+                    submitLogout();
+                });
+            }
+
+            function resetTimer() {
+                clearTimeout(logoutTimer);
+                logoutTimer = setTimeout(onInactivity, TIMEOUT);
+            }
+
+            activityEvents.forEach(function (evt) {
+                document.addEventListener(evt, resetTimer);
+            });
+
+            resetTimer();
+        })();
         </script>
     </body>
 </html>

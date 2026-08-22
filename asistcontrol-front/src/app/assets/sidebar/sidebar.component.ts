@@ -44,6 +44,7 @@ export class SidebarComponent {
     this.inactivity.stopWatching();
     localStorage.removeItem('is_logged_in');
     localStorage.removeItem('company_inactive');
+    localStorage.removeItem('last_activity');
     this.auth.logout().subscribe();
   }
 }

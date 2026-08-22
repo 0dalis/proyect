@@ -79,6 +79,7 @@ export class LoginComponent {
       next: (response: any) => {
 
         localStorage.setItem('is_logged_in', 'true');
+        localStorage.setItem('last_activity', String(Date.now()));
 
         const fullName =
           `${response.user.first_name} ${response.user.last_name}`;

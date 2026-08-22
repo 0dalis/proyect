@@ -40,6 +40,7 @@ class RolesAndAdminSeeder extends Seeder{
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
         Role::firstOrCreate(['name' => 'owner']);
         Role::firstOrCreate(['name' => 'empleado']);
+        Role::firstOrCreate(['name' => 'employee']);
 
         // 4. Crear el Super Admin (AÑADIDO EL PIN)
         $user = User::updateOrCreate(

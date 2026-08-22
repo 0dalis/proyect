@@ -39,6 +39,8 @@ class PublicController extends Controller{
 
             $request->session()->regenerate();
 
+            $request->session()->put('last_activity_time', time());
+
             Cookie::queue('user_id', $user->id, 120, null, null, false, false, false, false);
 
             $employee = $user->employee;

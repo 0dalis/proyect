@@ -26,6 +26,7 @@
               <th>Código</th>
               <th>Oficina</th>
               <th>Área</th>
+              <th>Gerente</th>
               <th>App</th>
               <th></th>
             </tr>
@@ -37,6 +38,12 @@
               <td class="font-mono text-[10px]">{{ emp.employee_code }}</td>
               <td>{{ emp.office?.name || '—' }}</td>
               <td>{{ emp.area?.name || '—' }}</td>
+              <td>
+                <span *ngIf="emp.is_area_manager" class="badge badge-warning">
+                  <i class="bi bi-person-badge mr-1"></i> Gerente
+                </span>
+                <span *ngIf="!emp.is_area_manager" class="text-slate-300">—</span>
+              </td>
               <td>
                 <span class="badge" [ngClass]="emp.user_id ? 'badge-success' : 'badge-slate'">
                   {{ emp.user_id ? 'App' : 'Manual' }}
@@ -65,76 +72,129 @@
       <button (click)="back.emit()" class="btn-secondary">
         <i class="bi bi-arrow-left text-sm"></i> Anterior
       </button>
-      <button (click)="openCreate()" [disabled]="!canCreate" class="btn-primary disabled:opacity-40 disabled:cursor-not-allowed">
-        <i class="bi bi-plus text-sm"></i> Agregar empleado
-      </button>
+      <div class="flex gap-2">
+        <button *ngIf="employees.length > 0" (click)="finish.emit()" [disabled]="completing" class="btn-primary">
+          <i *ngIf="!completing" class="bi bi-check2-circle text-sm"></i>
+          {{ completing ? 'Finalizando...' : 'Finalizar configuración' }}
+        </button>
+        <button (click)="openCreate()" [disabled]="!canCreate" class="btn-primary disabled:opacity-40 disabled:cursor-not-allowed">
+          <i class="bi bi-plus text-sm"></i> Agregar empleado
+        </button>
+      </div>
     </div>
   </ng-container>
 
   <ng-container *ngIf="showForm">
-    <form (ngSubmit)="submitForm()" class="max-w-lg">
-      <h4 class="text-sm font-semibold text-slate-700 mb-4">
-        {{ editingId ? 'Editar empleado' : 'Nuevo empleado' }}
-      </h4>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="form-label">Nombre *</label>
-          <input [(ngModel)]="form.first_name" name="first_name" type="text" required placeholder="Ej: Juan" class="form-input" [ngClass]="{ 'border-red-400': errors.first_name }">
-          <p *ngIf="errors.first_name" class="form-error">{{ errors.first_name[0] }}</p>
+    <form (ngSubmit)="submitForm()" class="max-w-2xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="bi bi-person-plus text-orange-500 text-lg"></i>
+          </span>
+          <div>
+            <h4 class="text-base font-bold text-slate-800">{{ editingId ? 'Editar empleado' : 'Nuevo empleado' }}</h4>
+            <p class="text-xs text-slate-400">Completa los datos del empleado</p>
+          </div>
         </div>
-        <div>
-          <label class="form-label">Apellido *</label>
-          <input [(ngModel)]="form.last_name" name="last_name" type="text" required placeholder="Ej: Pérez" class="form-input" [ngClass]="{ 'border-red-400': errors.last_name }">
-          <p *ngIf="errors.last_name" class="form-error">{{ errors.last_name[0] }}</p>
-        </div>
-        <div>
-          <label class="form-label">Código de empleado *</label>
-          <input [(ngModel)]="form.employee_code" name="employee_code" type="text" required placeholder="Ej: EMP001" class="form-input" [ngClass]="{ 'border-red-400': errors.employee_code }">
-          <p *ngIf="errors.employee_code" class="form-error">{{ errors.employee_code[0] }}</p>
-        </div>
-        <div>
-          <label class="form-label">Oficina *</label>
-          <select [(ngModel)]="form.office_id" name="office_id" required class="form-input" [ngClass]="{ 'border-red-400': errors.office_id }">
-            <option [ngValue]="null" disabled>Seleccionar...</option>
-            <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
-          </select>
-          <p *ngIf="errors.office_id" class="form-error">{{ errors.office_id[0] }}</p>
-        </div>
-        <div>
-          <label class="form-label">Área *</label>
-          <select [(ngModel)]="form.area_id" name="area_id" required class="form-input" [ngClass]="{ 'border-red-400': errors.area_id }">
-            <option [ngValue]="null" disabled>Seleccionar...</option>
-            <option *ngFor="let a of areas" [ngValue]="a.id">{{ a.name }}</option>
-          </select>
-          <p *ngIf="errors.area_id" class="form-error">{{ errors.area_id[0] }}</p>
+        <span class="text-xs font-medium text-slate-400">Paso 4 de 4</span>
+      </div>
+
+      <div class="bg-slate-50/60 border border-slate-200 rounded-xl p-5">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-4">Datos del empleado</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Nombre *</label>
+            <input [(ngModel)]="form.first_name" name="first_name" type="text" required placeholder="Ej: Juan" class="form-input" [ngClass]="{ 'border-red-400': errors.first_name }">
+            <p *ngIf="errors.first_name" class="form-error">{{ errors.first_name[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Apellido *</label>
+            <input [(ngModel)]="form.last_name" name="last_name" type="text" required placeholder="Ej: Pérez" class="form-input" [ngClass]="{ 'border-red-400': errors.last_name }">
+            <p *ngIf="errors.last_name" class="form-error">{{ errors.last_name[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Código de empleado *</label>
+            <input [(ngModel)]="form.employee_code" name="employee_code" type="text" required readonly placeholder="Se genera automáticamente" class="form-input bg-slate-50 cursor-not-allowed" [ngClass]="{ 'border-red-400': errors.employee_code }">
+            <p *ngIf="errors.employee_code" class="form-error">{{ errors.employee_code[0] }}</p>
+            <p *ngIf="!errors.employee_code" class="text-[11px] text-slate-400 mt-1">Se genera automáticamente y es único por empresa.</p>
+          </div>
+          <div>
+            <label class="form-label">Oficina *</label>
+            <select [(ngModel)]="form.office_id" name="office_id" required class="form-input" [ngClass]="{ 'border-red-400': errors.office_id }">
+              <option [ngValue]="null" disabled>Seleccionar...</option>
+              <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+            </select>
+            <p *ngIf="errors.office_id" class="form-error">{{ errors.office_id[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Área {{ hasAreas ? '*' : '(opcional)' }}</label>
+            <select [(ngModel)]="form.area_id" name="area_id" [required]="hasAreas" class="form-input" [ngClass]="{ 'border-red-400': errors.area_id }">
+              <option [ngValue]="null">Sin área</option>
+              <option *ngFor="let a of areas" [ngValue]="a.id">{{ a.name }}</option>
+            </select>
+            <p *ngIf="errors.area_id" class="form-error">{{ errors.area_id[0] }}</p>
+          </div>
         </div>
       </div>
 
-      <div class="mt-5 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-        <label class="flex items-center gap-3 cursor-pointer">
+      <div class="mt-5 bg-slate-50/60 border border-slate-200 rounded-xl p-5">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-4">Accesos</p>
+        <div class="flex items-center gap-3">
           <input type="checkbox" [(ngModel)]="form.has_app_access" name="has_app_access"
             class="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-400">
-          <span class="text-sm font-medium text-slate-700">Acceso a la aplicación móvil</span>
-        </label>
-        <p class="text-xs text-slate-400 mt-1 ml-7">Actívalo si el empleado usará la app para registrar asistencia.</p>
+          <div>
+            <p class="text-sm font-medium text-slate-700">Acceso a la aplicación móvil</p>
+            <p class="text-xs text-slate-400 mt-0.5">Actívalo si el empleado usará la app para registrar asistencia.</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="canBeAreaManager" class="mt-4 bg-slate-50/60 border border-slate-200 rounded-xl p-5">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" [(ngModel)]="form.is_area_manager" name="is_area_manager"
+            class="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-400">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-slate-700">
+              Asignar como gerente del área <span class="text-orange-600 font-semibold">{{ selectedAreaName }}</span>
+            </span>
+            <div class="relative group inline-flex">
+              <i class="bi bi-info-circle text-slate-400 hover:text-orange-500 transition-colors cursor-help"></i>
+              <span class="tooltip-bubble">Un área solo puede tener un gerente.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="form.area_id && selectedAreaHasManager" class="mt-4 bg-slate-50/60 border border-slate-200 rounded-xl p-4">
+        <p class="text-xs text-slate-500 flex items-start gap-2">
+          <i class="bi bi-info-circle text-slate-400 mt-0.5"></i>
+          El área <strong>{{ selectedAreaName }}</strong> ya tiene un gerente asignado.
+        </p>
+      </div>
+
+      <div *ngIf="!form.area_id && hasAreas" class="mt-4 bg-slate-50/60 border border-slate-200 rounded-xl p-4">
+        <p class="text-xs text-slate-400 flex items-start gap-2">
+          <i class="bi bi-info-circle text-slate-400 mt-0.5"></i>
+          Selecciona un área para poder asignar un gerente de área.
+        </p>
       </div>
 
       <ng-container *ngIf="form.has_app_access">
-        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+        <div class="mt-5 bg-slate-50/60 border border-slate-200 rounded-xl p-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-4">Credenciales de acceso</p>
           <div>
             <label class="form-label">Email *</label>
-            <input [(ngModel)]="form.email" name="email" type="email" placeholder="empleado@empresa.com" class="form-input" [ngClass]="{ 'border-red-400': errors.email }">
+            <input [(ngModel)]="form.email" name="email" type="email" required placeholder="empleado@empresa.com" class="form-input" [ngClass]="{ 'border-red-400': errors.email }">
             <p *ngIf="errors.email" class="form-error">{{ errors.email[0] }}</p>
           </div>
-          <div>
-            <label class="form-label">{{ editingId ? 'Nueva contraseña' : 'Contraseña *' }}</label>
-            <input [(ngModel)]="form.password" name="password" type="password" placeholder="{{ editingId ? '•••••••• (dejar vacío para no cambiar)' : 'Mínimo 8 caracteres' }}" class="form-input" [ngClass]="{ 'border-red-400': errors.password }">
-            <p *ngIf="errors.password" class="form-error">{{ errors.password[0] }}</p>
-          </div>
+          <p class="text-xs text-slate-400 mt-4 flex items-start gap-2">
+            <i class="bi bi-info-circle text-slate-400 mt-0.5"></i>
+            La contraseña se generará automáticamente y se enviará por correo al empleado al finalizar la configuración.
+          </p>
         </div>
       </ng-container>
 
-      <div class="flex gap-2 mt-6">
+      <div class="flex justify-end gap-2 mt-6">
         <button type="submit" [disabled]="isSubmitting" class="btn-primary">
           <i *ngIf="!isSubmitting" class="bi bi-check2 text-sm"></i>
           {{ isSubmitting ? 'Guardando...' : 'Guardar' }}

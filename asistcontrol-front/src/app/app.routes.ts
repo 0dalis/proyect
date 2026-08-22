@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { DashboardComponent } from './system/dashboard/dashboard.component';
 import { View1Component } from './system/dashboard/view1/view1.component';
+import { ShiftsComponent } from './system/shifts/shifts.component';
 import { CompletecompanyComponent } from './completecompany/completecompany.component';
 import { authGuard } from './middleware/auth.guard';
 import { redirectIfAuthGuard } from './guards/redirect-if-auth.guard';
@@ -17,6 +18,7 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: 'dashboard', component: View1Component },
+            { path: 'shifts', component: ShiftsComponent },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     }

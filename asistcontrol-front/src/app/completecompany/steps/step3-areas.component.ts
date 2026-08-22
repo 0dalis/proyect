@@ -1,9 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CompanySetupService } from '../../services/public/company-setup.service';
+import { CompleteProfileService } from '../../services/public/completeprofile.services';
 
 import Toastify from 'toastify-js';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-step3-areas',
@@ -26,7 +27,7 @@ export class Step3AreasComponent implements OnInit {
   isSubmitting = false;
   errors: any = {};
 
-  constructor(private setupService: CompanySetupService) {}
+  constructor(private completeProfileService: CompleteProfileService) {}
 
   ngOnInit(): void {
     this.loadAreas();
@@ -34,7 +35,7 @@ export class Step3AreasComponent implements OnInit {
 
   loadAreas(): void {
     this.isLoading = true;
-    this.setupService.getAreas().subscribe({
+    this.completeProfileService.getAreas().subscribe({
       next: (res: any) => {
         this.areas = res.areas;
         this.isLoading = false;
@@ -71,8 +72,8 @@ export class Step3AreasComponent implements OnInit {
     this.errors = {};
 
     const request = this.editingId
-      ? this.setupService.updateArea(this.editingId, { name: this.formName })
-      : this.setupService.createArea({ name: this.formName });
+      ? this.completeProfileService.updateArea(this.editingId, { name: this.formName })
+      : this.completeProfileService.createArea({ name: this.formName });
 
     request.subscribe({
       next: () => {
@@ -93,7 +94,7 @@ export class Step3AreasComponent implements OnInit {
   deleteArea(area: any): void {
     if (!confirm(`¿Eliminar el área "${area.name}"?`)) return;
 
-    this.setupService.deleteArea(area.id).subscribe({
+    this.completeProfileService.deleteArea(area.id).subscribe({
       next: () => {
         this.loadAreas();
         this.showSuccess('Área eliminada.');
@@ -106,7 +107,22 @@ export class Step3AreasComponent implements OnInit {
 
   continue(): void {
     if (this.areas.length === 0) {
-      this.showError('Debes crear al menos un área.');
+      Swal.fire({
+        title: '¿Continuar sin áreas?',
+        html: 'Las áreas son <strong>opcionales</strong> y podrás agregarlas más adelante.<br><br>Te permiten definir <strong>gerentes de área</strong>, a quienes puedes delegar responsabilidades como autorizar <strong>retardos</strong> o <strong>permisos</strong> de empleados.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#64748b',
+        reverseButtons: true,
+        focusCancel: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.next.emit();
+        }
+      });
       return;
     }
     this.next.emit();

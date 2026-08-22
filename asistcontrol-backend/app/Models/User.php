@@ -16,6 +16,7 @@ class User extends Authenticatable
         'company_id',
         'email',
         'password',
+        'pending_password',
         'is_active',
         'device_token',
         'activation_token',

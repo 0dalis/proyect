@@ -10,6 +10,8 @@ class Employee extends Model{
         'company_id',
         'office_id',
         'area_id',
+        'shift_id',
+        'is_area_manager', // TRUE: gerente del área a la que pertenece (area_id)
         'user_id',       // NULLABLE: Solo si tiene cuenta en el panel web/app
         'employee_code', // Código para el kiosco o QR
         'first_name',
@@ -24,6 +26,7 @@ class Employee extends Model{
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_area_manager' => 'boolean',
     ];
 
     /* --------------------------------------------------------------------------
@@ -57,14 +60,17 @@ class Employee extends Model{
         return $this->belongsTo(Area::class);
     }
 
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
     /* --------------------------------------------------------------------------
     | Mutators
     | -------------------------------------------------------------------------- */
     public function setPinAttribute($value)
     {
-        if (!empty($value)) {
-            $this->attributes['pin'] = Hash::make($value);
-        }
+        $this->attributes['pin'] = empty($value) ? '' : Hash::make($value);
     }
 
     /* --------------------------------------------------------------------------
