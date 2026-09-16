@@ -7,6 +7,7 @@ import { Step1ProfileComponent } from './steps/step1-profile.component';
 import { Step2OfficesComponent } from './steps/step2-offices.component';
 import { Step3AreasComponent } from './steps/step3-areas.component';
 import { Step4EmployeesComponent } from './steps/step4-employees.component';
+import { SetupMenuComponent } from './components/setup-menu/setup-menu.component';
 
 import Toastify from 'toastify-js';
 
@@ -19,6 +20,7 @@ import Toastify from 'toastify-js';
     Step2OfficesComponent,
     Step3AreasComponent,
     Step4EmployeesComponent,
+    SetupMenuComponent,
   ],
   templateUrl: './completecompany.component.html',
   styleUrl: './completecompany.component.css'

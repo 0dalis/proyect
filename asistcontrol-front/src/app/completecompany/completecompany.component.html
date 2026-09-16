@@ -4,23 +4,7 @@
     <div class="fixed inset-0 bg-grid-pattern pointer-events-none"></div>
 
     <div class="relative z-10 flex min-h-screen flex-col w-full">
-      <header class="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-700 rounded-lg flex items-center justify-center">
-            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-            </svg>
-          </div>
-          <span class="text-lg font-bold text-slate-800">
-            Asist<span class="text-orange-600">Control</span>
-          </span>
-          <span class="text-xs text-slate-400 ml-2">· Configuración inicial</span>
-        </div>
-        <button (click)="onLogout()"
-          class="text-xs text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1">
-          <i class="bi bi-box-arrow-right"></i> Salir
-        </button>
-      </header>
+      <app-setup-menu (logout)="onLogout()"></app-setup-menu>
 
       <div class="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
         <div class="flex items-center justify-center mb-8">
@@ -31,22 +15,22 @@
                 (click)="goToStep(step.num)"
                 class="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-200"
                 [ngClass]="{
-                  'bg-orange-600 text-white shadow-md shadow-orange-500/20': step.num === currentStep,
-                  'bg-green-100 text-green-700 cursor-pointer hover:bg-green-200': step.num < currentStep,
-                  'bg-slate-100 text-slate-400 cursor-not-allowed': step.num > currentStep
+                  'bg-primary-medium text-white shadow-md shadow-primary-medium/20': step.num === currentStep,
+                  'bg-success-green/15 text-success-green cursor-pointer hover:bg-success-green/25': step.num < currentStep,
+                  'bg-black/5 text-text-body/60 cursor-not-allowed': step.num > currentStep
                 }">
                 <i *ngIf="step.num < currentStep" class="bi bi-check-circle text-sm"></i>
                 <i *ngIf="step.num === currentStep" [class]="step.icon + ' text-sm'"></i>
-                <span *ngIf="step.num > currentStep" class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">{{ step.num }}</span>
+                <span *ngIf="step.num > currentStep" class="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center text-[10px] font-bold">{{ step.num }}</span>
                 {{ step.label }}
               </button>
-              <span *ngIf="i < steps.length - 1" class="w-8 h-px bg-slate-300"></span>
+              <span *ngIf="i < steps.length - 1" class="w-8 h-px bg-black/10 dark:bg-white/15"></span>
             </ng-container>
           </div>
         </div>
 
         <ng-container *ngIf="!isLoading">
-          <div class="bg-white border border-slate-200/80 rounded-2xl shadow-lg shadow-slate-200/70 p-6">
+          <div class="bg-surface border border-black/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 p-6">
             <app-step1-profile
               *ngIf="currentStep === 1"
               [company]="company"
@@ -80,7 +64,7 @@
         </ng-container>
 
         <div *ngIf="isLoading" class="flex items-center justify-center py-20">
-          <svg class="animate-spin h-8 w-8 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg class="animate-spin h-8 w-8 text-primary-medium" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
           </svg>

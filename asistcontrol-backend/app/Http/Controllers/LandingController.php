@@ -138,6 +138,10 @@ class LandingController extends Controller{
         return view('legal.terminos');
     }
 
+    public function cookies(){
+        return view('legal.cookies');
+    }
+
     public function sistema(){
         $daysTrial = config('app.days_trial');
         $planes = Plan::where('public', true)->orderBy('precio')->get();

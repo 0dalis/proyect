@@ -4,38 +4,38 @@
 
     <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
       <div class="absolute w-96 h-96 blur-3xl animate-float-1"
-        style="background: radial-gradient(circle, rgba(99,102,241,0.55) 0%, transparent 70%);"></div>
+        style="background: radial-gradient(circle, color-mix(in srgb, var(--color-primary-medium) 55%, transparent) 0%, transparent 70%);"></div>
       <div class="absolute w-80 h-80 blur-3xl animate-float-2"
-        style="background: radial-gradient(circle, rgba(244,114,182,0.45) 0%, transparent 70%);"></div>
+        style="background: radial-gradient(circle, color-mix(in srgb, var(--color-primary-light) 45%, transparent) 0%, transparent 70%);"></div>
       <div class="absolute w-72 h-72 blur-2xl animate-float-3"
-        style="background: radial-gradient(circle, rgba(251,146,60,0.4) 0%, transparent 70%);"></div>
+        style="background: radial-gradient(circle, color-mix(in srgb, var(--color-accent-teal) 40%, transparent) 0%, transparent 70%);"></div>
       <div class="absolute w-64 h-64 blur-2xl animate-float-4"
-        style="background: radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 70%);"></div>
+        style="background: radial-gradient(circle, color-mix(in srgb, var(--color-primary-dark) 40%, transparent) 0%, transparent 70%);"></div>
     </div>
 
     <div class="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 w-full">
       <div class="w-full max-w-md">
         <a href="http://127.0.0.1:5000" target="_blank"
            class="flex items-center justify-center gap-2.5 mb-8 group">
-          <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+          <div class="w-9 h-9 bg-gradient-to-br from-primary-medium to-primary-dark rounded-lg flex items-center justify-center shadow-md shadow-primary-medium/20 group-hover:scale-105 transition-transform">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
             </svg>
           </div>
-          <span class="text-xl font-bold tracking-tight text-slate-800">
-            Asist<span class="text-indigo-600">Control</span>
+          <span class="text-xl font-bold tracking-tight text-text-title">
+            Asist<span class="text-primary-medium">Control</span>
           </span>
         </a>
 
-        <div class="bg-white border border-slate-200/80 rounded-2xl shadow-lg shadow-slate-200/70 p-8">
+        <div class="bg-surface border border-black/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 p-8">
           <div class="text-center mb-6">
-            <h2 class="text-xl font-bold text-slate-800">Iniciar sesión</h2>
-            <p class="text-xs text-slate-500 mt-1">Ingresa a tu panel de administración</p>
+            <h2 class="text-xl font-bold text-text-title">Iniciar sesión</h2>
+            <p class="text-xs text-text-body mt-1">Ingresa a tu panel de administración</p>
           </div>
 
           <form class="space-y-4" (ngSubmit)="onLogin()">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1.5">
+              <label class="block text-xs font-medium text-text-body mb-1.5">
                 Correo electrónico
               </label>
               <input
@@ -48,7 +48,7 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1.5">
+              <label class="block text-xs font-medium text-text-body mb-1.5">
                 Contraseña
               </label>
               <div class="relative">
@@ -62,7 +62,7 @@
                 <button
                   type="button"
                   (click)="showPassword = !showPassword"
-                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-text-body hover:text-text-title transition-colors"
                   tabindex="-1">
                   <i class="bi text-base" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                 </button>
@@ -75,8 +75,8 @@
                 [disabled]="!formValid || isLoading"
                 class="w-full flex justify-center items-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200"
                 [ngClass]="{
-                  'bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-500/30 hover:-translate-y-0.5': formValid && !isLoading,
-                  'bg-slate-400 cursor-not-allowed opacity-60': !formValid || isLoading
+                  'bg-primary-medium hover:bg-primary-dark shadow-md shadow-primary-medium/30 hover:-translate-y-0.5': formValid && !isLoading,
+                  'bg-black/20 cursor-not-allowed opacity-60': !formValid || isLoading
                 }">
                 <span *ngIf="!isLoading" class="flex items-center gap-x-2">
                   <i class="bi bi-box-arrow-in-right text-base"></i>
@@ -96,27 +96,27 @@
 
           <div class="relative my-6">
             <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-slate-200"></div>
+              <div class="w-full border-t border-black/10 dark:border-white/10"></div>
             </div>
             <div class="relative flex justify-center text-xs">
-              <span class="px-3 text-slate-400 bg-white">o también</span>
+              <span class="px-3 text-text-body bg-surface">o también</span>
             </div>
           </div>
 
           <div class="flex flex-col gap-2.5 text-center text-xs">
             <a href="http://127.0.0.1:5000" target="_blank"
-               class="text-slate-500 hover:text-indigo-600 transition-colors">
+               class="text-text-body hover:text-primary-medium transition-colors">
               <i class="bi bi-info-circle mr-1"></i> Conocer más sobre AsistControl
             </a>
             <a href="http://127.0.0.1:5000/acceso#registro" target="_blank"
-               class="inline-flex items-center justify-center gap-1.5 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200">
+               class="inline-flex items-center justify-center gap-1.5 py-2 rounded-lg border border-black/10 dark:border-white/10 text-text-body hover:text-primary-medium hover:border-primary-medium hover:bg-primary-medium/10 transition-all duration-200">
               <i class="bi bi-person-plus text-sm"></i>
               Crear cuenta — Probar gratis
             </a>
           </div>
         </div>
 
-        <p class="mt-6 text-center text-[10px] text-slate-400">
+        <p class="mt-6 text-center text-[10px] text-text-body">
           &copy; {{ currentYear }} AsistControl · JALY SYSTEMS
         </p>
       </div>

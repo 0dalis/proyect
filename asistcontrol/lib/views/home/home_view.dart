@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/session_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../services/push_notification_service.dart';
 import 'tabs/home_tab.dart';
 import 'tabs/requests_tab.dart';
 import 'tabs/history_tab.dart';
@@ -41,6 +42,15 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     Icons.notifications_outlined,
     Icons.person_outlined,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final session = Provider.of<SessionProvider>(context, listen: false);
+      PushNotificationService.init(session.token);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

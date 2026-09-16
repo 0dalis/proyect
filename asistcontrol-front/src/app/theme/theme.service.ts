@@ -1,198 +1,146 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { AppTheme } from './theme.types';
+import { AppTheme, ThemeMode, ThemePalette, ThemePreferences } from './theme.types';
+import { getTheme } from './palettes';
+import { DEFAULT_FONT, getFont } from './fonts';
 
-import { DefaultTheme } from './themes/default.theme';
-import { DarkTheme } from './themes/dark.theme';
-
-type ThemeMode = 'default' | 'dark';
+const PREFS_COOKIE = 'ac_prefs';
+const PREFS_STORAGE = 'ac_prefs';
+const COOKIE_DAYS = 365;
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class ThemeService {
 
-    private currentTheme: AppTheme = DefaultTheme;
+  private currentTheme: AppTheme = getTheme('indigo', 'light');
 
-    private API_URL = 'http://127.0.0.1:8000/api';
+  constructor() {
+    this.ensurePreferences();
+  }
 
-    constructor(private http: HttpClient) {
-        this.ensureThemeMode();
+  // ---------- Preferencias ----------
+
+  private defaults(): ThemePreferences {
+    return { palette: 'indigo', mode: 'light', font: DEFAULT_FONT };
+  }
+
+  private readRaw(): Partial<ThemePreferences> {
+    const raw = this.readCookie(PREFS_COOKIE) ?? localStorage.getItem(PREFS_STORAGE);
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw) as Partial<ThemePreferences>;
+    } catch {
+      return {};
+    }
+  }
+
+  getPreferences(): ThemePreferences {
+    const raw = this.readRaw();
+    const defaults = this.defaults();
+    return {
+      palette: (raw.palette as ThemePalette) ?? defaults.palette,
+      mode: (raw.mode as ThemeMode) ?? defaults.mode,
+      font: raw.font ?? defaults.font,
+    };
+  }
+
+  private savePreferences(prefs: ThemePreferences): void {
+    const value = JSON.stringify(prefs);
+    this.writeCookie(PREFS_COOKIE, value, COOKIE_DAYS);
+    localStorage.setItem(PREFS_STORAGE, value);
+  }
+
+  private ensurePreferences(): void {
+    const prefs = this.getPreferences();
+    this.savePreferences(prefs);
+  }
+
+  getPalette(): ThemePalette {
+    return this.getPreferences().palette;
+  }
+
+  getMode(): ThemeMode {
+    return this.getPreferences().mode;
+  }
+
+  getFontKey(): string {
+    return this.getPreferences().font;
+  }
+
+  // ---------- Setters (cambio en tiempo real) ----------
+
+  setPalette(palette: ThemePalette): void {
+    const prefs = { ...this.getPreferences(), palette };
+    this.savePreferences(prefs);
+    this.applyCurrent();
+  }
+
+  setMode(mode: ThemeMode): void {
+    const prefs = { ...this.getPreferences(), mode };
+    this.savePreferences(prefs);
+    this.applyCurrent();
+  }
+
+  setFont(font: string): void {
+    const prefs = { ...this.getPreferences(), font };
+    this.savePreferences(prefs);
+    this.applyFont(font);
+  }
+
+  toggleMode(): void {
+    this.setMode(this.getMode() === 'dark' ? 'light' : 'dark');
+  }
+
+  // Compatibilidad con la API previa.
+  setThemeMode(mode: string): void {
+    this.setMode(mode === 'dark' ? 'dark' : 'light');
+  }
+
+  applyCurrent(): void {
+    const prefs = this.getPreferences();
+    this.applyTheme(getTheme(prefs.palette, prefs.mode));
+    this.applyFont(prefs.font);
+  }
+
+  applyFont(fontKey: string): void {
+    document.documentElement.style.setProperty('--user-font', getFont(fontKey).fontFamily);
+  }
+
+  // ---------- Aplicación del tema ----------
+
+  applyTheme(theme: AppTheme): void {
+    this.currentTheme = theme;
+
+    Object.keys(theme.colors).forEach((key) => {
+      const cssVarName = `--${this.toKebabCase(key)}`;
+      document.documentElement.style.setProperty(cssVarName, theme.colors[key]);
+    });
+
+    if (theme.fontFamily) {
+      document.documentElement.style.setProperty('--user-font', theme.fontFamily);
     }
 
-    private ensureThemeMode(): void {
-        const savedMode = localStorage.getItem(
-            'theme-mode'
-        ) as ThemeMode | null;
-        if (!savedMode) {
-            localStorage.setItem(
-                'theme-mode',
-                'default'
-            );
-        }
-    }
+    localStorage.setItem('current-theme-name', theme.name);
+  }
 
-    private getThemeMode(): ThemeMode {
+  getCurrentTheme(): AppTheme {
+    return this.currentTheme;
+  }
 
-        const mode = localStorage.getItem(
-            'theme-mode'
-        ) as ThemeMode | null;
+  // ---------- Cookies ----------
 
-        if (
-            mode === 'dark' ||
-            mode === 'default'
-        ) {
-            return mode;
-        }
+  private writeCookie(name: string, value: string, days: number): void {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  }
 
-        return 'default';
-    }
+  private readCookie(name: string): string | null {
+    const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+    return match ? decodeURIComponent(match[3]) : null;
+  }
 
-    private resolveLocalTheme(
-        mode: ThemeMode
-    ): AppTheme {
-
-        switch (mode) {
-
-            case 'dark':
-                return DarkTheme;
-
-            case 'default':
-            default:
-                return DefaultTheme;
-        }
-    }
-
-    initTheme(userData: any): void {
-
-        this.ensureThemeMode();
-
-        if (userData?.theme_personalised) {
-
-            this.loadRemoteTheme();
-
-        } else {
-
-            const mode = this.getThemeMode();
-
-            const theme =
-                this.resolveLocalTheme(mode);
-
-            this.applyTheme(theme);
-        }
-    }
-
-    private loadRemoteTheme(): void {
-
-        const token = localStorage.getItem('token');
-
-        const user = JSON.parse(
-            localStorage.getItem('user') || '{}'
-        );
-
-        const headers = new HttpHeaders({
-            Authorization: `Bearer ${token}`
-        });
-
-        const url =
-            `${this.API_URL}/theme/json?clientId=${user.id}`;
-
-        this.http.get<AppTheme>(
-            url,
-            { headers }
-        ).subscribe({
-
-            next: (theme) => {
-
-                this.applyTheme(theme);
-
-                if (theme.fontUrl) {
-                    this.loadFont(theme.fontUrl);
-                }
-            },
-
-            error: (err) => {
-
-                console.error(
-                    'Error cargando tema personalizado',
-                    err
-                );
-
-                this.applyTheme(DefaultTheme);
-            }
-        });
-    }
-
-    applyTheme(theme: AppTheme): void {
-
-        this.currentTheme = theme;
-
-        const colors = theme.colors;
-
-        Object.keys(colors).forEach((key) => {
-
-            const cssVarName =
-                `--${this.toKebabCase(key)}`;
-
-            const value = colors[key];
-
-            document.documentElement.style.setProperty(
-                cssVarName,
-                value
-            );
-        });
-        if (theme.fontFamily) {
-            document.documentElement.style.setProperty('--user-font', theme.fontFamily);
-        }
-        localStorage.setItem(
-            'current-theme-name',
-            theme.name
-        );
-    }
-
-    setThemeMode(mode: ThemeMode): void {
-
-        localStorage.setItem(
-            'theme-mode',
-            mode
-        );
-
-        const theme =
-            this.resolveLocalTheme(mode);
-
-        this.applyTheme(theme);
-    }
-
-    private toKebabCase(str: string): string {
-
-        return str
-            .replace(
-                /([a-z0-9])([A-Z])/g,
-                '$1-$2'
-            )
-            .toLowerCase();
-    }
-
-    loadFont(fontUrl: string): void {
-
-        const newUserFont = new FontFace(
-            'CustomUserFont',
-            `url(${fontUrl})`
-        );
-
-        newUserFont.load().then((loadedFont) => {
-
-            document.fonts.add(loadedFont);
-
-            document.documentElement.style.setProperty(
-                '--user-font',
-                'CustomUserFont'
-            );
-        });
-    }
-
-    getCurrentTheme(): AppTheme {
-        return this.currentTheme;
-    }
+  private toKebabCase(str: string): string {
+    return str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  }
 }

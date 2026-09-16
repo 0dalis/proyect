@@ -17,6 +17,7 @@ class Shift extends Model
         'start_time',
         'end_time',
         'cross_midnight',
+        'work_days',
         'lunch_start',
         'lunch_end',
         'tolerance_minutes',
@@ -27,11 +28,17 @@ class Shift extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'cross_midnight' => 'boolean',
+        'work_days' => 'array',
         'start_time' => 'datetime:H:i:s',
         'end_time' => 'datetime:H:i:s',
         'lunch_start' => 'datetime:H:i:s',
         'lunch_end' => 'datetime:H:i:s',
     ];
+
+    /**
+     * Días laborables por defecto (Lunes a Viernes).
+     */
+    public const DEFAULT_WORK_DAYS = [1, 2, 3, 4, 5];
 
     /*
     |--------------------------------------------------------------------------
@@ -122,5 +129,48 @@ class Shift extends Model
         $end = Carbon::parse($this->lunch_end);
 
         return $start->diffInMinutes($end);
+    }
+
+    /**
+     * Días laborables del turno (ISO 1-7). Si no están definidos, Lun-Vie.
+     *
+     * @return array<int,int>
+     */
+    public function getWorkDays(): array
+    {
+        $days = $this->work_days;
+
+        if (empty($days) || ! is_array($days)) {
+            return self::DEFAULT_WORK_DAYS;
+        }
+
+        return array_values(array_map('intval', $days));
+    }
+
+    public function isWorkingDay(Carbon $date): bool
+    {
+        return in_array($date->dayOfWeekIso, $this->getWorkDays(), true);
+    }
+
+    /**
+     * Cuenta los días laborables entre dos fechas (inclusive), excluyendo los
+     * festivos indicados (array de fechas 'Y-m-d').
+     *
+     * @param  array<int,string>  $holidays
+     */
+    public function workingDaysBetween(Carbon $start, Carbon $end, array $holidays = []): int
+    {
+        $count = 0;
+        $cursor = $start->copy()->startOfDay();
+        $end = $end->copy()->startOfDay();
+
+        while ($cursor->lte($end)) {
+            if ($this->isWorkingDay($cursor) && ! in_array($cursor->toDateString(), $holidays, true)) {
+                $count++;
+            }
+            $cursor->addDay();
+        }
+
+        return $count;
     }
 }

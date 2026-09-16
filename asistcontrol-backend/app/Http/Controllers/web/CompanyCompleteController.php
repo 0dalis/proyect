@@ -8,10 +8,12 @@ use App\Models\Area;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\Office;
+use App\Models\Shift;
 use App\Models\User;
 use App\Services\PlanLimitsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -112,7 +114,12 @@ class CompanyCompleteController extends Controller
     public function offices(Request $request): JsonResponse
     {
         $company = $this->getCompany($request);
-        $offices = $company->offices()->orderBy('name')->get();
+        $offices = $company->offices()
+            ->with(['shifts' => fn ($q) => $q->orderBy('start_time')])
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($office) => $this->officePayload($office))
+            ->values();
 
         return response()->json(['offices' => $offices]);
     }
@@ -129,7 +136,7 @@ class CompanyCompleteController extends Controller
             ], 422);
         }
 
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), array_merge([
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:50',
             'latitude' => 'required|numeric|between:-90,90',
@@ -137,26 +144,48 @@ class CompanyCompleteController extends Controller
             'radius_meters' => 'required|integer|min:10|max:5000',
             'timezone' => 'nullable|string|max:100',
             'country' => 'nullable|string|max:100',
-        ]);
+        ], $this->shiftValidationRules()));
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $office = $company->offices()->create([
-            'name' => $request->name,
-            'code' => $request->code,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'radius_meters' => $request->radius_meters,
-            'timezone' => $request->timezone ?? 'UTC',
-            'country' => $request->country,
-            'is_active' => true,
-        ]);
+        $office = DB::transaction(function () use ($company, $request) {
+            $office = $company->offices()->create([
+                'name' => $request->name,
+                'code' => $request->code,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'radius_meters' => $request->radius_meters,
+                'timezone' => $request->timezone ?? 'UTC',
+                'country' => $request->country,
+                'is_active' => true,
+            ]);
+
+            foreach ($request->input('shifts', []) as $shiftData) {
+                $office->shifts()->create([
+                    'name' => $shiftData['name'],
+                    'start_time' => $shiftData['start_time'],
+                    'end_time' => $shiftData['end_time'],
+                    'cross_midnight' => $shiftData['cross_midnight'] ?? false,
+                    'work_days' => $shiftData['work_days'] ?? \App\Models\Shift::DEFAULT_WORK_DAYS,
+                    'lunch_start' => $shiftData['lunch_start'] ?? null,
+                    'lunch_end' => $shiftData['lunch_end'] ?? null,
+                    'tolerance_minutes' => $shiftData['tolerance_minutes'] ?? 10,
+                    'early_leave_minutes' => $shiftData['early_leave_minutes'] ?? 0,
+                    'work_hours_expected' => $shiftData['work_hours_expected'] ?? null,
+                    'is_active' => $shiftData['is_active'] ?? true,
+                ]);
+            }
+
+            return $office;
+        });
+
+        $office->load(['shifts' => fn ($q) => $q->orderBy('start_time')]);
 
         return response()->json([
             'message' => 'Oficina creada correctamente.',
-            'office' => $office,
+            'office' => $this->officePayload($office),
         ], 201);
     }
 
@@ -171,7 +200,7 @@ class CompanyCompleteController extends Controller
             ], 422);
         }
 
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), array_merge([
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:50',
             'latitude' => 'required|numeric|between:-90,90',
@@ -180,19 +209,56 @@ class CompanyCompleteController extends Controller
             'timezone' => 'nullable|string|max:100',
             'country' => 'nullable|string|max:100',
             'is_active' => 'boolean',
-        ]);
+        ], $this->shiftValidationRules()));
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $office->update($request->only([
-            'name', 'code', 'latitude', 'longitude', 'radius_meters', 'timezone', 'country', 'is_active',
-        ]));
+        DB::transaction(function () use ($office, $request) {
+            $office->update($request->only([
+                'name', 'code', 'latitude', 'longitude', 'radius_meters', 'timezone', 'country', 'is_active',
+            ]));
+
+            $existingIds = $office->shifts()->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+            $incomingIds = collect($request->input('shifts', []))
+                ->pluck('id')
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->intersect($existingIds)
+                ->all();
+
+            $office->shifts()->whereNotIn('id', $incomingIds)->delete();
+
+            foreach ($request->input('shifts', []) as $shiftData) {
+                $payload = [
+                    'name' => $shiftData['name'],
+                    'start_time' => $shiftData['start_time'],
+                    'end_time' => $shiftData['end_time'],
+                    'cross_midnight' => $shiftData['cross_midnight'] ?? false,
+                    'work_days' => $shiftData['work_days'] ?? \App\Models\Shift::DEFAULT_WORK_DAYS,
+                    'lunch_start' => $shiftData['lunch_start'] ?? null,
+                    'lunch_end' => $shiftData['lunch_end'] ?? null,
+                    'tolerance_minutes' => $shiftData['tolerance_minutes'] ?? 10,
+                    'early_leave_minutes' => $shiftData['early_leave_minutes'] ?? 0,
+                    'work_hours_expected' => $shiftData['work_hours_expected'] ?? null,
+                    'is_active' => $shiftData['is_active'] ?? true,
+                ];
+
+                if (! empty($shiftData['id']) && in_array((int) $shiftData['id'], $existingIds, true)) {
+                    $office->shifts()->where('id', $shiftData['id'])->update($payload);
+                } elseif (empty($shiftData['id'])) {
+                    $office->shifts()->create($payload);
+                }
+            }
+        });
+
+        $office->load(['shifts' => fn ($q) => $q->orderBy('start_time')]);
 
         return response()->json([
             'message' => 'Oficina actualizada correctamente.',
-            'office' => $office,
+            'office' => $this->officePayload($office),
         ]);
     }
 
@@ -216,6 +282,56 @@ class CompanyCompleteController extends Controller
         $office->delete();
 
         return response()->json(['message' => 'Oficina eliminada correctamente.']);
+    }
+
+    private function shiftValidationRules(): array
+    {
+        return [
+            'shifts' => 'required|array|min:1',
+            'shifts.*.id' => 'nullable|integer',
+            'shifts.*.name' => 'required|string|max:255',
+            'shifts.*.start_time' => 'required|date_format:H:i',
+            'shifts.*.end_time' => 'required|date_format:H:i',
+            'shifts.*.cross_midnight' => 'boolean',
+            'shifts.*.work_days' => 'nullable|array',
+            'shifts.*.work_days.*' => 'integer|between:1,7',
+            'shifts.*.lunch_start' => 'nullable|date_format:H:i',
+            'shifts.*.lunch_end' => 'nullable|date_format:H:i',
+            'shifts.*.tolerance_minutes' => 'nullable|integer|min:0|max:120',
+            'shifts.*.early_leave_minutes' => 'nullable|integer|min:0|max:120',
+            'shifts.*.work_hours_expected' => 'nullable|integer|min:0|max:1440',
+            'shifts.*.is_active' => 'boolean',
+        ];
+    }
+
+    private function officePayload(Office $office): array
+    {
+        $data = $office->toArray();
+        $data['shifts'] = $office->shifts
+            ->map(fn ($shift) => $this->shiftPayload($shift))
+            ->values()
+            ->all();
+
+        return $data;
+    }
+
+    private function shiftPayload(Shift $shift): array
+    {
+        return [
+            'id' => $shift->id,
+            'office_id' => $shift->office_id,
+            'name' => $shift->name,
+            'start_time' => $shift->start_time ? Carbon::parse($shift->start_time)->format('H:i') : null,
+            'end_time' => $shift->end_time ? Carbon::parse($shift->end_time)->format('H:i') : null,
+            'cross_midnight' => (bool) $shift->cross_midnight,
+            'work_days' => $shift->getWorkDays(),
+            'lunch_start' => $shift->lunch_start ? Carbon::parse($shift->lunch_start)->format('H:i') : null,
+            'lunch_end' => $shift->lunch_end ? Carbon::parse($shift->lunch_end)->format('H:i') : null,
+            'tolerance_minutes' => (int) $shift->tolerance_minutes,
+            'early_leave_minutes' => (int) $shift->early_leave_minutes,
+            'work_hours_expected' => $shift->work_hours_expected,
+            'is_active' => (bool) $shift->is_active,
+        ];
     }
 
     public function areas(Request $request): JsonResponse

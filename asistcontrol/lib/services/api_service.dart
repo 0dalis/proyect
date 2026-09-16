@@ -34,7 +34,7 @@ class ApiService {
   Future<Map<String, dynamic>> registrarAsistencia(String token, String userId, Map<String, dynamic> data) async {
     try {
       final response = await http.post(
-        Uri.parse("${ApiConstants.baseUrl}/asistencia/registrar"),
+        Uri.parse(ApiConstants.attendance),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -71,12 +71,49 @@ class ApiService {
     }
   }
 
+  // CREDENCIAL DEL EMPLEADO
+  Future<Map<String, dynamic>> getCredential(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.credential),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      );
+      if (response.statusCode == 401) {
+        throw AuthException('Sesión expirada o usuario inactivo');
+      }
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      throw _processError(e);
+    }
+  }
+
+  /// Descarga el PDF de la credencial y devuelve la ruta local del archivo.
+  Future<String> downloadCredentialPdf(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.credentialPdf),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/pdf'},
+      );
+
+      if (response.statusCode != 200) {
+        throw AppException('La credencial no está disponible para descarga.');
+      }
+
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/mi_credencial.pdf');
+      await file.writeAsBytes(response.bodyBytes);
+      return file.path;
+    } catch (e) {
+      throw _processError(e);
+    }
+  }
+
   // --- MÉTODOS AUXILIARES ---
 
   Future<AppConfigModel> getAppConfig(String token, String userId) async {
     try {
       final response = await http.post(
-        Uri.parse("http://10.0.2.2:5000/api/mobile/empresa/fonts"),
+        Uri.parse(ApiConstants.appConfig),
         headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
         body: {'user_id': userId},
       );

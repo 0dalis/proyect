@@ -1,0 +1,247 @@
+<div class="flex flex-col gap-6 animate-fade-in" *ngIf="!loading && employee">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <a routerLink="/asistcontrol/employees" class="btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+      <div>
+        <h1 class="text-2xl font-bold text-text-title">{{ employee.first_name }} {{ employee.last_name }}</h1>
+        <p class="text-sm text-text-body">{{ employee.employee_code }} · {{ employee.office?.name || 'Sin oficina' }}</p>
+      </div>
+    </div>
+    <button (click)="showCredential = true" class="btn-primary"><i class="bi bi-qr-code"></i> Credencial / QR</button>
+  </div>
+
+  <div class="flex flex-wrap gap-2">
+    <button (click)="setTab('resumen')" class="px-4 py-2 rounded-lg text-xs font-semibold" [ngClass]="tab === 'resumen' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'"><i class="bi bi-person"></i> Resumen</button>
+    <button (click)="setTab('calendario')" class="px-4 py-2 rounded-lg text-xs font-semibold" [ngClass]="tab === 'calendario' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'"><i class="bi bi-calendar3"></i> Calendario</button>
+    <button (click)="setTab('asistencia')" class="px-4 py-2 rounded-lg text-xs font-semibold" [ngClass]="tab === 'asistencia' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'"><i class="bi bi-clock-history"></i> Asistencia</button>
+    <button (click)="setTab('vacaciones')" class="px-4 py-2 rounded-lg text-xs font-semibold" [ngClass]="tab === 'vacaciones' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'"><i class="bi bi-suitcase"></i> Vacaciones</button>
+    <button (click)="setTab('prestamos')" class="px-4 py-2 rounded-lg text-xs font-semibold" [ngClass]="tab === 'prestamos' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'"><i class="bi bi-cash-coin"></i> Nómina / Préstamos</button>
+  </div>
+
+  <!-- RESUMEN -->
+  <div *ngIf="tab === 'resumen'" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="dash-card p-5">
+      <h2 class="text-sm font-semibold text-text-title mb-4">Datos laborales y bancarios</h2>
+      <form (ngSubmit)="saveLabor()">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Puesto</label>
+            <input type="text" [(ngModel)]="labor.position" name="position" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Fecha de ingreso</label>
+            <input type="date" [(ngModel)]="labor.hired_at" name="hired_at" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Banco</label>
+            <input type="text" [(ngModel)]="labor.bank_name" name="bank_name" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Cuenta / CLABE</label>
+            <input type="text" [(ngModel)]="labor.bank_account" name="bank_account" class="form-input">
+          </div>
+          <div class="flex items-center gap-4 pt-2 sm:col-span-2">
+            <label class="flex items-center gap-2 text-xs text-text-body">
+              <input type="checkbox" [(ngModel)]="labor.is_area_manager" name="is_area_manager" class="w-4 h-4 rounded"> Gerente de área
+            </label>
+            <label class="flex items-center gap-2 text-xs text-text-body">
+              <input type="checkbox" [(ngModel)]="labor.is_active" name="is_active" class="w-4 h-4 rounded"> Activo
+            </label>
+          </div>
+        </div>
+        <div class="flex justify-end mt-4">
+          <button type="submit" [disabled]="isSubmitting" class="btn-primary">{{ isSubmitting ? 'Guardando...' : 'Guardar datos' }}</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="dash-card p-5">
+      <h2 class="text-sm font-semibold text-text-title mb-4">Compensación</h2>
+      <form (ngSubmit)="saveCompensation()">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Tipo de salario</label>
+            <select [(ngModel)]="compensation.salary_type" name="salary_type" class="form-input">
+              <option value="fixed">Fijo</option>
+              <option value="hourly">Por hora</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Salario base ({{ compensation.currency }})</label>
+            <input type="number" min="0" step="0.01" [(ngModel)]="compensation.base_salary" name="base_salary" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Frecuencia</label>
+            <select [(ngModel)]="compensation.pay_frequency" name="pay_frequency" class="form-input">
+              <option value="weekly">Semanal</option>
+              <option value="biweekly">Catorcenal</option>
+              <option value="monthly">Mensual</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Horas por día</label>
+            <input type="number" min="1" max="24" step="0.5" [(ngModel)]="compensation.daily_hours" name="daily_hours" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Factor horas extra</label>
+            <input type="number" min="1" max="5" step="0.1" [(ngModel)]="compensation.overtime_factor" name="overtime_factor" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Tope horas extra (min)</label>
+            <input type="number" min="0" [(ngModel)]="compensation.overtime_cap_minutes" name="overtime_cap_minutes" placeholder="Sin tope" class="form-input">
+          </div>
+        </div>
+        <div class="flex justify-end mt-4">
+          <button type="submit" [disabled]="isSubmitting" class="btn-primary">{{ isSubmitting ? 'Guardando...' : 'Guardar compensación' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CALENDARIO -->
+  <div *ngIf="tab === 'calendario'" class="dash-card p-5 max-w-2xl">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-semibold text-text-title">Calendario {{ year }}</h2>
+      <button (click)="loadCalendar()" class="btn-secondary"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+    </div>
+    <app-calendar [days]="calendarDays" [holidays]="calendarHolidays" [workDays]="calendarWorkDays"></app-calendar>
+  </div>
+
+  <!-- ASISTENCIA -->
+  <div *ngIf="tab === 'asistencia'" class="dash-card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table-theme">
+        <thead><tr><th>Fecha</th><th>Estado</th><th>Entrada</th><th>Salida</th><th>Horas</th><th>Extra</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let a of attendance">
+            <td>{{ a.date | date: 'dd/MM/yyyy' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-success': a.status === 'present',
+                'badge-warning': a.status === 'late',
+                'badge-danger': a.status === 'absent',
+                'badge-slate': a.status === 'justified'
+              }">{{ a.leave_type === 'vacation' ? 'Vacaciones' : a.status }}</span>
+            </td>
+            <td class="font-mono">{{ timeOf(a, 'check_in') }}</td>
+            <td class="font-mono">{{ timeOf(a, 'check_out') }}</td>
+            <td>{{ (a.worked_minutes / 60) | number: '1.0-1' }} h</td>
+            <td>{{ a.overtime_minutes }} min</td>
+          </tr>
+          <tr *ngIf="attendance.length === 0"><td colspan="6" class="py-8 text-center text-text-body text-xs">Sin registros este año.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VACACIONES -->
+  <div *ngIf="tab === 'vacaciones'" class="flex flex-col gap-4">
+    <div class="grid grid-cols-3 gap-4">
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Días al año</p><p class="text-lg font-bold text-text-title">{{ balance?.days_entitled ?? '—' }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Usados</p><p class="text-lg font-bold text-amber-500">{{ balance?.days_used ?? '—' }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Disponibles</p><p class="text-lg font-bold text-success-green">{{ balance?.days_available ?? '—' }}</p></div>
+    </div>
+    <div class="dash-card overflow-hidden">
+      <div class="px-4 py-3 border-b border-black/10 dark:border-white/10"><h2 class="text-sm font-semibold text-text-title">Solicitudes de vacaciones</h2></div>
+      <div class="overflow-x-auto">
+        <table class="table-theme">
+          <thead><tr><th>Inicio</th><th>Fin</th><th>Días</th><th>Goce</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let r of requests">
+              <td>{{ r.start_date | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ r.end_date ? (r.end_date | date: 'dd/MM/yyyy') : '—' }}</td>
+              <td>{{ r.days ?? '—' }}</td>
+              <td>{{ r.is_paid ? 'Con goce' : 'Sin goce' }}</td>
+              <td><span class="badge" [ngClass]="{
+                'badge-warning': r.status === 'pending',
+                'badge-success': r.status === 'approved',
+                'badge-danger': r.status === 'rejected'
+              }">{{ r.status }}</span></td>
+            </tr>
+            <tr *ngIf="requests.length === 0"><td colspan="5" class="py-8 text-center text-text-body text-xs">Sin solicitudes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- NÓMINA / PRÉSTAMOS -->
+  <div *ngIf="tab === 'prestamos'" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="dash-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-text-title">Conceptos de nómina</h2>
+        <button (click)="saveConcepts()" [disabled]="isSubmitting" class="btn-primary">Guardar</button>
+      </div>
+      <div *ngIf="concepts.length === 0" class="text-xs text-text-body py-4">No hay conceptos configurados en Nómina → Conceptos.</div>
+      <div *ngFor="let c of concepts" class="flex items-center justify-between gap-3 py-2 border-b border-black/5 dark:border-white/10 last:border-b-0">
+        <label class="flex items-center gap-2 text-xs text-text-body flex-1">
+          <input type="checkbox" [checked]="assigned[c.id]?.selected" (change)="toggleConcept(c)" class="w-4 h-4 rounded">
+          <span class="text-text-title">{{ c.name }}</span>
+          <span class="badge" [ngClass]="c.type === 'bonus' ? 'badge-success' : 'badge-danger'">{{ c.type === 'bonus' ? 'Bono' : 'Deducción' }}</span>
+        </label>
+        <input *ngIf="assigned[c.id]?.selected" type="number" min="0" step="0.01"
+          [(ngModel)]="assigned[c.id].override" [name]="'override_' + c.id" placeholder="{{ c.amount }}"
+          class="form-input" style="max-width: 110px;">
+      </div>
+    </div>
+
+    <div class="dash-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-text-title">Préstamos y anticipos</h2>
+        <button (click)="openLoan()" class="btn-secondary"><i class="bi bi-plus-lg"></i> Nuevo</button>
+      </div>
+      <div *ngIf="loans.length === 0" class="text-xs text-text-body py-4">Sin préstamos registrados.</div>
+      <div *ngFor="let l of loans" class="flex items-center justify-between gap-3 py-2 border-b border-black/5 dark:border-white/10 last:border-b-0">
+        <div class="min-w-0">
+          <p class="text-xs font-semibold text-text-title truncate">{{ l.concept }}</p>
+          <p class="text-[10px] text-text-body">
+            {{ l.installment_amount | number: '1.2-2' }} x {{ l.installments }} ({{ l.paid_installments }} pagados)
+            · <span class="badge" [ngClass]="l.status === 'active' ? 'badge-warning' : 'badge-success'">{{ l.status }}</span>
+          </p>
+        </div>
+        <button (click)="removeLoan(l)" class="text-red-500 hover:text-red-700 text-xs"><i class="bi bi-trash"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="text-center py-16 text-text-body">Cargando...</div>
+
+<!-- Modal préstamo -->
+<div *ngIf="showLoanForm" class="fixed inset-0 z-[60] overflow-y-auto" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-neutral-900/60 modal-backdrop" (click)="showLoanForm = false"></div>
+  <div class="flex min-h-full items-center justify-center p-4" (click)="showLoanForm = false">
+    <div class="relative w-full max-w-md bg-surface rounded-2xl shadow-2xl modal-card border border-black/10 dark:border-white/10" (click)="$event.stopPropagation()">
+      <div class="px-6 py-4 border-b border-black/10 dark:border-white/10">
+        <h2 class="text-base font-bold text-text-title">Nuevo préstamo</h2>
+      </div>
+      <form (ngSubmit)="submitLoan()" class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label class="form-label">Concepto *</label>
+            <input type="text" [(ngModel)]="loanForm.concept" name="lconcept" required class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Monto total *</label>
+            <input type="number" min="0.01" step="0.01" [(ngModel)]="loanForm.total_amount" name="lamount" required class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Número de pagos *</label>
+            <input type="number" min="1" max="120" [(ngModel)]="loanForm.installments" name="linstallments" required class="form-input">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="form-label">Fecha de inicio</label>
+            <input type="date" [(ngModel)]="loanForm.start_date" name="lstart" class="form-input">
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-black/10 dark:border-white/10">
+          <button type="button" (click)="showLoanForm = false" class="btn-secondary">Cancelar</button>
+          <button type="submit" [disabled]="isSubmitting" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<app-credential *ngIf="showCredential && employee" [employeeId]="employee.id" (close)="showCredential = false"></app-credential>

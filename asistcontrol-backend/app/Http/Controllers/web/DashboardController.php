@@ -17,12 +17,23 @@ class DashboardController extends Controller
         $company = $request->user()->company;
         $today = now()->toDateString();
 
-        $employees = $this->companyEmployees($company)->get();
+        $employees = $this->companyEmployees($company)->with('shift')->get();
         $totalEmployees = $employees->count();
         $activeEmployees = $employees->where('is_active', true)->count();
+
+        $isHoliday = $company->holidays()->whereDate('date', $today)->exists();
+
         $trackableEmployees = $employees
             ->where('is_active', true)
-            ->filter(fn ($e) => ! is_null($e->user_id));
+            ->filter(fn ($e) => ! is_null($e->user_id))
+            ->filter(function ($e) {
+                // Excluir a quien hoy no trabaja según los días laborables de su turno.
+                return $e->shift ? $e->shift->isWorkingDay(now()) : true;
+            });
+
+        if ($isHoliday) {
+            $trackableEmployees = collect();
+        }
 
         $officesTotal = $company->offices()->count();
         $officesActive = $company->offices()->where('is_active', true)->count();
@@ -97,6 +108,18 @@ class DashboardController extends Controller
 
         $userEmployee = $request->user()->employee;
 
+        $latestPeriod = $company->payrollPeriods()
+            ->whereIn('status', ['calculated', 'closed'])
+            ->orderByDesc('end_date')
+            ->first();
+
+        $payroll = $latestPeriod ? [
+            'period' => $latestPeriod->name,
+            'net' => (float) $latestPeriod->items()->sum('net_amount'),
+            'gross' => (float) $latestPeriod->items()->sum('gross_amount'),
+            'employees' => $latestPeriod->items()->count(),
+        ] : null;
+
         return response()->json([
             'company' => [
                 'id' => $company->id,
@@ -121,12 +144,14 @@ class DashboardController extends Controller
                 'assistance_percent' => $assistancePercent,
                 'punctuality_percent' => $punctualityPercent,
                 'worked_hours_today' => $workedHours,
+                'overtime_minutes_today' => (int) $todayAttendances->sum('overtime_minutes'),
                 'present' => $present,
                 'late' => $late,
                 'absent' => $absent,
                 'justified' => $justified,
                 'expected' => $expectedCount,
             ],
+            'payroll' => $payroll,
             'recent_records' => $recentRecords,
             'attendance_trend' => [
                 'labels' => $trendLabels,

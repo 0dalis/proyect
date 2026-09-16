@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'check.inactivity'   => \App\Http\Middleware\CheckInactivity::class,
             'admin.panel'        => \App\Http\Middleware\EnsureSuperAdminPanel::class,
+            'audit.requests'     => \App\Http\Middleware\AuditRequests::class,
         ]);
 
         $middleware->encryptCookies(except: [

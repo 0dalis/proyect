@@ -62,6 +62,30 @@ class Company extends Model
         return $this->hasMany(Notification::class);
     }
 
+    public function setting() {
+        return $this->hasOne(CompanySetting::class);
+    }
+
+    public function payrollConcepts() {
+        return $this->hasMany(PayrollConcept::class);
+    }
+
+    public function payrollPeriods() {
+        return $this->hasMany(PayrollPeriod::class);
+    }
+
+    public function requests() {
+        return $this->hasMany(Request::class);
+    }
+
+    public function holidays() {
+        return $this->hasMany(CompanyHoliday::class);
+    }
+
+    public function credentials() {
+        return $this->hasMany(EmployeeCredential::class);
+    }
+
     // --- Métodos de Ayuda y Estado ---
 
     /**

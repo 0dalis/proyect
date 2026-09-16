@@ -18,6 +18,10 @@ class Employee extends Model{
         'last_name',
         'pin',           // Hasheado o cifrado para marcaje en kiosco
         'is_active',
+        'bank_name',
+        'bank_account',
+        'position',
+        'hired_at',
     ];
 
     protected $hidden = [
@@ -27,6 +31,7 @@ class Employee extends Model{
     protected $casts = [
         'is_active' => 'boolean',
         'is_area_manager' => 'boolean',
+        'hired_at' => 'date',
     ];
 
     /* --------------------------------------------------------------------------
@@ -43,6 +48,41 @@ class Employee extends Model{
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function compensation()
+    {
+        return $this->hasOne(EmployeeCompensation::class);
+    }
+
+    public function concepts()
+    {
+        return $this->hasMany(EmployeeConcept::class);
+    }
+
+    public function vacationBalances()
+    {
+        return $this->hasMany(VacationBalance::class);
+    }
+
+    public function payrollItems()
+    {
+        return $this->hasMany(PayrollItem::class);
+    }
+
+    public function loans()
+    {
+        return $this->hasMany(EmployeeLoan::class);
+    }
+
+    public function credential()
+    {
+        return $this->hasOne(EmployeeCredential::class);
+    }
+
+    public function requests()
+    {
+        return $this->hasMany(Request::class, 'user_id', 'user_id');
     }
 
     public function company()

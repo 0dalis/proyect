@@ -1,6 +1,19 @@
+export type ThemePalette =
+  | 'indigo'
+  | 'red'
+  | 'purple'
+  | 'green'
+  | 'blue'
+  | 'orange';
+
+export type ThemeMode = 'light' | 'dark';
+
 export interface AppTheme {
 
   name: string;
+
+  palette: ThemePalette;
+  mode: ThemeMode;
 
   colors: {
 
@@ -26,6 +39,12 @@ export interface AppTheme {
     borderFocus: string;
   };
 
-  fontFamily?: string; // <-- El "?" la hace opcional
+  fontFamily?: string;
   fontUrl?: string;
+}
+
+export interface ThemePreferences {
+  palette: ThemePalette;
+  mode: ThemeMode;
+  font: string;
 }

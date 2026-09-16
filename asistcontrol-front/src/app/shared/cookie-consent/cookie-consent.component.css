@@ -1,0 +1,53 @@
+.cookie-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+.cookie-card {
+  width: 100%;
+  max-width: 40rem;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  pointer-events: auto;
+  animation: cookie-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cookie-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cookie-link {
+  color: var(--color-primary-medium);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.cookie-accept {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--color-primary-medium);
+  border: none;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.cookie-accept:hover {
+  background-color: var(--color-primary-dark);
+}

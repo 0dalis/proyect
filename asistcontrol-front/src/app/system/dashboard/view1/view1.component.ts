@@ -44,6 +44,10 @@ export class View1Component implements OnInit {
     return this.data?.summary ?? {};
   }
 
+  get payroll(): any {
+    return this.data?.payroll ?? null;
+  }
+
   get recentRecords(): any[] {
     return this.data?.recent_records ?? [];
   }

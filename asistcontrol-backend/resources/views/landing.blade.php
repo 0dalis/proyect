@@ -659,6 +659,7 @@
             <a href="{{ route('planes-detalle') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Planes</a>
             <a href="{{ route('privacidad') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Privacidad</a>
             <a href="{{ route('terminos') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Términos</a>
+            <a href="{{ route('cookies') }}" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Cookies</a>
         </div>
     </div>
 </footer>

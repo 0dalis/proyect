@@ -16,12 +16,16 @@ class Notification extends Model
         'message',
         'target_type',
         'area_id',
+        'office_id',
         'target_user_id',
+        'target_user_ids',
         'scheduled_at',
         'sent_at',
         'expires_at',
         'is_active',
         'priority',
+        'sent_count',
+        'failed_count',
     ];
 
     protected $casts = [
@@ -29,6 +33,7 @@ class Notification extends Model
         'scheduled_at' => 'datetime',
         'sent_at' => 'datetime',
         'expires_at' => 'datetime',
+        'target_user_ids' => 'array',
     ];
 
     /*
@@ -52,6 +57,11 @@ class Notification extends Model
         return $this->belongsTo(Area::class);
     }
 
+    public function office()
+    {
+        return $this->belongsTo(Office::class);
+    }
+
     public function targetUser()
     {
         return $this->belongsTo(User::class, 'target_user_id');
@@ -60,6 +70,33 @@ class Notification extends Model
     public function reads()
     {
         return $this->hasMany(NotificationRead::class);
+    }
+
+    /**
+     * Usuarios objetivo de la notificación (sin filtrar por dispositivo).
+     */
+    public function recipientUsers(Company $company)
+    {
+        $query = $company->users()->with('employee:id,user_id,first_name,last_name,area_id,office_id');
+
+        switch ($this->target_type) {
+            case 'area':
+                $query->whereHas('employee', fn ($q) => $q->where('area_id', $this->area_id));
+                break;
+            case 'office':
+                $query->whereHas('employee', fn ($q) => $q->where('office_id', $this->office_id));
+                break;
+            case 'user':
+                $query->where('id', $this->target_user_id);
+                break;
+            case 'users':
+                $query->whereIn('id', $this->target_user_ids ?? []);
+                break;
+            default:
+                break;
+        }
+
+        return $query->get();
     }
 
     /*

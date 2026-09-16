@@ -13,11 +13,13 @@ class AttendanceRecord extends Model
     protected $fillable = [
         'attendance_id',
         'user_id',
+        'employee_id',
         'type',
         'recorded_at',
         'latitude',
         'longitude',
         'photo_path',
+        'source',
     ];
 
     protected $casts = [
@@ -40,6 +42,11 @@ class AttendanceRecord extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 
     /*

@@ -317,7 +317,7 @@
                     <div class="flex items-center gap-2 pt-1">
                         <input type="checkbox" name="terminos" id="terminos" required class="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500/20">
                         <label for="terminos" class="text-[11px] text-slate-500 dark:text-slate-400">
-                            Acepto los <a href="{{ route('terminos') }}" target="_blank" class="text-brand-600 dark:text-brand-400 hover:underline">Términos</a> y <a href="{{ route('privacidad') }}" target="_blank" class="text-brand-600 dark:text-brand-400 hover:underline">Privacidad</a>.
+                            Acepto los <a href="{{ route('terminos') }}" target="_blank" class="text-brand-600 dark:text-brand-400 hover:underline">Términos</a>, la <a href="{{ route('privacidad') }}" target="_blank" class="text-brand-600 dark:text-brand-400 hover:underline">Privacidad</a> y la <a href="{{ route('cookies') }}" target="_blank" class="text-brand-600 dark:text-brand-400 hover:underline">Política de Cookies</a>.
                         </label>
                     </div>
 

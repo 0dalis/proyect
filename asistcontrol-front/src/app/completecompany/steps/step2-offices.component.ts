@@ -64,7 +64,7 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   isSubmitting = false;
   errors: any = {};
 
-  formStage: 'map' | 'estado' | 'leaflet' = 'map';
+  formStage: 'map' | 'estado' | 'leaflet' | 'turnos' = 'map';
 
   isInternational = false;
   userLocation: { lat: number; lng: number } | null = null;
@@ -85,6 +85,9 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
   radiusDisplay = RADIUS_DEFAULT;
   private currentRadius = RADIUS_DEFAULT;
   private currentBearing = 0;
+
+  turnos: any[] = [];
+  turnoErrors: any = {};
 
   private chart: Highcharts.Chart | null = null;
   private officeMap: L.Map | null = null;
@@ -289,6 +292,8 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.countryForCoords = null;
     if (this.countryDebounce) clearTimeout(this.countryDebounce);
     this.countryDebounce = null;
+    this.turnos = [this.newTurno()];
+    this.turnoErrors = {};
     this.showForm = true;
     this.enterMapStage();
     this.requestUserLocation();
@@ -331,6 +336,24 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.errors = {};
     this.selectedState = null;
     this.selectedMunicipio = null;
+    this.turnos = (office.shifts || []).map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      start_time: this.toHHmm(s.start_time),
+      end_time: this.toHHmm(s.end_time),
+      cross_midnight: !!s.cross_midnight,
+      work_days: s.work_days ?? [1, 2, 3, 4, 5],
+      lunch_start: this.toHHmm(s.lunch_start),
+      lunch_end: this.toHHmm(s.lunch_end),
+      tolerance_minutes: s.tolerance_minutes,
+      early_leave_minutes: s.early_leave_minutes,
+      work_hours_expected: s.work_hours_expected,
+      is_active: !!s.is_active
+    }));
+    if (this.turnos.length === 0) {
+      this.turnos = [this.newTurno()];
+    }
+    this.turnoErrors = {};
     this.showForm = true;
     this.formStage = 'leaflet';
     this.currentRadius = office.radius_meters;
@@ -446,10 +469,67 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedMunicipioName = '';
     this.searchQuery = '';
     this.searchResults = [];
+    this.turnos = [];
+    this.turnoErrors = {};
     if (this.countryDebounce) clearTimeout(this.countryDebounce);
     this.countryDebounce = null;
     this.countryForCoords = null;
     this.destroyOfficeMap();
+  }
+
+  // ---------- Turnos ----------
+
+  private newTurno(): any {
+    return { name: '', start_time: '08:00', end_time: '16:00', cross_midnight: false, work_days: [1, 2, 3, 4, 5], lunch_start: '', lunch_end: '', tolerance_minutes: 10, early_leave_minutes: 0, work_hours_expected: null as number | null, is_active: true };
+  }
+
+  weekDays = [
+    { n: 1, l: 'Lun' }, { n: 2, l: 'Mar' }, { n: 3, l: 'Mié' }, { n: 4, l: 'Jue' },
+    { n: 5, l: 'Vie' }, { n: 6, l: 'Sáb' }, { n: 7, l: 'Dom' },
+  ];
+
+  toggleTurnoDay(turno: any, day: number): void {
+    if (!turno.work_days) turno.work_days = [];
+    const idx = turno.work_days.indexOf(day);
+    if (idx >= 0) {
+      turno.work_days.splice(idx, 1);
+    } else {
+      turno.work_days.push(day);
+    }
+  }
+
+  isTurnoDay(turno: any, day: number): boolean {
+    return (turno.work_days ?? []).includes(day);
+  }
+
+  addTurno(): void {
+    this.turnos.push(this.newTurno());
+  }
+
+  removeTurno(index: number): void {
+    this.turnos.splice(index, 1);
+  }
+
+  enterTurnosStage(): void {
+    if (this.turnos.length === 0) {
+      this.turnos = [this.newTurno()];
+    }
+    this.turnoErrors = {};
+    this.formStage = 'turnos';
+  }
+
+  backFromTurnos(): void {
+    this.formStage = 'leaflet';
+    setTimeout(() => this.initOfficeMap(), 50);
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  private toHHmm(value: any): string {
+    if (!value) return '';
+    return String(value).slice(0, 5);
   }
 
   // ---------- Leaflet: mapa de la oficina ----------
@@ -669,6 +749,31 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    if (this.turnos.length === 0) {
+      this.showError('Debes agregar al menos un turno.');
+      return;
+    }
+
+    this.turnoErrors = {};
+    let hasTurnoError = false;
+    this.turnos.forEach((t, i) => {
+      const errs: any = {};
+      if (!t.name || !t.name.trim()) errs.name = 'Nombre requerido.';
+      if (!t.start_time) errs.start_time = 'Hora requerida.';
+      if (!t.end_time) errs.end_time = 'Hora requerida.';
+      if ((t.lunch_start && !t.lunch_end) || (!t.lunch_start && t.lunch_end)) {
+        errs.lunch_start = 'Completa ambas horas de descanso.';
+      }
+      if (Object.keys(errs).length > 0) {
+        this.turnoErrors[i] = errs;
+        hasTurnoError = true;
+      }
+    });
+    if (hasTurnoError) {
+      this.showError('Revisa los campos de los turnos.');
+      return;
+    }
+
     this.isSubmitting = true;
     this.errors = {};
 
@@ -686,6 +791,21 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+    const shiftsPayload = this.turnos.map(t => ({
+      id: t.id || undefined,
+      name: t.name.trim(),
+      start_time: t.start_time,
+      end_time: t.end_time,
+      cross_midnight: !!t.cross_midnight,
+      work_days: t.work_days ?? [1, 2, 3, 4, 5],
+      lunch_start: t.lunch_start || null,
+      lunch_end: t.lunch_end || null,
+      tolerance_minutes: t.tolerance_minutes ?? 10,
+      early_leave_minutes: t.early_leave_minutes ?? 0,
+      work_hours_expected: t.work_hours_expected ?? null,
+      is_active: t.is_active ?? true
+    }));
+
     const data: any = {
       name: this.form.name.trim(),
       code: this.form.code?.trim() || null,
@@ -693,7 +813,8 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
       longitude: this.form.longitude,
       radius_meters: Math.round(this.form.radius_meters),
       timezone: this.form.timezone || 'UTC',
-      country: this.form.country || null
+      country: this.form.country || null,
+      shifts: shiftsPayload
     };
 
     const request = this.editingId
@@ -711,6 +832,8 @@ export class Step2OfficesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedMunicipioName = '';
         this.searchQuery = '';
         this.searchResults = [];
+        this.turnos = [];
+        this.turnoErrors = {};
         this.destroyOfficeMap();
         this.loadOffices();
         this.loadOfficeLimit();

@@ -1,0 +1,256 @@
+<div class="flex flex-col gap-6 animate-fade-in">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-text-title">Nóminas</h1>
+      <p class="text-sm text-text-body mt-0.5">Calcula la nómina por periodo, bonos y deducciones</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <app-export-button resource="payroll_periods"></app-export-button>
+      <button *ngIf="tab === 'periods'" (click)="openPeriodForm()" class="btn-primary"><i class="bi bi-plus-lg"></i> Nuevo periodo</button>
+      <button *ngIf="tab === 'concepts'" (click)="openConceptForm()" class="btn-primary"><i class="bi bi-plus-lg"></i> Nuevo concepto</button>
+    </div>
+  </div>
+
+  <div class="flex gap-2">
+    <button (click)="tab = 'periods'" class="px-4 py-2 rounded-lg text-xs font-semibold"
+      [ngClass]="tab === 'periods' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">Periodos</button>
+    <button (click)="tab = 'concepts'" class="px-4 py-2 rounded-lg text-xs font-semibold"
+      [ngClass]="tab === 'concepts' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">Conceptos</button>
+    <button (click)="tab = 'settings'" class="px-4 py-2 rounded-lg text-xs font-semibold"
+      [ngClass]="tab === 'settings' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">Configuración</button>
+  </div>
+
+  <!-- Periodos -->
+  <div *ngIf="tab === 'periods'" class="dash-card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table-theme">
+        <thead>
+          <tr>
+            <th>Periodo</th>
+            <th>Frecuencia</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Empleados</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of periods">
+            <td class="font-semibold text-text-title">{{ p.name }}</td>
+            <td>{{ frequencyLabel(p.frequency) }}</td>
+            <td>{{ p.start_date | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ p.end_date | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ p.items_count ?? 0 }}</td>
+            <td><span class="badge" [ngClass]="statusBadge(p.status)">{{ statusLabel(p.status) }}</span></td>
+            <td class="text-right whitespace-nowrap">
+              <a [routerLink]="['/asistcontrol/payroll/periods', p.id]" class="text-primary-medium hover:text-primary-dark text-xs mr-2" title="Ver">
+                <i class="bi bi-eye"></i>
+              </a>
+              <button (click)="calculate(p)" [disabled]="p.status === 'closed'" class="text-primary-medium hover:text-primary-dark text-xs mr-2 disabled:opacity-30" title="Calcular">
+                <i class="bi bi-calculator"></i>
+              </button>
+              <button (click)="close(p)" [disabled]="p.status !== 'calculated'" class="text-success-green hover:opacity-80 text-xs mr-2 disabled:opacity-30" title="Cerrar">
+                <i class="bi bi-lock"></i>
+              </button>
+              <button (click)="removePeriod(p)" [disabled]="p.status === 'closed'" class="text-red-500 hover:text-red-700 text-xs disabled:opacity-30" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && periods.length === 0">
+            <td colspan="7" class="py-10 text-center text-text-body">
+              <i class="bi bi-cash-stack text-2xl"></i>
+              <p class="mt-2 text-xs">No hay periodos de nómina. Crea el primero.</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="7" class="py-10 text-center text-text-body">Cargando...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Conceptos -->
+  <div *ngIf="tab === 'concepts'" class="dash-card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table-theme">
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Tipo</th>
+            <th>Cálculo</th>
+            <th>Monto</th>
+            <th>Recurrente</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of concepts">
+            <td class="font-semibold text-text-title">{{ c.name }}</td>
+            <td><span class="badge" [ngClass]="c.type === 'bonus' ? 'badge-success' : 'badge-danger'">{{ c.type === 'bonus' ? 'Bono' : 'Deducción' }}</span></td>
+            <td>{{ c.calculation }}</td>
+            <td>{{ c.amount | number: '1.2-2' }}</td>
+            <td>{{ c.is_recurring ? 'Sí' : 'No' }}</td>
+            <td><span class="badge" [ngClass]="c.is_active ? 'badge-success' : 'badge-slate'">{{ c.is_active ? 'Activo' : 'Inactivo' }}</span></td>
+            <td class="text-right whitespace-nowrap">
+              <button (click)="openConceptForm(c)" class="text-primary-medium hover:text-primary-dark text-xs mr-2"><i class="bi bi-pencil"></i></button>
+              <button (click)="removeConcept(c)" class="text-red-500 hover:text-red-700 text-xs"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="concepts.length === 0">
+            <td colspan="7" class="py-10 text-center text-text-body">
+              <i class="bi bi-list-check text-2xl"></i>
+              <p class="mt-2 text-xs">No hay conceptos configurados.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Configuración -->
+  <div *ngIf="tab === 'settings'" class="dash-card p-6 max-w-3xl">
+    <form (ngSubmit)="saveSettings()">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Moneda</label>
+          <input type="text" maxlength="3" [(ngModel)]="settings.currency" name="currency" class="form-input uppercase">
+        </div>
+        <div>
+          <label class="form-label">Frecuencia por defecto</label>
+          <select [(ngModel)]="settings.default_pay_frequency" name="default_pay_frequency" class="form-input">
+            <option value="weekly">Semanal</option>
+            <option value="biweekly">Catorcenal</option>
+            <option value="monthly">Mensual</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Monto bono de asistencia</label>
+          <input type="number" min="0" step="0.01" [(ngModel)]="settings.attendance_bonus_amount" name="attendance_bonus_amount" class="form-input">
+        </div>
+        <div class="flex items-center gap-2 pt-6">
+          <input type="checkbox" [(ngModel)]="settings.attendance_bonus_enabled" name="attendance_bonus_enabled" class="w-4 h-4 rounded">
+          <span class="text-xs text-text-body">Activar bono de asistencia (sin faltas)</span>
+        </div>
+        <div>
+          <label class="form-label">Penalización por retardo</label>
+          <input type="number" min="0" step="0.01" [(ngModel)]="settings.late_penalty_amount" name="late_penalty_amount" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Penalización por falta</label>
+          <input type="number" min="0" step="0.01" [(ngModel)]="settings.absence_penalty_amount" name="absence_penalty_amount" class="form-input">
+        </div>
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" [(ngModel)]="settings.overtime_enabled" name="overtime_enabled" class="w-4 h-4 rounded">
+          <span class="text-xs text-text-body">Calcular horas extra</span>
+        </div>
+      </div>
+      <div class="flex justify-end mt-6 pt-4 border-t border-black/10 dark:border-white/10">
+        <button type="submit" [disabled]="isSubmitting" class="btn-primary">{{ isSubmitting ? 'Guardando...' : 'Guardar configuración' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal periodo -->
+<div *ngIf="showPeriodForm" class="fixed inset-0 z-[60] overflow-y-auto" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-neutral-900/60 modal-backdrop" (click)="cancelPeriodForm()"></div>
+  <div class="flex min-h-full items-center justify-center p-4" (click)="cancelPeriodForm()">
+    <div class="relative w-full max-w-lg bg-surface rounded-2xl shadow-2xl modal-card border border-black/10 dark:border-white/10" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-black/10 dark:border-white/10">
+        <h2 class="text-base font-bold text-text-title">Nuevo periodo de nómina</h2>
+        <button (click)="cancelPeriodForm()" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg text-text-body hover:bg-black/5 dark:hover:bg-white/10"><i class="bi bi-x-lg text-sm"></i></button>
+      </div>
+      <form (ngSubmit)="submitPeriod()" class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label class="form-label">Nombre *</label>
+            <input type="text" [(ngModel)]="periodForm.name" name="name" required placeholder="Ej: Nómina enero 2026" class="form-input" [ngClass]="{ 'border-red-400': errors.name }">
+            <p *ngIf="errors.name" class="form-error">{{ errors.name[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Frecuencia *</label>
+            <select [(ngModel)]="periodForm.frequency" name="frequency" class="form-input">
+              <option value="weekly">Semanal</option>
+              <option value="biweekly">Catorcenal</option>
+              <option value="monthly">Mensual</option>
+            </select>
+          </div>
+          <div></div>
+          <div>
+            <label class="form-label">Inicio *</label>
+            <input type="date" [(ngModel)]="periodForm.start_date" name="start_date" required class="form-input" [ngClass]="{ 'border-red-400': errors.start_date }">
+            <p *ngIf="errors.start_date" class="form-error">{{ errors.start_date[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Fin *</label>
+            <input type="date" [(ngModel)]="periodForm.end_date" name="end_date" required class="form-input" [ngClass]="{ 'border-red-400': errors.end_date }">
+            <p *ngIf="errors.end_date" class="form-error">{{ errors.end_date[0] }}</p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-black/10 dark:border-white/10">
+          <button type="button" (click)="cancelPeriodForm()" class="btn-secondary">Cancelar</button>
+          <button type="submit" [disabled]="isSubmitting" class="btn-primary">{{ isSubmitting ? 'Guardando...' : 'Crear periodo' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal concepto -->
+<div *ngIf="showConceptForm" class="fixed inset-0 z-[60] overflow-y-auto" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-neutral-900/60 modal-backdrop" (click)="cancelConceptForm()"></div>
+  <div class="flex min-h-full items-center justify-center p-4" (click)="cancelConceptForm()">
+    <div class="relative w-full max-w-lg bg-surface rounded-2xl shadow-2xl modal-card border border-black/10 dark:border-white/10" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-black/10 dark:border-white/10">
+        <h2 class="text-base font-bold text-text-title">{{ editingConceptId ? 'Editar concepto' : 'Nuevo concepto' }}</h2>
+        <button (click)="cancelConceptForm()" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg text-text-body hover:bg-black/5 dark:hover:bg-white/10"><i class="bi bi-x-lg text-sm"></i></button>
+      </div>
+      <form (ngSubmit)="submitConcept()" class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label class="form-label">Nombre *</label>
+            <input type="text" [(ngModel)]="conceptForm.name" name="cname" required class="form-input" [ngClass]="{ 'border-red-400': errors.name }">
+            <p *ngIf="errors.name" class="form-error">{{ errors.name[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Tipo</label>
+            <select [(ngModel)]="conceptForm.type" name="ctype" class="form-input">
+              <option value="bonus">Bono</option>
+              <option value="deduction">Deducción</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Cálculo</label>
+            <select [(ngModel)]="conceptForm.calculation" name="ccalc" class="form-input">
+              <option value="fixed">Monto fijo</option>
+              <option value="percentage">Porcentaje del base</option>
+              <option value="per_hour">Por hora</option>
+              <option value="per_day">Por día</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Monto / valor</label>
+            <input type="number" min="0" step="0.01" [(ngModel)]="conceptForm.amount" name="camount" class="form-input">
+          </div>
+          <div class="flex items-center gap-4 pt-6">
+            <label class="flex items-center gap-2 text-xs text-text-body">
+              <input type="checkbox" [(ngModel)]="conceptForm.is_recurring" name="crec" class="w-4 h-4 rounded"> Recurrente
+            </label>
+            <label class="flex items-center gap-2 text-xs text-text-body">
+              <input type="checkbox" [(ngModel)]="conceptForm.is_active" name="cact" class="w-4 h-4 rounded"> Activo
+            </label>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-black/10 dark:border-white/10">
+          <button type="button" (click)="cancelConceptForm()" class="btn-secondary">Cancelar</button>
+          <button type="submit" [disabled]="isSubmitting" class="btn-primary">{{ isSubmitting ? 'Guardando...' : 'Guardar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

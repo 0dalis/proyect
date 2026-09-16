@@ -20,6 +20,7 @@ Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
 Route::get('/acceso', [LandingController::class, 'acceso'])->name('acceso');
 Route::get('/privacidad', [LandingController::class, 'privacidad'])->name('privacidad');
 Route::get('/terminos', [LandingController::class, 'terminos'])->name('terminos');
+Route::get('/cookies', [LandingController::class, 'cookies'])->name('cookies');
 Route::get('/sistema', [LandingController::class, 'sistema'])->name('sistema');
 Route::get('/planes-detalle', [LandingController::class, 'planesDetalle'])->name('planes-detalle');
 Route::post('/contacto', [LandingController::class, 'contacto'])->name('landing.contacto')->middleware('throttle:contacto');

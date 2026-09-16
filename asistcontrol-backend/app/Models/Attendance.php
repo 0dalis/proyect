@@ -13,14 +13,26 @@ class Attendance extends Model
     protected $fillable = [
         'company_id',
         'user_id',
+        'employee_id',
         'office_id',
+        'shift_id',
         'date',
         'status',
+        'leave_type',
+        'request_id',
         'worked_minutes',
+        'late_minutes',
+        'early_minutes',
+        'overtime_minutes',
+        'source',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'worked_minutes' => 'integer',
+        'late_minutes' => 'integer',
+        'early_minutes' => 'integer',
+        'overtime_minutes' => 'integer',
     ];
 
     /*
@@ -32,6 +44,21 @@ class Attendance extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    public function corrections()
+    {
+        return $this->hasMany(AttendanceCorrection::class);
     }
 
     public function office()

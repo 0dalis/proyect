@@ -29,6 +29,7 @@ export class ShiftsComponent implements OnInit {
     start_time: '08:00',
     end_time: '16:00',
     cross_midnight: false,
+    work_days: [1, 2, 3, 4, 5] as number[],
     lunch_start: '',
     lunch_end: '',
     tolerance_minutes: 10,
@@ -36,6 +37,11 @@ export class ShiftsComponent implements OnInit {
     work_hours_expected: null as number | null,
     is_active: true
   };
+
+  weekDays = [
+    { n: 1, l: 'Lun' }, { n: 2, l: 'Mar' }, { n: 3, l: 'Mié' }, { n: 4, l: 'Jue' },
+    { n: 5, l: 'Vie' }, { n: 6, l: 'Sáb' }, { n: 7, l: 'Dom' },
+  ];
   isSubmitting = false;
   errors: any = {};
 
@@ -98,6 +104,7 @@ export class ShiftsComponent implements OnInit {
     this.form = {
       office_id: this.selectedOfficeId,
       name: '', start_time: '08:00', end_time: '16:00', cross_midnight: false,
+      work_days: [1, 2, 3, 4, 5],
       lunch_start: '', lunch_end: '', tolerance_minutes: 10, early_leave_minutes: 0,
       work_hours_expected: null, is_active: true
     };
@@ -113,6 +120,7 @@ export class ShiftsComponent implements OnInit {
       start_time: shift.start_time,
       end_time: shift.end_time,
       cross_midnight: !!shift.cross_midnight,
+      work_days: shift.work_days ?? [1, 2, 3, 4, 5],
       lunch_start: shift.lunch_start || '',
       lunch_end: shift.lunch_end || '',
       tolerance_minutes: shift.tolerance_minutes,
@@ -128,6 +136,19 @@ export class ShiftsComponent implements OnInit {
     this.showForm = false;
     this.editingId = null;
     this.errors = {};
+  }
+
+  toggleWorkDay(day: number): void {
+    const idx = this.form.work_days.indexOf(day);
+    if (idx >= 0) {
+      this.form.work_days.splice(idx, 1);
+    } else {
+      this.form.work_days.push(day);
+    }
+  }
+
+  isWorkDay(day: number): boolean {
+    return this.form.work_days.includes(day);
   }
 
   submitForm(): void {

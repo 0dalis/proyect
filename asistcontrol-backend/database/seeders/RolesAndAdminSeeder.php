@@ -39,6 +39,7 @@ class RolesAndAdminSeeder extends Seeder{
         // 3. Crear Roles por defecto
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
         Role::firstOrCreate(['name' => 'owner']);
+        Role::firstOrCreate(['name' => 'admin']);
         Role::firstOrCreate(['name' => 'empleado']);
         Role::firstOrCreate(['name' => 'employee']);
 

@@ -28,6 +28,15 @@
             </div>
 
             <div class="group">
+                <a routerLink="/asistcontrol/attendance"
+                   routerLinkActive="bg-primary-light/10 text-primary-medium"
+                   class="flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <i class="bi bi-clock-history text-base min-w-[24px] text-center"></i>
+                    <span [class.opacity-0]="!isSidebarHovered" class="mx-2 transition-all duration-300 whitespace-nowrap">Asistencia</span>
+                </a>
+            </div>
+
+            <div class="group">
                 <button (click)="isSidebarHovered ? gestionExpanded = !gestionExpanded : onSidebarMouseEnter()"
                         class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                     <div class="flex items-center">
@@ -43,25 +52,64 @@
                 </button>
 
                 <div [class.submenu-abierto]="gestionExpanded && isSidebarHovered"
-                     style="--total: 4;"
+                     style="--total: 5;"
                      class="submenu-contenedor mt-1 ml-4 flex flex-col">
-                    <a routerLink="/welcome/users" style="--i: 0;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <a routerLink="/asistcontrol/employees" style="--i: 0;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                         <i class="bi bi-people text-sm min-w-[20px] text-center"></i>
                         <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Empleados</span>
                     </a>
-                    <a routerLink="/welcome/roles" style="--i: 1;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
-                        <i class="bi bi-geo text-sm min-w-[20px] text-center"></i>
+                    <a routerLink="/asistcontrol/offices" style="--i: 1;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-building text-sm min-w-[20px] text-center"></i>
+                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Oficinas</span>
+                    </a>
+                    <a routerLink="/asistcontrol/areas" style="--i: 2;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-diagram-3 text-sm min-w-[20px] text-center"></i>
                         <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Áreas</span>
                     </a>
-                    <a routerLink="/welcome/permissions" style="--i: 2;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
-                        <i class="bi bi-person-badge text-sm min-w-[20px] text-center"></i>
-                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Gerentes</span>
+                    <a routerLink="/asistcontrol/requests" style="--i: 3;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-inbox text-sm min-w-[20px] text-center"></i>
+                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Solicitudes</span>
                     </a>
-                    <a routerLink="/asistcontrol/shifts" style="--i: 3;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <a routerLink="/asistcontrol/shifts" style="--i: 4;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                         <i class="bi bi-calendar-clock text-sm min-w-[20px] text-center"></i>
                         <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Horarios</span>
                     </a>
                 </div>
+            </div>
+
+            <div class="group">
+                <a routerLink="/asistcontrol/payroll"
+                   routerLinkActive="bg-primary-light/10 text-primary-medium"
+                   class="flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <i class="bi bi-cash-stack text-base min-w-[24px] text-center"></i>
+                    <span [class.opacity-0]="!isSidebarHovered" class="mx-2 transition-all duration-300 whitespace-nowrap">Nómina</span>
+                </a>
+            </div>
+
+            <div class="group">
+                <a routerLink="/asistcontrol/reports"
+                   routerLinkActive="bg-primary-light/10 text-primary-medium"
+                   class="flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <i class="bi bi-bar-chart text-base min-w-[24px] text-center"></i>
+                    <span [class.opacity-0]="!isSidebarHovered" class="mx-2 transition-all duration-300 whitespace-nowrap">Reportes</span>
+                </a>
+            </div>
+
+            <div class="group">
+                <a routerLink="/asistcontrol/notifications"
+                   routerLinkActive="bg-primary-light/10 text-primary-medium"
+                   class="flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <i class="bi bi-bell text-base min-w-[24px] text-center"></i>
+                    <span [class.opacity-0]="!isSidebarHovered" class="mx-2 transition-all duration-300 whitespace-nowrap">Notificaciones</span>
+                </a>
+            </div>
+
+            <div class="group">
+                <a href="/kiosk" target="_blank" rel="noopener"
+                   class="flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <i class="bi bi-display text-base min-w-[24px] text-center"></i>
+                    <span [class.opacity-0]="!isSidebarHovered" class="mx-2 transition-all duration-300 whitespace-nowrap">Modo kiosco</span>
+                </a>
             </div>
 
             <div class="group">
@@ -80,15 +128,31 @@
                 </button>
 
                 <div [class.submenu-abierto]="configExpanded && isSidebarHovered"
-                     style="--total: 2;"
+                     style="--total: 6;"
                      class="submenu-contenedor mt-1 ml-4 flex flex-col">
-                    <a routerLink="/welcome/settings/general" style="--i: 0;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <a routerLink="/asistcontrol/settings/general" style="--i: 0;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                         <i class="bi bi-sliders2 text-sm min-w-[20px] text-center"></i>
                         <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">General</span>
                     </a>
-                    <a routerLink="/welcome/settings/appearance" style="--i: 1;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                    <a routerLink="/asistcontrol/settings/appearance" style="--i: 1;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
                         <i class="bi bi-palette text-sm min-w-[20px] text-center"></i>
                         <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Apariencia</span>
+                    </a>
+                    <a routerLink="/asistcontrol/users" style="--i: 2;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-person-badge text-sm min-w-[20px] text-center"></i>
+                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Usuarios</span>
+                    </a>
+                    <a routerLink="/asistcontrol/settings/holidays" style="--i: 3;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-calendar-event text-sm min-w-[20px] text-center"></i>
+                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Festivos</span>
+                    </a>
+                    <a routerLink="/asistcontrol/settings/audit" style="--i: 4;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-clipboard-data text-sm min-w-[20px] text-center"></i>
+                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Auditoría</span>
+                    </a>
+                    <a routerLink="/asistcontrol/settings/profile" style="--i: 5;" class="carta-submenu flex items-center px-3 py-2 text-xs font-medium text-text-body transition-all rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+                        <i class="bi bi-person-gear text-sm min-w-[20px] text-center"></i>
+                        <span [class.opacity-0]="!isSidebarHovered" class="mx-2 whitespace-nowrap">Perfil</span>
                     </a>
                 </div>
             </div>
@@ -122,14 +186,9 @@
             (mouseleave)="userMenuOpen = false"
             class="absolute right-0 mt-2 w-48 bg-surface border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-1 z-50">
 
-            <a routerLink="/welcome/profile" class="flex items-center gap-x-2 px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
-              <i class="bi bi-person text-base"></i>
-              Ver Perfil
-            </a>
-
-            <a routerLink="/welcome/settings/security" class="flex items-center gap-x-2 px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
-              <i class="bi bi-key text-base"></i>
-              Cambiar Contraseña
+            <a routerLink="/asistcontrol/settings/appearance" class="flex items-center gap-x-2 px-3 py-2 text-xs font-medium text-text-body transition-all duration-200 rounded-lg hover:bg-primary-light/10 hover:text-primary-medium">
+              <i class="bi bi-sliders text-base"></i>
+              Configuración
             </a>
           </div>
         </div>

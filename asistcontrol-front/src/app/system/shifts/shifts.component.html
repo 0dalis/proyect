@@ -220,6 +220,16 @@
             <label class="form-label">Horas esperadas (min)</label>
             <input [(ngModel)]="form.work_hours_expected" name="work_hours_expected" type="number" min="0" max="1440" placeholder="480" class="form-input">
           </div>
+          <div class="sm:col-span-2 lg:col-span-4">
+            <label class="form-label">Días laborables</label>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" *ngFor="let d of weekDays" (click)="toggleWorkDay(d.n)"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                [ngClass]="isWorkDay(d.n) ? 'bg-primary-medium text-white border-primary-medium' : 'bg-transparent text-text-body border-black/10 dark:border-white/15'">
+                {{ d.l }}
+              </button>
+            </div>
+          </div>
           <div class="flex items-center gap-3 sm:col-span-2 lg:col-span-2">
             <input type="checkbox" [(ngModel)]="form.cross_midnight" name="cross_midnight" class="w-4 h-4 rounded border-slate-300 text-primary-medium focus:ring-primary-medium">
             <span class="text-xs text-text-body">Cruce de medianoche</span>

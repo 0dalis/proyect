@@ -1,0 +1,62 @@
+<div class="theme-settings">
+  <div class="mb-5">
+    <h3 class="text-sm font-bold text-text-title">Apariencia</h3>
+    <p class="text-[11px] text-text-body mt-0.5">Personaliza colores, modo y tipografía del sistema.</p>
+  </div>
+
+  <!-- Paletas -->
+  <div class="mb-5">
+    <p class="ts-label">Paleta de color</p>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <button
+        type="button"
+        *ngFor="let p of palettes"
+        (click)="selectPalette(p.key)"
+        class="ts-swatch"
+        [class.ts-swatch-active]="selectedPalette === p.key"
+        [attr.aria-label]="p.label"
+        [title]="p.label">
+        <span class="ts-swatch-dot" [style.background]="p.swatch"></span>
+        <span class="ts-swatch-label">{{ p.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modo -->
+  <div class="mb-5">
+    <p class="ts-label">Modo</p>
+    <div class="ts-segment">
+      <button
+        type="button"
+        (click)="selectMode('light')"
+        class="ts-segment-btn"
+        [class.ts-segment-active]="selectedMode === 'light'">
+        <i class="bi bi-sun"></i> Claro
+      </button>
+      <button
+        type="button"
+        (click)="selectMode('dark')"
+        class="ts-segment-btn"
+        [class.ts-segment-active]="selectedMode === 'dark'">
+        <i class="bi bi-moon-stars"></i> Oscuro
+      </button>
+    </div>
+  </div>
+
+  <!-- Tipografía -->
+  <div>
+    <p class="ts-label">Tipografía</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <button
+        type="button"
+        *ngFor="let f of fonts"
+        (click)="selectFont(f.key)"
+        class="ts-font"
+        [class.ts-font-active]="selectedFont === f.key"
+        [style.font-family]="f.fontFamily">
+        <span class="text-sm text-text-title">{{ f.label }}</span>
+        <span class="text-[10px] text-text-body" [style.font-family]="f.fontFamily">AsistControl 08:00</span>
+      </button>
+    </div>
+  </div>
+</div>
