@@ -1,0 +1,11 @@
+/*
+ * Fija arriba al hacer scroll. El sticky va en el host (no en <header>): el
+ * host mide lo mismo que la barra y dentro de él no tendría espacio para
+ * quedarse pegada.
+ */
+:host {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 40;
+  display: block;
+}

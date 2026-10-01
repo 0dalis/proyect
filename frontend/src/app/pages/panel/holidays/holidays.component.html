@@ -1,0 +1,72 @@
+<app-page-header
+  heading="Días festivos"
+  description="No cuentan como falta. Si alguien trabaja un festivo, la pre-nómina le paga el día doble adicional (art. 75 LFT)."
+/>
+
+<div class="grid gap-5 lg:grid-cols-[1fr_22rem]">
+  <section class="card">
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+      <div class="inline-flex items-center gap-1">
+        <button class="btn btn-sm" type="button" (click)="changeYear(-1)" aria-label="Año anterior">
+          <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+        <strong class="w-16 text-center text-lg tabular-nums">{{ year() }}</strong>
+        <button class="btn btn-sm" type="button" (click)="changeYear(1)" aria-label="Año siguiente">
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+      <span class="flex-1"></span>
+      <button class="btn btn-primary btn-sm" type="button" (click)="loadOfficial()" [disabled]="busy()">
+        <i class="bi bi-flag" aria-hidden="true"></i> Cargar festivos oficiales {{ year() }}
+      </button>
+    </div>
+
+    @if (loading()) {
+      <app-skeleton type="lines" [rows]="7" />
+    } @else {
+      <ul class="divide-y divide-line">
+        @for (holiday of holidays(); track holiday.id) {
+          <li class="flex items-center gap-3 py-3">
+            <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-center leading-tight text-primary-active">
+              <span class="text-lg font-bold">{{ holiday.date.slice(8, 10) }}</span>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold text-ink">{{ holiday.name }}</div>
+              <div class="text-sm capitalize text-muted-text">{{ label(holiday.date) }}</div>
+            </div>
+            @if (holiday.is_official) {
+              <span class="badge badge-brand">LFT</span>
+            }
+            <button class="btn btn-ghost btn-sm" type="button" (click)="remove(holiday)" [attr.aria-label]="'Quitar ' + holiday.name">
+              <i class="bi bi-trash3" aria-hidden="true"></i>
+            </button>
+          </li>
+        } @empty {
+          <li class="py-8 text-center text-muted-text">
+            Sin festivos en {{ year() }}. Carga los oficiales o agrega los de tu empresa.
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <aside class="card h-fit">
+    <h3 class="text-base">Agregar un día</h3>
+    <p class="text-sm text-muted-text">
+      Por ejemplo, el día de la empresa o una jornada electoral.
+    </p>
+    <form (ngSubmit)="add()">
+      <div class="field">
+        <label for="holiday-date">Fecha</label>
+        <input id="holiday-date" name="date" type="date" [(ngModel)]="draft.date" required />
+      </div>
+      <div class="field">
+        <label for="holiday-name">Nombre</label>
+        <input id="holiday-name" name="name" maxlength="120" [(ngModel)]="draft.name" required />
+      </div>
+      <button class="btn btn-primary w-full" type="submit" [disabled]="!draft.date || !draft.name.trim() || busy()">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar
+      </button>
+    </form>
+  </aside>
+</div>

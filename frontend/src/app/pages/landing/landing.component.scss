@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.testimonial {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+
+  blockquote {
+    margin: 0;
+  }
+}

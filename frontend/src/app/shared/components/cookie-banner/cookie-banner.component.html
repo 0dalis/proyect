@@ -1,0 +1,25 @@
+@if (consent.choice() === null) {
+  <div
+    class="glass fixed inset-x-3 bottom-3 z-[2500] mx-auto flex max-w-3xl flex-col gap-3 bg-surface/90 p-4 sm:flex-row sm:items-center"
+    role="dialog"
+    aria-label="Aviso de cookies"
+    animate.enter="banner-enter"
+    animate.leave="banner-leave"
+  >
+    <div class="icon-tile hidden sm:grid">
+      <i class="bi bi-cookie" aria-hidden="true"></i>
+    </div>
+    <p class="m-0 flex-1 text-sm text-ink-soft">
+      Usamos cookies necesarias para mantener tu sesión segura. No usamos cookies de publicidad.
+      <a routerLink="/legal/cookies">Conoce más</a>.
+    </p>
+    <div class="flex gap-2">
+      <button type="button" class="btn btn-sm" (click)="consent.accept('essential')">
+        Solo necesarias
+      </button>
+      <button type="button" class="btn btn-sm btn-primary" (click)="consent.accept('all')">
+        Aceptar
+      </button>
+    </div>
+  </div>
+}

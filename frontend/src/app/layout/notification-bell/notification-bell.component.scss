@@ -1,0 +1,118 @@
+:host {
+  position: relative;
+  display: block;
+}
+
+.bell-button {
+  position: relative;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.75rem;
+  background: none;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover,
+  &.active {
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary-focus);
+    outline-offset: 1px;
+  }
+}
+
+.count {
+  position: absolute;
+  top: -0.15rem;
+  right: -0.15rem;
+  display: grid;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--color-status-critical);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.panel {
+  position: absolute;
+  right: 0;
+  z-index: 50;
+  margin-top: 0.5rem;
+  width: min(24rem, calc(100vw - 1.5rem));
+  overflow: hidden;
+  padding: 0;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+}
+
+.item {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  background: none;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  }
+
+  &.unread {
+    background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  }
+}
+
+.icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 0.6rem;
+
+  &[data-tone='primary'] {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+  }
+
+  &[data-tone='success'] {
+    background: var(--color-success-soft);
+    color: var(--color-success-text);
+  }
+
+  &[data-tone='danger'] {
+    background: var(--color-danger-soft);
+    color: var(--color-danger-text);
+  }
+
+  &[data-tone='info'] {
+    background: var(--color-info-soft);
+    color: var(--color-info-text);
+  }
+}
+
+.dot {
+  margin-top: 0.4rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--color-primary);
+}

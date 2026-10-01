@@ -1,0 +1,225 @@
+<div class="flex flex-col gap-6 animate-fade-in">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-text-title">Reportes</h1>
+      <p class="text-sm text-text-body mt-0.5">Analiza asistencia y nómina por empresa, área, oficina o empleado</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <app-export-button resource="report_attendance" [filters]="exportFilters"></app-export-button>
+    </div>
+  </div>
+
+  <div class="flex gap-2">
+    <button (click)="tab = 'attendance'" class="px-4 py-2 rounded-lg text-xs font-semibold"
+      [ngClass]="tab === 'attendance' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">Asistencia</button>
+    <button (click)="tab = 'payroll'" class="px-4 py-2 rounded-lg text-xs font-semibold"
+      [ngClass]="tab === 'payroll' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">Nómina</button>
+  </div>
+
+  <!-- ============ ASISTENCIA ============ -->
+  <ng-container *ngIf="tab === 'attendance'">
+    <div class="dash-card p-4">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button (click)="setPreset('today')" class="btn-secondary" [ngClass]="preset === 'today' ? 'border-primary-medium text-primary-medium' : ''">Hoy</button>
+        <button (click)="setPreset('yesterday')" class="btn-secondary" [ngClass]="preset === 'yesterday' ? 'border-primary-medium text-primary-medium' : ''">Ayer</button>
+        <button (click)="setPreset('week')" class="btn-secondary" [ngClass]="preset === 'week' ? 'border-primary-medium text-primary-medium' : ''">Esta semana</button>
+        <button (click)="setPreset('month')" class="btn-secondary" [ngClass]="preset === 'month' ? 'border-primary-medium text-primary-medium' : ''">Este mes</button>
+        <button (click)="setPreset('lastmonth')" class="btn-secondary" [ngClass]="preset === 'lastmonth' ? 'border-primary-medium text-primary-medium' : ''">Mes pasado</button>
+        <button (click)="setPreset('year')" class="btn-secondary" [ngClass]="preset === 'year' ? 'border-primary-medium text-primary-medium' : ''">Este año</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+        <div>
+          <label class="form-label">Desde</label>
+          <input type="date" [(ngModel)]="from" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Hasta</label>
+          <input type="date" [(ngModel)]="to" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Agrupar por</label>
+          <select [(ngModel)]="groupBy" class="form-input">
+            <option value="company">Empresa</option>
+            <option value="area">Área</option>
+            <option value="office">Oficina</option>
+            <option value="employee">Empleado</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Oficina</label>
+          <select [(ngModel)]="officeId" class="form-input">
+            <option value="">Todas</option>
+            <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Área</label>
+          <select [(ngModel)]="areaId" class="form-input">
+            <option value="">Todas</option>
+            <option *ngFor="let a of areas" [ngValue]="a.id">{{ a.name }}</option>
+          </select>
+        </div>
+        <button (click)="loadAttendance()" class="btn-primary w-full"><i class="bi bi-bar-chart"></i> Generar</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-6 gap-4" *ngIf="attendanceData?.totals">
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Registros</p><p class="text-lg font-bold text-text-title">{{ attendanceData.totals.records || 0 }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Presentes</p><p class="text-lg font-bold text-success-green">{{ attendanceData.totals.present || 0 }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Retardos</p><p class="text-lg font-bold text-amber-500">{{ attendanceData.totals.late || 0 }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Faltas</p><p class="text-lg font-bold text-red-500">{{ attendanceData.totals.absent || 0 }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Puntualidad</p><p class="text-lg font-bold text-text-title">{{ attendanceData.totals.punctuality_rate || 0 }}%</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Horas trabajadas</p><p class="text-lg font-bold text-text-title">{{ (attendanceData.totals.worked_minutes / 60) | number: '1.0-0' }} h</p></div>
+    </div>
+
+    <div class="dash-card p-5" *ngIf="attendanceData?.groups?.length">
+      <h2 class="text-sm font-semibold text-text-title mb-3">Comparativo por {{ groupBy === 'company' ? 'empresa' : groupBy }}</h2>
+      <div #chartEl></div>
+    </div>
+
+    <div class="dash-card overflow-hidden" *ngIf="attendanceData">
+      <div class="overflow-x-auto">
+        <table class="table-theme">
+          <thead>
+            <tr>
+              <th>{{ groupBy === 'company' ? 'Grupo' : (groupBy | titlecase) }}</th>
+              <th>Empleados</th>
+              <th>Registros</th>
+              <th>Presentes</th>
+              <th>Retardos</th>
+              <th>Faltas</th>
+              <th>Justificados</th>
+              <th>Horas</th>
+              <th>Extra</th>
+              <th>Puntualidad</th>
+              <th>Ausentismo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let g of attendanceData.groups" (click)="openEmployee(g)"
+                [class.cursor-pointer]="groupBy === 'employee'"
+                class="hover:bg-primary-medium/5">
+              <td class="font-semibold text-text-title">{{ g.label }}</td>
+              <td>{{ g.employees }}</td>
+              <td>{{ g.records }}</td>
+              <td class="text-success-green">{{ g.present }}</td>
+              <td class="text-amber-500">{{ g.late }}</td>
+              <td class="text-red-500">{{ g.absent }}</td>
+              <td>{{ g.justified }}</td>
+              <td>{{ (g.worked_minutes / 60) | number: '1.0-0' }} h</td>
+              <td>{{ g.overtime_minutes }} min</td>
+              <td>{{ g.punctuality_rate }}%</td>
+              <td>{{ g.absence_rate }}%</td>
+            </tr>
+            <tr *ngIf="attendanceData.groups.length === 0">
+              <td colspan="11" class="py-10 text-center text-text-body text-xs">Sin datos para el periodo y filtros seleccionados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ============ NÓMINA ============ -->
+  <ng-container *ngIf="tab === 'payroll'">
+    <div class="dash-card p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+        <div>
+          <label class="form-label">Periodo</label>
+          <select [(ngModel)]="periodId" class="form-input">
+            <option [ngValue]="null" disabled>Seleccionar...</option>
+            <option *ngFor="let p of periods" [ngValue]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Agrupar por</label>
+          <select [(ngModel)]="payrollGroupBy" class="form-input">
+            <option value="company">Empresa</option>
+            <option value="area">Área</option>
+            <option value="office">Oficina</option>
+            <option value="employee">Empleado</option>
+          </select>
+        </div>
+        <button (click)="loadPayroll()" [disabled]="!periodId" class="btn-primary disabled:opacity-40"><i class="bi bi-cash-stack"></i> Ver resumen</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" *ngIf="payrollData?.totals">
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Percepciones</p><p class="text-lg font-bold text-text-title">{{ money(payrollData.totals.gross) }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Deducciones</p><p class="text-lg font-bold text-text-title">{{ money(payrollData.totals.deductions) }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Neto</p><p class="text-lg font-bold text-success-green">{{ money(payrollData.totals.net) }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Empleados</p><p class="text-lg font-bold text-text-title">{{ payrollData.totals.employees }}</p></div>
+    </div>
+
+    <div class="dash-card overflow-hidden" *ngIf="payrollData?.groups">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-black/10 dark:border-white/10">
+        <h2 class="text-sm font-semibold text-text-title">Desglose por {{ payrollGroupBy === 'company' ? 'empresa' : payrollGroupBy }}</h2>
+        <app-export-button resource="payroll_items" [filters]="{ period_id: periodId }"></app-export-button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table-theme">
+          <thead><tr><th>Grupo</th><th>Empleados</th><th>Base</th><th>Horas extra</th><th>Bonos</th><th>Deducciones</th><th>Neto</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let g of payrollData.groups">
+              <td class="font-semibold text-text-title">{{ g.label }}</td>
+              <td>{{ g.employees }}</td>
+              <td>{{ money(g.base) }}</td>
+              <td>{{ money(g.overtime) }}</td>
+              <td class="text-success-green">{{ money(g.bonuses) }}</td>
+              <td class="text-red-500">{{ money(g.deductions) }}</td>
+              <td class="font-bold text-text-title">{{ money(g.net) }}</td>
+            </tr>
+            <tr *ngIf="payrollData.groups.length === 0"><td colspan="7" class="py-10 text-center text-text-body text-xs">Sin datos.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Modal reporte de empleado -->
+<div *ngIf="employeeModal" class="fixed inset-0 z-[60] overflow-y-auto" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-neutral-900/60 modal-backdrop" (click)="closeEmployee()"></div>
+  <div class="flex min-h-full items-center justify-center p-4" (click)="closeEmployee()">
+    <div class="relative w-full max-w-3xl bg-surface rounded-2xl shadow-2xl modal-card border border-black/10 dark:border-white/10" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-black/10 dark:border-white/10">
+        <div>
+          <h2 class="text-base font-bold text-text-title">{{ employeeModal.employee.first_name }} {{ employeeModal.employee.last_name }}</h2>
+          <p class="text-xs text-text-body">{{ employeeModal.employee.employee_code }} · {{ from }} – {{ to }}</p>
+        </div>
+        <button (click)="closeEmployee()" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg text-text-body hover:bg-black/5 dark:hover:bg-white/10"><i class="bi bi-x-lg text-sm"></i></button>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+          <div class="dash-card p-3"><p class="text-[10px] uppercase text-text-body">Presentes</p><p class="font-bold text-success-green">{{ employeeModal.totals.present }}</p></div>
+          <div class="dash-card p-3"><p class="text-[10px] uppercase text-text-body">Retardos</p><p class="font-bold text-amber-500">{{ employeeModal.totals.late }}</p></div>
+          <div class="dash-card p-3"><p class="text-[10px] uppercase text-text-body">Faltas</p><p class="font-bold text-red-500">{{ employeeModal.totals.absent }}</p></div>
+          <div class="dash-card p-3"><p class="text-[10px] uppercase text-text-body">Justificados</p><p class="font-bold text-text-title">{{ employeeModal.totals.justified }}</p></div>
+          <div class="dash-card p-3"><p class="text-[10px] uppercase text-text-body">Horas</p><p class="font-bold text-text-title">{{ (employeeModal.totals.worked_minutes / 60) | number: '1.0-0' }} h</p></div>
+        </div>
+        <div class="overflow-x-auto max-h-80 overflow-y-auto">
+          <table class="table-theme">
+            <thead><tr><th>Fecha</th><th>Estado</th><th>Entrada</th><th>Salida</th><th>Horas</th><th>Extra</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let r of employeeModal.records">
+                <td>{{ r.date | date: 'dd/MM/yyyy' }}</td>
+                <td><span class="badge" [ngClass]="{
+                  'badge-success': r.status === 'present',
+                  'badge-warning': r.status === 'late',
+                  'badge-danger': r.status === 'absent',
+                  'badge-slate': r.status === 'justified'
+                }">{{ r.status }}</span></td>
+                <td class="font-mono">{{ timeOf(r, 'check_in') }}</td>
+                <td class="font-mono">{{ timeOf(r, 'check_out') }}</td>
+                <td>{{ (r.worked_minutes / 60) | number: '1.0-1' }} h</td>
+                <td>{{ r.overtime_minutes }} min</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

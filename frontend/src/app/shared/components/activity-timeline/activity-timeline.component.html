@@ -1,0 +1,70 @@
+<ol class="tl">
+  @for (entry of entries(); track entry.id) {
+    <li class="tl__item" [attr.data-tone]="dot(entry.action)">
+      <span class="tl__node" aria-hidden="true"><span class="tl__dot"></span></span>
+      <span class="tl__line" aria-hidden="true"></span>
+
+      <p class="tl__when" [title]="entry.created_at | date: 'full'">
+        {{ entry.created_at | date: 'd MMM y · HH:mm' }}
+      </p>
+
+      <p class="tl__title">
+        <span class="tl__who">{{ entry.user_name }}</span>
+        <span class="tl__what">{{ entry.description }}</span>
+      </p>
+
+      <div class="tl__meta">
+        <span class="badge !py-0 text-[10px]">
+          <i class="bi" [class]="'bi-' + style(entry.action).icon" aria-hidden="true"></i>
+          {{ actionLabel(entry.action) }}
+        </span>
+        @if (entry.employee_id === null) {
+          <span class="badge !py-0 text-[10px]"
+            ><i class="bi bi-globe2" aria-hidden="true"></i> General</span
+          >
+        } @else if (linkEmployees() && entry.employee_public_id) {
+          <a [routerLink]="['/panel/empleados', entry.employee_public_id]" class="tl__link">
+            <i class="bi bi-person" aria-hidden="true"></i> Ver empleado
+          </a>
+        }
+        @if (entry.changes) {
+          <button type="button" class="tl__toggle" (click)="toggle(entry)">
+            {{ open().has(entry.id) ? 'Ocultar cambios' : 'Ver cambios' }}
+            <i
+              class="bi"
+              [class]="open().has(entry.id) ? 'bi-chevron-up' : 'bi-chevron-down'"
+              aria-hidden="true"
+            ></i>
+          </button>
+        }
+      </div>
+
+      @if (open().has(entry.id)) {
+        <div class="tl__changes">
+          <table class="text-xs">
+            <thead>
+              <tr>
+                <th>Campo</th>
+                <th>Antes</th>
+                <th>Después</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of changes(entry); track item.field) {
+                <tr>
+                  <td class="font-medium">{{ item.field }}</td>
+                  <td class="text-danger-text line-through decoration-danger/40">
+                    {{ format(item.change.old) }}
+                  </td>
+                  <td class="text-success-text">{{ format(item.change.new) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </li>
+  } @empty {
+    <li class="empty">Sin actividad registrada.</li>
+  }
+</ol>

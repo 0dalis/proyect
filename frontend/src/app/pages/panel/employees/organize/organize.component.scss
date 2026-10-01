@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.organize {
+  td {
+    vertical-align: top;
+  }
+
+  select,
+  input[type='date'],
+  input[type='email'] {
+    min-width: 8.5rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  tr.selected td {
+    background: var(--color-primary-soft);
+  }
+}

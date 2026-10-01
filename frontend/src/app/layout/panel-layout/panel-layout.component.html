@@ -1,0 +1,32 @@
+@if (onboarding()) {
+  <app-onboarding-modal />
+} @else if (firstAccess()) {
+  <app-first-access-modal />
+} @else {
+  <div class="min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
+    <app-sidebar />
+
+    <div class="min-w-0 px-3 pb-10 lg:pr-6 lg:pl-3">
+      <app-topbar />
+
+      @if (pastDueDeadline(); as deadline) {
+        <div class="alert alert-warning mt-4 !mb-0" role="alert">
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+          <span>
+            No pudimos cobrar tu suscripción. Revisa tu método de pago antes del
+            <strong>{{ deadline | date: "d 'de' MMMM" }}</strong> o tu empresa pasará al plan Free.
+            @if (auth.isOwner()) {
+              <a routerLink="/panel/suscripcion" class="font-semibold">Revisar pago</a>
+            }
+          </span>
+        </div>
+      }
+
+      <main class="pt-6">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+
+  <app-rating-modal />
+}

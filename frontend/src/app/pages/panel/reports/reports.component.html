@@ -1,0 +1,67 @@
+<app-page-header
+  heading="Reporte de asistencia"
+  description="Resumen por empleado. Una falta es un día laborable sin entrada, salvo vacaciones o permisos aprobados."
+>
+  <button type="button" class="btn" (click)="exportCsv()">
+    <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Exportar a Excel (CSV)
+  </button>
+</app-page-header>
+
+<app-period-picker [(period)]="period">
+  @if (areas().length) {
+    <select class="!w-auto !py-1 text-sm" [(ngModel)]="areaId" (ngModelChange)="load()">
+      <option [ngValue]="null">Todas las áreas</option>
+      @for (area of areas(); track area.id) {
+        <option [ngValue]="area.id">{{ area.name }}</option>
+      }
+    </select>
+  }
+</app-period-picker>
+
+@if (loading()) {
+  <div class="mt-4"><app-skeleton type="table" [rows]="8" [columns]="8" /></div>
+} @else {
+  <div class="card mt-4 overflow-x-auto p-0">
+    <table>
+      <thead>
+        <tr>
+          <th class="pl-5">Empleado</th>
+          @for (column of columns; track column.key) {
+            <th class="text-right">{{ column.label }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.employee.id) {
+          <tr>
+            <td class="pl-5">
+              <div class="font-semibold">{{ row.employee.name }}</div>
+              <div class="text-xs text-muted-text">
+                <span class="dot" [style.background]="row.employee.area_color || '#94a3b8'"></span>
+                {{ row.employee.area }} · {{ row.employee.employee_code }}
+              </div>
+            </td>
+            @for (column of columns; track column.key) {
+              <td class="text-right tabular-nums">
+                @if (column.warnAt !== undefined && row.metrics[column.key] >= column.warnAt) {
+                  <span class="badge late">! {{ row.metrics[column.key] }}</span>
+                } @else {
+                  {{ row.metrics[column.key] }}
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="columns.length + 1" class="empty">
+              {{ loading() ? 'Calculando…' : 'Sin empleados en este filtro.' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+<p class="mt-2 text-xs text-muted-text">
+  Marcamos con ! los retardos sin justificar a partir de 3 y cualquier falta sin justificar.
+</p>

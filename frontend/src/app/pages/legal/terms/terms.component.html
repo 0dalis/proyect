@@ -1,0 +1,128 @@
+<h1>Términos y condiciones de uso</h1>
+<p class="meta">Última actualización: {{ legal.updatedAt }} · Versión {{ legal.version }}</p>
+
+<p>
+  Estos términos regulan el uso de <strong>{{ legal.product }}</strong
+  >, servicio en la nube para el control de asistencia, permisos, vacaciones, pre-nómina y bonos,
+  diseñado, operado y soportado por <strong>{{ legal.provider }}</strong> ("{{
+    legal.providerShort
+  }}"). Al crear una cuenta aceptas estos términos y el
+  <a routerLink="/legal/privacidad">Aviso de privacidad</a>.
+</p>
+
+<h2>1. La cuenta</h2>
+<ul>
+  <li>
+    El correo con el que se registra la empresa es la <strong>cuenta maestra (dueño)</strong>. Debe
+    confirmarse antes de usar el servicio y es responsable de la cuenta y de los usuarios que
+    autorice.
+  </li>
+  <li>
+    Cada usuario debe proteger su contraseña y su PIN. Las acciones hechas con sus credenciales se
+    le atribuyen.
+  </li>
+  <li>La información debe ser verdadera y mantenerse actualizada.</li>
+</ul>
+
+<h2>2. Prueba, planes y pagos</h2>
+<ul>
+  <li>
+    Las cuentas sin confirmar el correo se eliminan a los 30 días del registro. Al entrar por
+    primera vez, el dueño elige su plan.
+  </li>
+  <li>
+    Los planes de pago empiezan con un periodo de prueba gratuito, cuya duración se indica al
+    elegirlos. Para iniciarlo se registra una tarjeta, y el primer cobro se hace un día antes de que
+    termine la prueba. El plan Free no tiene costo ni periodo de prueba, y no incluye pre-nómina
+    ni bonos.
+  </li>
+  <li>
+    Los planes se pagan por mes o por año. El pago anual equivale a 11 mensualidades: un mes es de
+    regalo. Las oficinas, usuarios y bloques de empleados adicionales se cobran aparte. El dueño de
+    la cuenta no cuenta como empleado.
+  </li>
+  <li>
+    Los pagos se procesan con Stripe; AsistControl no guarda los datos de la tarjeta. Si un cobro
+    falla, avisaremos para que se revise el método de pago. Si a los 3 días sigue sin pagarse, la
+    cuenta pasa al plan Free: los datos se conservan, pero solo se pueden usar los empleados que
+    permita ese plan (por antigüedad) y el resto queda bloqueado hasta que se contrate un plan
+    mayor.
+  </li>
+  <li>Se puede cancelar en cualquier momento.</li>
+  <li>Los precios pueden cambiar con aviso previo de al menos 30 días.</li>
+</ul>
+
+<h2>3. Responsabilidades de la empresa cliente</h2>
+<ul>
+  <li>
+    Informar a sus empleados sobre el uso de {{ legal.product }}, en particular la ubicación al
+    checar y la fotografía del kiosko, y obtener su consentimiento cuando la ley lo requiera.
+  </li>
+  <li>Usar el sistema conforme a la legislación laboral y de protección de datos aplicable.</li>
+  <li>Configurar correctamente turnos, tolerancias, geocercas y reglas de bonos.</li>
+  <li>
+    Revisar los cálculos antes de pagar. La <strong>pre-nómina es una estimación</strong>: no
+    calcula impuestos ni cuotas de seguridad social y no sustituye un sistema de nómina fiscal.
+  </li>
+</ul>
+
+<h2>4. Uso aceptable</h2>
+<p>No está permitido:</p>
+<ul>
+  <li>Intentar acceder a información de otras empresas o eludir los controles de seguridad.</li>
+  <li>Usar el servicio para vigilar a personas fuera de su jornada o con fines ilícitos.</li>
+  <li>
+    Automatizar peticiones masivas, hacer ingeniería inversa o revender el servicio sin
+    autorización.
+  </li>
+  <li>Registrar checadas en nombre de otra persona.</li>
+</ul>
+
+<h2>5. Disponibilidad y soporte</h2>
+<p>
+  {{ legal.providerShort }} procura la disponibilidad continua del servicio, pero pueden existir
+  interrupciones por mantenimiento o causas ajenas. El soporte se atiende en
+  {{ legal.supportEmail }}.
+</p>
+
+<h2>6. Propiedad intelectual</h2>
+<p>
+  {{ legal.product }}, su código, diseño y marca son propiedad de {{ legal.providerShort }}. La
+  información que la empresa captura sigue siendo suya; nos otorga únicamente el permiso necesario
+  para procesarla y prestar el servicio.
+</p>
+
+<h2>7. Suspensión y cancelación</h2>
+<ul>
+  <li>
+    La empresa puede cancelar en cualquier momento; el servicio sigue activo hasta el fin del
+    periodo pagado.
+  </li>
+  <li>Podemos suspender cuentas por incumplir estos términos.</li>
+  <li>
+    Solo el dueño puede eliminar la empresa de AsistControl (Mi perfil → Eliminar perfil de
+    empresa). Al solicitarlo, el acceso de todos los usuarios, la app y los kioskos se cierra de
+    inmediato y se cancela la suscripción. El dueño recibe por correo un enlace, válido por 48
+    horas, para descargar sus datos (empleados, histórico de asistencia, solicitudes y catálogos).
+    Si el enlace vence, puede pedir uno nuevo a soporte mientras no pasen 30 días.
+  </li>
+  <li>
+    A los 30 días de la solicitud se eliminan de forma definitiva todos los datos de la empresa y de
+    sus empleados, y ya no es posible recuperarlos. Solo conservamos los comprobantes fiscales de
+    los pagos y un registro de la baja sin datos personales.
+  </li>
+</ul>
+
+<h2>8. Limitación de responsabilidad</h2>
+<p>
+  En la medida permitida por la ley, {{ legal.providerShort }} no es responsable por daños
+  indirectos, pérdida de ganancias ni por decisiones laborales o de pago que la empresa tome con
+  base en la información del sistema. La responsabilidad total se limita al monto pagado por el
+  servicio en los 12 meses anteriores al reclamo.
+</p>
+
+<h2>9. Ley aplicable</h2>
+<p>
+  Estos términos se rigen por las leyes de los Estados Unidos Mexicanos. Para cualquier
+  controversia, las partes se someten a los tribunales competentes de {{ legal.jurisdiction }}.
+</p>

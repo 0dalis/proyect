@@ -1,0 +1,367 @@
+<app-page-header
+  heading="Hola, {{ firstName() }}"
+  description="{{ today | date: 'EEEE d \'de\' MMMM' }} · {{ auth.user()?.role_label }} en {{
+    auth.user()?.company?.name
+  }}"
+>
+  @if (auth.user()?.employee) {
+    <a routerLink="/panel/solicitudes" class="btn btn-primary">+ Pedir permiso o justificar</a>
+  }
+</app-page-header>
+
+@if (loading()) {
+  <div class="grid gap-5">
+    <app-skeleton type="cards" /><app-skeleton type="chart" /><app-skeleton
+      type="list"
+      [rows]="3"
+    />
+  </div>
+} @else {
+  <!-- Mi mes: para cualquiera ligado a un empleado -->
+  @if (mine()?.metrics; as metrics) {
+    <section class="card mb-5">
+      <div class="mb-3 flex flex-wrap items-baseline gap-2">
+        <h3 class="text-base">Mi asistencia este mes</h3>
+        <span class="text-sm text-muted-text">
+          {{ mine()!.shift.name }} · {{ mine()!.shift.starts_at.slice(0, 5) }}–{{
+            mine()!.shift.ends_at.slice(0, 5)
+          }}
+          · tolerancia {{ mine()!.shift.tolerance_minutes }} min
+        </span>
+      </div>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-xl bg-surface/60 p-3">
+          <div class="stat-label">Días trabajados</div>
+          <div class="stat-value">
+            {{ metrics.worked_days
+            }}<span class="text-base font-medium text-muted"> / {{ metrics.scheduled_days }}</span>
+          </div>
+        </div>
+        <div class="rounded-xl bg-surface/60 p-3">
+          <div class="stat-label">A tiempo</div>
+          <div class="stat-value">{{ metrics.on_time }}</div>
+        </div>
+        <div class="rounded-xl bg-surface/60 p-3">
+          <div class="stat-label">Retardos sin justificar</div>
+          <div class="stat-value">{{ metrics.unjustified_lates }}</div>
+          @if (metrics.unjustified_lates >= 3) {
+            <div class="text-xs text-warning-text">
+              <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Pierdes el bono de
+              puntualidad
+            </div>
+          }
+        </div>
+        <div class="rounded-xl bg-surface/60 p-3">
+          <div class="stat-label">Faltas sin justificar</div>
+          <div class="stat-value">{{ metrics.unjustified_absences }}</div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- Equipo: owner, admin y gerentes ven a quien les corresponde -->
+  @if (data(); as d) {
+    @if (seesTeam()) {
+      <!-- Tarjetas del día -->
+      <div class="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="card">
+          <div class="stat-label">Asistencia hoy</div>
+          <div class="stat-value">
+            {{ d.team.registered }}<span class="text-base font-medium text-muted"> / {{ d.team.scheduled }}</span>
+          </div>
+          <div class="text-xs text-muted-text">
+            @if (attendancePercent() !== null) {
+              {{ attendancePercent() }}% de quienes trabajan hoy
+            } @else {
+              Hoy nadie tiene turno
+            }
+          </div>
+        </div>
+        <div class="card">
+          <div class="stat-label">En la oficina ahora</div>
+          <div class="stat-value">{{ d.team.in_office_now }}</div>
+          <div class="text-xs text-muted-text">Checaron entrada y aún no salen</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Retardos hoy</div>
+          <div class="stat-value">{{ d.team.counts.late }}</div>
+          <div class="text-xs text-muted-text">{{ d.team.counts.missing }} sin registro</div>
+        </div>
+        <a routerLink="/panel/solicitudes" class="card block no-underline transition hover:bg-surface/70">
+          <div class="stat-label">Solicitudes pendientes</div>
+          <div class="stat-value">{{ d.pending_requests }}</div>
+          <div class="text-xs text-muted-text">
+            @for (type of pendingByType(); track type.key; let last = $last) {
+              {{ type.total }} {{ type.label | lowercase }}{{ last ? '' : ' · ' }}
+            } @empty {
+              Nada por revisar
+            }
+          </div>
+          @if (d.pending_devices) {
+            <div class="text-xs text-warning-text">{{ d.pending_devices }} celular(es) por autorizar</div>
+          }
+        </a>
+      </div>
+
+      <!-- Así va el día -->
+      <section class="card mb-5">
+        <div class="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h3 class="text-base">Así va el día</h3>
+          <span class="text-sm text-muted-text">
+            <strong class="text-ink">{{ d.team.registered }} de {{ d.team.scheduled }}</strong>
+            registraron asistencia
+            @if (todaySummary()) {
+              · {{ todaySummary() }}
+            }
+          </span>
+        </div>
+
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <app-pie-chart [slices]="todaySlices()" unit=" empleados" description="Estado de los empleados hoy" />
+
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+            <div>
+              <h4 class="list-title">
+                <i class="bi bi-x-circle text-danger-text" aria-hidden="true"></i> Sin registro
+              </h4>
+              @for (person of d.team.missing; track person.id) {
+                <div class="person">
+                  <span class="min-w-0 flex-1 truncate">{{ person.name }}</span>
+                  <span class="text-xs text-muted-text">{{ person.shift }} · entra {{ person.starts_at }}</span>
+                </div>
+              } @empty {
+                <p class="text-sm text-muted-text">Todos los que debían llegar ya checaron.</p>
+              }
+            </div>
+            <div>
+              <h4 class="list-title">
+                <i class="bi bi-clock text-warning-text" aria-hidden="true"></i> Llegaron tarde
+              </h4>
+              @for (person of d.team.late; track person.id) {
+                <div class="person">
+                  <span class="min-w-0 flex-1 truncate">{{ person.name }}</span>
+                  <span class="text-xs text-muted-text tabular-nums">{{ person.check_in }} · {{ person.minutes_late }} min</span>
+                </div>
+              } @empty {
+                <p class="text-sm text-muted-text">Sin retardos hoy.</p>
+              }
+            </div>
+            @if (d.team.away.length) {
+              <div class="sm:col-span-2 xl:col-span-1">
+                <h4 class="list-title">
+                  <i class="bi bi-airplane text-info-text" aria-hidden="true"></i> Fuera hoy
+                </h4>
+                @for (person of d.team.away; track person.id) {
+                  <div class="person">
+                    <span class="min-w-0 flex-1 truncate">{{ person.name }}</span>
+                    <span class="text-xs text-muted-text">
+                      {{ d.team.labels[person.state] }}
+                      @if (person.until) {
+                        · hasta {{ person.until | date: 'd MMM' }}
+                      }
+                    </span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Por oficina y por turno (solo si hay más de uno) -->
+      @if (d.team.by_office.length || d.team.by_shift.length) {
+        <div class="mb-5 grid gap-5 lg:grid-cols-2">
+          @for (block of [
+            { title: 'Por oficina', groups: d.team.by_office },
+            { title: 'Por turno', groups: d.team.by_shift }
+          ]; track block.title) {
+            @if (block.groups.length) {
+              <section class="card">
+                <h3 class="mb-3 text-base">{{ block.title }}</h3>
+                <div class="grid gap-3">
+                  @for (group of block.groups; track group.name) {
+                    <div>
+                      <div class="mb-1 flex items-baseline gap-2 text-sm">
+                        <span class="flex-1 truncate font-semibold text-ink">{{ group.name }}</span>
+                        <span class="text-muted-text tabular-nums">
+                          {{ group.registered }} de {{ group.scheduled }} ·
+                          {{ group.total }} {{ group.total === 1 ? 'empleado' : 'empleados' }}
+                        </span>
+                      </div>
+                      <div class="stacked" role="img" [attr.aria-label]="group.name + ': ' + group.registered + ' de ' + group.scheduled + ' registraron asistencia'">
+                        @for (segment of segments(group); track segment.state) {
+                          <span
+                            [style.width.%]="segment.width"
+                            [style.background]="segment.color"
+                            [title]="segment.label + ': ' + segment.value"
+                          ></span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-soft">
+                  @for (state of stateOrder; track state) {
+                    @if (d.team.counts[state]) {
+                      <span class="inline-flex items-center gap-1">
+                        <span class="size-2.5 rounded-sm" [style.background]="stateMeta[state].color"></span>
+                        {{ d.team.labels[state] }}
+                      </span>
+                    }
+                  }
+                </div>
+              </section>
+            }
+          }
+        </div>
+      }
+
+      <!-- Tendencia y métricas del mes -->
+      <div class="mb-5 grid gap-5 lg:grid-cols-3">
+        <section class="card lg:col-span-2">
+          <h3 class="mb-1 text-base">Entradas de los últimos 14 días</h3>
+          <p class="mb-3 text-sm text-muted-text">Por estado de llegada</p>
+          <app-status-chart [data]="d.series" />
+        </section>
+
+        <section class="card">
+          <h3 class="mb-3 text-base">Este mes</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="metric">
+              <div class="stat-label">Asistencia</div>
+              <div class="stat-value">{{ d.month.attendance_rate ?? '—' }}{{ d.month.attendance_rate !== null ? '%' : '' }}</div>
+              <div class="text-xs text-muted-text">{{ d.month.worked_days }} de {{ d.month.scheduled_days }} días</div>
+            </div>
+            <div class="metric">
+              <div class="stat-label">Puntualidad 30 días</div>
+              <div class="stat-value">{{ d.punctuality.current ?? '—' }}{{ d.punctuality.current !== null ? '%' : '' }}</div>
+              @if (punctualityTrend(); as trend) {
+                <div class="text-xs" [class.text-success-text]="trend > 0" [class.text-danger-text]="trend < 0">
+                  <i class="bi" [class.bi-arrow-up-right]="trend > 0" [class.bi-arrow-down-right]="trend < 0" aria-hidden="true"></i>
+                  {{ trend > 0 ? '+' : '' }}{{ trend }} pts vs. 30 días antes
+                </div>
+              } @else {
+                <div class="text-xs text-muted-text">Entradas a tiempo</div>
+              }
+            </div>
+            <div class="metric">
+              <div class="stat-label">Retardos</div>
+              <div class="stat-value">{{ d.month.lates }}</div>
+            </div>
+            <div class="metric">
+              <div class="stat-label">Faltas sin justificar</div>
+              <div class="stat-value">{{ d.month.absences }}</div>
+            </div>
+            <div class="metric">
+              <div class="stat-label">Horas extra</div>
+              <div class="stat-value">{{ d.month.overtime_hours }}</div>
+            </div>
+            <div class="metric">
+              <div class="stat-label">Vacaciones y permisos</div>
+              <div class="stat-value">{{ d.month.excused_days }}</div>
+              <div class="text-xs text-muted-text">días</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="mb-5 grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">
+        <section class="card lg:col-span-2 2xl:col-span-1">
+          <h3 class="mb-1 text-base">Asistencia del mes</h3>
+          <p class="mb-3 text-sm text-muted-text">Días laborables del mes por resultado</p>
+          <app-pie-chart [slices]="monthSlices()" [height]="220" unit=" días" description="Días laborables del mes por resultado" />
+        </section>
+
+        <section class="card">
+          <div class="mb-2 flex items-center">
+            <h3 class="text-base">Más retardos este mes</h3>
+            <span class="flex-1"></span>
+            @if (auth.can('reports.view')) {
+              <a routerLink="/panel/reportes" class="text-sm">Ver reportes</a>
+            }
+          </div>
+          @for (person of d.month.top_lates; track person.id; let i = $index) {
+            <div class="person">
+              <span class="rank">{{ i + 1 }}</span>
+              @if (auth.can('employees.view')) {
+                <a [routerLink]="['/panel/empleados', person.public_id]" class="min-w-0 flex-1 truncate text-ink no-underline hover:underline">{{ person.name }}</a>
+              } @else {
+                <span class="min-w-0 flex-1 truncate">{{ person.name }}</span>
+              }
+              <span class="text-sm font-semibold tabular-nums">{{ person.lates }}</span>
+              <span class="w-20 text-right text-xs text-muted-text tabular-nums">{{ person.minutes_late }} min</span>
+            </div>
+          } @empty {
+            <p class="empty">Nadie ha llegado tarde este mes.</p>
+          }
+        </section>
+
+        <section class="card">
+          <h3 class="mb-2 text-base">Vacaciones en curso y próximas</h3>
+          @for (vacation of d.upcoming_vacations; track vacation.id) {
+            <div class="person">
+              <span class="min-w-0 flex-1 truncate">{{ vacation.name }}</span>
+              <span class="text-xs text-muted-text">
+                {{ vacation.starts_on | date: 'd MMM' }} – {{ vacation.ends_on | date: 'd MMM' }}
+              </span>
+              @if (vacation.ongoing) {
+                <span class="badge badge-brand">Hoy</span>
+              }
+            </div>
+          } @empty {
+            <p class="empty">Nadie sale de vacaciones en los próximos 14 días.</p>
+          }
+        </section>
+      </div>
+    }
+  }
+
+  <div class="grid gap-5 lg:grid-cols-2">
+    <section class="card">
+      <div class="mb-2 flex items-center">
+        <h3 class="text-base">Últimas checadas</h3>
+        <span class="flex-1"></span><a routerLink="/panel/asistencia" class="text-sm">Ver todas</a>
+      </div>
+      @for (record of records(); track record.id) {
+        <div class="flex items-center gap-3 border-b border-glass py-2.5 last:border-0">
+          <div class="min-w-0 flex-1">
+            <div class="truncate text-sm font-semibold">
+              {{ record.employee?.first_name }} {{ record.employee?.last_name }}
+            </div>
+            <div class="text-xs text-muted-text">
+              {{ record.type === 'check_in' ? 'Entrada' : 'Salida' }} ·
+              {{ channels[record.channel] }}
+            </div>
+          </div>
+          <span class="text-sm text-ink-soft tabular-nums">{{
+            record.recorded_at | tzDate: 'time' : record.office?.timezone
+          }}</span>
+          <span class="badge" [class]="record.status">{{ labels[record.status] }}</span>
+        </div>
+      } @empty {
+        <p class="empty">Aún no hay checadas hoy.</p>
+      }
+    </section>
+
+    <section class="card">
+      <div class="mb-2 flex items-center">
+        <h3 class="text-base">{{ seesTeam() ? 'Solicitudes por revisar' : 'Mis solicitudes' }}</h3>
+        <span class="flex-1"></span><a routerLink="/panel/solicitudes" class="text-sm">Ver todas</a>
+      </div>
+      @for (request of requests(); track request.id) {
+        <div class="flex items-center gap-3 border-b border-glass py-2.5 last:border-0">
+          <div class="min-w-0 flex-1">
+            <div class="truncate text-sm font-semibold">
+              {{ request.employee?.first_name }} {{ request.employee?.last_name }}
+            </div>
+            <div class="truncate text-xs text-muted-text">{{ request.reason }}</div>
+          </div>
+          <span class="text-xs text-muted-text">{{ request.starts_on | date: 'd MMM' }}</span>
+          <span class="badge" [class]="request.status">{{ labels[request.status] }}</span>
+        </div>
+      } @empty {
+        <p class="empty">Nada pendiente por ahora.</p>
+      }
+    </section>
+  </div>
+}

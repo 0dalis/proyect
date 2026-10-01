@@ -1,0 +1,85 @@
+<div class="group">
+  <div
+    class="mb-0.5 flex items-center gap-1 text-[11px] font-semibold tracking-wide text-muted-text uppercase"
+  >
+    <span>{{ label() }}</span>
+    @if (editable() && save() && !editing()) {
+      <button
+        type="button"
+        class="pencil grid size-4 cursor-pointer place-items-center rounded text-[9px] text-muted transition hover:bg-primary-soft hover:text-primary-active"
+        (click)="start()"
+        [attr.aria-label]="'Editar ' + label()"
+        [title]="'Editar ' + label().toLowerCase()"
+      >
+        <i class="bi bi-pencil" aria-hidden="true"></i>
+      </button>
+    }
+  </div>
+
+  @if (editing()) {
+    <form class="flex items-center gap-1.5" (ngSubmit)="commit()" (keydown.escape)="cancel()">
+      @switch (type()) {
+        @case ('select') {
+          <select
+            #field
+            name="value"
+            [(ngModel)]="draft"
+            class="!py-1 text-sm"
+            [disabled]="saving()"
+          >
+            @for (option of options(); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        }
+        @case ('pin') {
+          <input
+            #field
+            name="value"
+            type="password"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="6 dígitos"
+            [(ngModel)]="draft"
+            class="!py-1 text-sm"
+            [disabled]="saving()"
+          />
+        }
+        @default {
+          <input
+            #field
+            name="value"
+            [type]="type()"
+            [placeholder]="placeholder()"
+            [(ngModel)]="draft"
+            class="!py-1 text-sm"
+            [disabled]="saving()"
+          />
+        }
+      }
+      <button
+        type="submit"
+        class="btn btn-sm btn-ok !px-2"
+        [disabled]="saving()"
+        aria-label="Guardar"
+      >
+        <i
+          class="bi"
+          [class]="saving() ? 'bi-arrow-repeat animate-spin' : 'bi-check-lg'"
+          aria-hidden="true"
+        ></i>
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-ghost !px-2"
+        (click)="cancel()"
+        [disabled]="saving()"
+        aria-label="Cancelar"
+      >
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </form>
+  } @else {
+    <div class="min-h-6 text-sm font-medium text-ink">{{ shown() }}</div>
+  }
+</div>

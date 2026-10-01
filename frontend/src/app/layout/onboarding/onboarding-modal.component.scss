@@ -1,0 +1,47 @@
+/* Sin botón de cerrar ni cierre con Esc o clic fuera: el modal es obligatorio */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: start center;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+  background: color-mix(in srgb, #030c0a 60%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 64rem;
+  padding: 1.75rem;
+  animation: rise 0.25s ease-out;
+}
+
+.step-dot {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-line);
+  color: var(--color-muted-text);
+
+  &.active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &.done {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    color: #fff;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}

@@ -1,0 +1,654 @@
+<a
+  routerLink="/panel/empleados"
+  class="mb-4 inline-flex items-center gap-1 text-sm text-muted-text"
+>
+  <i class="bi bi-arrow-left" aria-hidden="true"></i> Empleados
+</a>
+
+@if (loading()) {
+  <app-skeleton type="detail" [rows]="8" />
+} @else if (employee(); as e) {
+  <div class="grid gap-5 xl:grid-cols-[22rem_1fr]">
+    <!-- ================= Columna izquierda: datos ================= -->
+    <div class="grid content-start gap-5">
+      <section class="card">
+        <div class="mb-4 flex items-center gap-4">
+          @if (e.photo_url; as photo) {
+            <img [src]="photo" alt="" class="size-16 shrink-0 rounded-2xl object-cover" />
+          } @else {
+            <span
+              class="grid size-16 shrink-0 place-items-center rounded-2xl bg-primary text-xl font-bold text-white"
+            >
+              {{ initials() }}
+            </span>
+          }
+          <div class="min-w-0">
+            <h1 class="!mb-1 truncate text-xl">{{ e.first_name }} {{ e.last_name }}</h1>
+            <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-text">
+              <span>{{ e.employee_code }}</span>
+              <span class="badge" [class]="e.status">{{ labels[e.status] }}</span>
+              @if (e.work_mode === 'remote') {
+                <span class="badge badge-brand">Home office</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (canEdit) {
+          <app-image-upload
+            class="mb-5"
+            [photoUrl]="e.photo_url"
+            [initials]="initials()"
+            [busy]="uploadingPhoto()"
+            [compact]="true"
+            label="Foto del empleado"
+            hint="Se usa en la ficha y en la credencial PDF. JPG, PNG o WebP · máximo 2 MB"
+            (upload)="uploadPhoto($event)"
+            (removed)="removePhoto()"
+          />
+        }
+
+        @if (e.needs_setup) {
+          <div class="alert alert-warning">
+            <i class="bi bi-hourglass" aria-hidden="true"></i>
+            <span>
+              Sin organizar: asígnale oficina, turno, área y tipo aquí abajo (o desde
+              <a routerLink="/panel/empleados/organizar">Organizar empleados</a>). Mientras tanto no
+              puede checar.
+            </span>
+          </div>
+        }
+
+        @if (e.locked_by_plan) {
+          <div class="alert alert-warning">
+            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+            <span>
+              Este empleado está fuera del límite de tu plan: no puede checar ni entrar, y sus datos
+              no se pueden modificar hasta que mejores tu plan.
+            </span>
+          </div>
+        }
+
+        <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+          <app-inline-field
+            label="Nombre(s)"
+            [value]="e.first_name"
+            [editable]="canEdit"
+            [save]="saveField('first_name', 'Nombre')"
+          />
+          <app-inline-field
+            label="Apellidos"
+            [value]="e.last_name"
+            [editable]="canEdit"
+            [save]="saveField('last_name', 'Apellidos')"
+          />
+          <app-inline-field
+            class="col-span-2"
+            label="Puesto"
+            [value]="e.position"
+            [editable]="canEdit"
+            [save]="saveField('position', 'Puesto')"
+          />
+          <app-inline-field
+            class="col-span-2"
+            label="Correo"
+            type="email"
+            [value]="e.email"
+            [editable]="canEdit"
+            [save]="saveField('email', 'Correo')"
+          />
+          <app-inline-field
+            label="Teléfono"
+            type="tel"
+            [value]="e.phone"
+            [editable]="canEdit"
+            [save]="saveField('phone', 'Teléfono')"
+          />
+          <app-inline-field
+            label="Ingreso"
+            type="date"
+            [value]="e.hired_on"
+            [editable]="canEdit"
+            [save]="saveField('hired_on', 'Fecha de ingreso')"
+          />
+
+          <app-inline-field
+            label="Área"
+            type="select"
+            [value]="e.area_id"
+            [options]="areaOptions()"
+            [display]="e.area?.name ?? null"
+            [editable]="canEdit && areaOptions().length > 0"
+            [save]="saveField('area_id', 'Área')"
+          />
+          <app-inline-field
+            label="Oficina"
+            type="select"
+            [value]="e.office_id"
+            [options]="officeOptions()"
+            [display]="e.office?.name ?? null"
+            [editable]="canEdit && officeOptions().length > 0"
+            [save]="saveField('office_id', 'Oficina')"
+          />
+          <app-inline-field
+            class="col-span-2"
+            label="Turno"
+            type="select"
+            [value]="e.shift_id"
+            [options]="shiftOptions()"
+            [display]="
+              e.shift
+                ? e.shift.name +
+                  ' (' +
+                  e.shift.starts_at.slice(0, 5) +
+                  '–' +
+                  e.shift.ends_at.slice(0, 5) +
+                  ')'
+                : null
+            "
+            [editable]="canEdit && shiftOptions().length > 0"
+            [save]="saveField('shift_id', 'Turno')"
+          />
+          <app-inline-field
+            label="Modalidad"
+            type="select"
+            [value]="e.work_mode"
+            [options]="workModeOptions"
+            [editable]="canEdit"
+            [save]="saveField('work_mode', 'Modalidad')"
+          />
+          <app-inline-field
+            label="Contrato"
+            type="select"
+            [value]="e.employment_type"
+            [options]="employmentOptions"
+            [editable]="canEdit"
+            [save]="saveField('employment_type', 'Tipo de contrato')"
+          />
+          @if (e.employment_type === 'temporary') {
+            <app-inline-field
+              label="Fin de contrato"
+              type="date"
+              [value]="e.contract_ends_on"
+              [editable]="canEdit"
+              [save]="saveField('contract_ends_on', 'Fin de contrato')"
+            />
+          }
+          <app-inline-field
+            label="Estado"
+            type="select"
+            [value]="e.status"
+            [options]="statusOptions"
+            [editable]="canEdit"
+            [save]="saveField('status', 'Estado')"
+          />
+          <app-inline-field
+            label="PIN para checar"
+            type="pin"
+            [value]="'pin'"
+            [editable]="canEdit"
+            [save]="saveField('pin', 'PIN')"
+          />
+
+          @if (canPayroll) {
+            <app-inline-field
+              label="Sueldo"
+              type="number"
+              [value]="e.salary"
+              [display]="e.salary ? '$' + (+e.salary).toLocaleString('es-MX') : null"
+              [save]="saveField('salary', 'Sueldo')"
+            />
+            <app-inline-field
+              label="Periodicidad"
+              type="select"
+              [value]="e.salary_period"
+              [options]="salaryPeriodOptions"
+              [save]="saveField('salary_period', 'Periodicidad')"
+            />
+          }
+        </div>
+      </section>
+
+      <!-- Credencial -->
+      <section class="card">
+        <div class="mb-2 flex items-center gap-2">
+          <span class="icon-tile !size-8 !text-base"
+            ><i class="bi bi-qr-code" aria-hidden="true"></i
+          ></span>
+          <h3 class="!mb-0 flex-1 text-base">Credencial</h3>
+        </div>
+        <p class="text-sm text-muted-text">
+          Emitida el {{ e.badge_issued_at ? (e.badge_issued_at | date: 'd MMM y') : '—' }}
+          @if (e.badge_expires_on) {
+            · vence el {{ e.badge_expires_on | date: 'd MMM y' }}
+          }
+        </p>
+        @if (canKiosks) {
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-primary" (click)="credentialOpen.set(true)">
+              <i class="bi bi-person-badge" aria-hidden="true"></i> Ver credencial
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" (click)="reissueBadge()">
+              <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Perdió su credencial
+            </button>
+          </div>
+        }
+      </section>
+
+      <!-- Acceso a la app -->
+      <section class="card">
+        <div class="mb-2 flex items-center gap-2">
+          <span class="icon-tile !size-8 !text-base"
+            ><i class="bi bi-phone" aria-hidden="true"></i
+          ></span>
+          <h3 class="!mb-0 flex-1 text-base">Acceso a la app</h3>
+          @if (canEdit) {
+            <label class="switch" title="Acceso a la app">
+              <input
+                type="checkbox"
+                role="switch"
+                aria-label="Acceso a la app"
+                [checked]="!!e.user?.app_access"
+                [disabled]="appSaving() || e.status !== 'active'"
+                (change)="toggleApp($event)"
+              />
+              <span aria-hidden="true"></span>
+            </label>
+          }
+        </div>
+
+        @if (appFormOpen()) {
+          <form class="grid gap-2" (ngSubmit)="saveApp(true)">
+            <p class="text-sm text-muted-text">
+              Escribe su correo. Le enviaremos el código de empresa y una contraseña temporal; al
+              entrar la cambiará y creará su PIN de 6 dígitos.
+            </p>
+            <input
+              type="email"
+              name="app-email"
+              placeholder="correo@empresa.com"
+              autocomplete="off"
+              [(ngModel)]="appEmail"
+              required
+            />
+            <div class="flex gap-2">
+              <button type="button" class="btn btn-sm" (click)="appFormOpen.set(false)">Cancelar</button>
+              <button type="submit" class="btn btn-primary btn-sm" [disabled]="!appEmail.includes('@') || appSaving()">
+                <i class="bi bi-send" aria-hidden="true"></i> Activar y enviar acceso
+              </button>
+            </div>
+          </form>
+        } @else if (e.user?.app_access && e.user; as user) {
+          <dl class="grid gap-1 text-sm">
+            <div class="flex gap-2">
+              <dt class="text-muted-text">Usuario</dt>
+              <dd class="ml-auto truncate font-medium">{{ user.email }}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="text-muted-text">Rol</dt>
+              <dd class="ml-auto font-medium">{{ user.role_label }}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="text-muted-text">Último acceso</dt>
+              <dd class="ml-auto font-medium">
+                {{ user.last_login_at ? (user.last_login_at | date: 'd MMM, HH:mm') : 'Nunca' }}
+              </dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="text-muted-text">Estado</dt>
+              <dd class="ml-auto">
+                @if (user.blocked_at) {
+                  <span class="badge rejected">Bloqueado</span>
+                } @else if (user.must_change_password) {
+                  <span class="badge pending">Pendiente de primer acceso</span>
+                } @else {
+                  <span class="badge active">Activo</span>
+                }
+              </dd>
+            </div>
+          </dl>
+          <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            @if (canEdit) {
+              <button type="button" class="link-button" (click)="resendApp()">
+                <i class="bi bi-envelope" aria-hidden="true"></i> Reenviar acceso
+              </button>
+            }
+            @if (canUsers) {
+              <a routerLink="/panel/usuarios">Roles y bloqueos</a>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-muted-text">
+            Sin app: checa y consulta su asistencia en el kiosko con su número de empleado y PIN, o
+            con su credencial.
+          </p>
+        }
+      </section>
+
+      <!-- Vacaciones -->
+      <section class="card">
+        <div class="mb-3 flex items-center gap-2">
+          <span class="icon-tile !size-8 !text-base"
+            ><i class="bi bi-sun" aria-hidden="true"></i
+          ></span>
+          <h3 class="!mb-0 flex-1 text-base">Vacaciones</h3>
+        </div>
+        <app-vacation-balance [balance]="e.vacation" />
+      </section>
+
+      <!-- Home office -->
+      <section class="card">
+        <div class="mb-2 flex items-center gap-2">
+          <span class="icon-tile !size-8 !text-base"
+            ><i class="bi bi-house-door" aria-hidden="true"></i
+          ></span>
+          <h3 class="!mb-0 flex-1 text-base">Home office por días</h3>
+        </div>
+        <p class="text-sm text-muted-text">
+          Esos días no se valida la geocerca; sí aplican turno y retardos.
+        </p>
+        @for (period of e.remote_work_periods; track period.id) {
+          <div class="mb-2 flex items-center gap-2 rounded-xl bg-canvas/70 px-3 py-2 text-sm">
+            <i class="bi bi-calendar-range text-muted" aria-hidden="true"></i>
+            <span class="flex-1">
+              {{ period.starts_on | date: 'd MMM' }} –
+              {{ period.ends_on ? (period.ends_on | date: 'd MMM y') : 'sin fin' }}
+              <span class="block text-xs text-muted-text">{{ weekdayNames(period.weekdays) }}</span>
+            </span>
+            @if (canEdit) {
+              <button
+                type="button"
+                class="btn btn-sm btn-ghost btn-danger !px-2"
+                (click)="removeRemote(period.id)"
+                aria-label="Quitar periodo"
+              >
+                <i class="bi bi-trash3" aria-hidden="true"></i>
+              </button>
+            }
+          </div>
+        }
+        @if (canEdit) {
+          <div class="mt-2 grid grid-cols-2 gap-2">
+            <input type="date" [(ngModel)]="remote.starts_on" aria-label="Desde" />
+            <input type="date" [(ngModel)]="remote.ends_on" aria-label="Hasta (opcional)" />
+          </div>
+          <div class="mt-2 flex flex-wrap gap-1">
+            @for (day of weekdays; track day.value) {
+              <button
+                type="button"
+                class="btn btn-sm !px-2"
+                [class.btn-primary]="remote.days.has(day.value)"
+                (click)="toggleRemoteDay(day.value)"
+                [attr.aria-pressed]="remote.days.has(day.value)"
+                [title]="day.label"
+              >
+                {{ day.short }}
+              </button>
+            }
+          </div>
+          <button
+            type="button"
+            class="btn btn-sm mt-2 w-full"
+            [disabled]="!remote.starts_on"
+            (click)="addRemote()"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar periodo
+          </button>
+          <p class="hint mt-1">Sin días marcados = todos los días del rango.</p>
+        }
+      </section>
+    </div>
+
+    <!-- ================= Columna derecha: asistencia e historial ================= -->
+    <div class="grid content-start gap-5">
+      <section class="card">
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <h2 class="!mb-0 flex-1 text-lg">Asistencia</h2>
+          <div class="flex gap-1 rounded-xl bg-canvas/70 p-1">
+            @for (
+              option of [
+                { v: 'week', l: 'Semana' },
+                { v: 'month', l: 'Mes' },
+                { v: 'year', l: 'Año' },
+              ];
+              track option.v
+            ) {
+              <button
+                type="button"
+                class="btn btn-sm"
+                [class.btn-ghost]="period() !== option.v"
+                [class.btn-primary]="period() === option.v"
+                (click)="setPeriod($any(option.v))"
+              >
+                {{ option.l }}
+              </button>
+            }
+          </div>
+          <button type="button" class="btn btn-sm" (click)="downloadReport()">
+            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Reporte PDF
+          </button>
+        </div>
+
+        <div class="mb-4 flex items-center gap-2">
+          <button
+            type="button"
+            class="btn btn-sm btn-ghost !px-2"
+            (click)="move(-1)"
+            aria-label="Periodo anterior"
+          >
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+          </button>
+          <span class="min-w-40 text-center text-sm font-semibold text-ink capitalize">{{
+            rangeLabel()
+          }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-ghost !px-2"
+            (click)="move(1)"
+            aria-label="Periodo siguiente"
+          >
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        @if (statsLoading()) {
+          <app-skeleton type="cards" [cards]="4" />
+          <div class="mt-4"><app-skeleton type="chart" /></div>
+        } @else if (stats(); as s) {
+          <div class="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div class="rounded-xl bg-canvas/70 p-3">
+              <div class="stat-label">Días trabajados</div>
+              <div class="text-2xl font-bold text-ink">
+                {{ s.metrics.worked_days
+                }}<span class="text-sm font-medium text-muted-text">
+                  / {{ s.metrics.scheduled_days }}</span
+                >
+              </div>
+            </div>
+            <div class="rounded-xl bg-canvas/70 p-3">
+              <div class="stat-label">A tiempo</div>
+              <div class="text-2xl font-bold text-ink">{{ s.metrics.on_time }}</div>
+            </div>
+            <div class="rounded-xl bg-canvas/70 p-3">
+              <div class="stat-label">Retardos</div>
+              <div class="text-2xl font-bold text-ink">{{ s.metrics.lates }}</div>
+              <div class="text-xs text-muted-text">
+                {{ s.metrics.unjustified_lates }} sin justificar · {{ s.metrics.minutes_late }} min
+              </div>
+            </div>
+            <div class="rounded-xl bg-canvas/70 p-3">
+              <div class="stat-label">Faltas</div>
+              <div class="text-2xl font-bold text-ink">{{ s.metrics.absences }}</div>
+              <div class="text-xs text-muted-text">
+                {{ s.metrics.unjustified_absences }} sin justificar
+              </div>
+            </div>
+          </div>
+
+          <app-status-chart
+            [data]="chartPoints()"
+            [description]="'Asistencia de ' + e.first_name + ' en ' + rangeLabel()"
+          />
+
+          @if (period() !== 'year') {
+            <div class="mt-5 max-h-96 overflow-y-auto rounded-xl border border-line">
+              <table>
+                <thead class="sticky top-0 bg-surface">
+                  <tr>
+                    <th>Día</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Extra</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (day of visibleDays(); track day.date) {
+                    <tr [class.opacity-50]="day.status === 'rest' || day.status === 'pending' || day.status === 'holiday'">
+                      <td class="text-sm capitalize">{{ day.date | date: 'EEE d MMM' }}</td>
+                      <td class="tabular-nums">{{ day.check_in ?? '—' }}</td>
+                      <td class="tabular-nums">{{ day.check_out ?? '—' }}</td>
+                      <td class="text-sm tabular-nums">
+                        @if (day.overtime_minutes) {
+                          <span class="text-info-text">+{{ hours(day.overtime_minutes) }}</span>
+                        } @else {
+                          —
+                        }
+                      </td>
+                      <td>
+                        @if (day.status === 'rest' || day.status === 'pending' || day.status === 'holiday') {
+                          <span class="text-xs text-muted-text">{{ day.holiday ?? dayLabels[day.status] }}</span>
+                        } @else {
+                          <span
+                            class="badge"
+                            [class]="day.status === 'excused' ? 'badge-brand' : day.status"
+                            >{{ dayLabels[day.status] }}</span
+                          >
+                        }
+                        @if (day.minutes_late) {
+                          <span class="text-xs text-muted-text"> {{ day.minutes_late }} min</span>
+                        }
+                        @if (day.justified) {
+                          <span class="badge badge-brand ml-1">Justificado</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        }
+      </section>
+
+      <section class="card">
+        <div class="cal-card" #calendarCard>
+          <div class="cal-head">
+            <span class="cal-head__icon"
+              ><i class="bi bi-calendar3" aria-hidden="true"></i
+            ></span>
+            <h2 class="cal-head__title">Calendario de asistencia</h2>
+            <div class="cal-nav">
+              <button
+                type="button"
+                class="cal-nav__btn"
+                (click)="moveCalendar(-1)"
+                [disabled]="!canGoPrev()"
+                aria-label="Mes anterior"
+              >
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+              </button>
+              <span class="cal-nav__label">{{ calendarLabel() }}</span>
+              <button
+                type="button"
+                class="cal-nav__btn"
+                (click)="moveCalendar(1)"
+                [disabled]="!canGoNext()"
+                aria-label="Mes siguiente"
+              >
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="cal-weekdays">
+            @for (label of calendarWeekdays; track label) {
+              <span>{{ label }}</span>
+            }
+          </div>
+
+          @if (calendarLoading()) {
+            <app-skeleton type="lines" [rows]="6" />
+          } @else {
+            <div class="cal-grid">
+              @for (day of calendarCells(); track $index) {
+                @if (day) {
+                  <div
+                    class="cal-day"
+                    [attr.data-tone]="dayTone(day)"
+                    [class.is-today]="isToday(day)"
+                    [title]="dayTitle(day)"
+                    [style.animation-delay.ms]="$index * 12"
+                  >
+                    <span class="cal-day__num">{{ dayNumber(day) }}</span>
+                    @if (dayIcon(day); as icon) {
+                      <span class="cal-day__badge"><i class="bi" [class]="icon"></i></span>
+                    } @else {
+                      <span class="cal-day__badge cal-day__badge--empty"></span>
+                    }
+                  </div>
+                } @else {
+                  <div class="cal-day cal-day--empty"></div>
+                }
+              }
+            </div>
+          }
+
+          <ul class="cal-legend">
+            @for (item of calendarLegend; track item.tone) {
+              <li class="cal-legend__pill">
+                <span class="cal-dot" [attr.data-tone]="item.tone"></span>
+                {{ item.label }}
+              </li>
+            }
+            <li class="cal-legend__today">
+              <span class="cal-dot cal-dot--today"></span> Hoy
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="hist-head">
+          <span class="hist-head__icon"
+            ><i class="bi bi-clock-history" aria-hidden="true"></i
+          ></span>
+          <div class="hist-head__text">
+            <h2 class="hist-head__title">Historial</h2>
+            <p class="hist-head__sub">
+              Cambios a su expediente, justificaciones, descargas y lo que hizo en el sistema.
+            </p>
+          </div>
+        </div>
+
+        <app-activity-timeline [entries]="activity()" [actions]="activityActions()" />
+
+        @if (activityPage() < activityLastPage()) {
+          <button type="button" class="hist-more" (click)="loadActivity(activityPage() + 1)">
+            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Ver más
+          </button>
+        }
+      </section>
+    </div>
+  </div>
+
+  @if (credentialOpen()) {
+    <app-credential-viewer
+      [employee]="e"
+      [company]="auth.user()!.company"
+      (closed)="credentialOpen.set(false)"
+    />
+  }
+} @else {
+  <div class="card empty">No encontramos a este empleado o no tienes acceso a él.</div>
+}

@@ -1,0 +1,58 @@
+@for (stack of stacks(); track stack.position) {
+  <section
+    class="stack"
+    [class]="'stack--' + stack.position"
+    aria-live="polite"
+    aria-label="Notificaciones"
+  >
+    @for (toast of stack.toasts; track toast.id) {
+      <!-- El "slot" anima la altura para que las demás se acomoden suave -->
+      <div class="slot" animate.enter="slot--enter" animate.leave="slot--leave">
+        <div class="slot__inner">
+          <article
+            class="toast"
+            [class]="'toast--' + toast.type + ' toast--' + toast.display"
+            [class.toast--expanded]="isExpanded(toast)"
+            [attr.role]="toast.type === 'error' ? 'alert' : 'status'"
+            (mouseenter)="toastService.pause(toast.id)"
+            (mouseleave)="!isExpanded(toast) && toastService.resume(toast.id)"
+            (click)="toggle(toast)"
+          >
+            <!-- 20 %: icono sobre el color del tipo -->
+            <div class="toast__icon">
+              <i class="bi" [class]="'bi-' + toast.icon" aria-hidden="true"></i>
+            </div>
+
+            <!-- 80 %: texto -->
+            <div class="toast__body">
+              <p class="toast__title">{{ toast.title }}</p>
+              <p class="toast__message">{{ toast.message }}</p>
+            </div>
+
+            @if (toast.closable) {
+              <button
+                type="button"
+                class="toast__close"
+                (click)="close(toast, $event)"
+                aria-label="Cerrar notificación"
+              >
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </button>
+            }
+
+            @if (toast.duration > 0) {
+              <div
+                class="toast__progress"
+                [class.toast__progress--paused]="toast.paused"
+                [style.animation-duration.ms]="toast.duration"
+              ></div>
+            }
+
+            <!-- En modo icono el texto no se ve, pero sí se anuncia -->
+            <span class="sr-only">{{ toast.title }}: {{ toast.message }}</span>
+          </article>
+        </div>
+      </div>
+    }
+  </section>
+}

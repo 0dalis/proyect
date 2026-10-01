@@ -1,0 +1,149 @@
+<!-- Mensual / anual -->
+<div class="mb-5 flex flex-wrap items-center justify-center gap-3">
+  <div class="interval" role="radiogroup" aria-label="Forma de pago">
+    <button
+      type="button"
+      role="radio"
+      [attr.aria-checked]="interval() === 'month'"
+      [class.active]="interval() === 'month'"
+      (click)="interval.set('month')"
+    >
+      Mensual
+    </button>
+    <button
+      type="button"
+      role="radio"
+      [attr.aria-checked]="interval() === 'year'"
+      [class.active]="interval() === 'year'"
+      (click)="interval.set('year')"
+    >
+      Anual
+    </button>
+  </div>
+  <span class="badge active"><i class="bi bi-gift" aria-hidden="true"></i> Anual: pagas 11 meses, 1 de regalo</span>
+</div>
+
+<!-- Planes -->
+<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" role="radiogroup" aria-label="Plan">
+  @for (plan of options().plans; track plan.slug) {
+    <button
+      type="button"
+      role="radio"
+      class="plan"
+      [class.selected]="selectedSlug() === plan.slug"
+      [class.current]="isCurrent(plan)"
+      [attr.aria-checked]="selectedSlug() === plan.slug"
+      [disabled]="isCurrent(plan)"
+      (click)="select(plan)"
+    >
+      <span class="flex items-center justify-between gap-2">
+        <strong class="text-base text-ink">{{ plan.name }}</strong>
+        @if (isCurrent(plan)) {
+          <span class="badge">Plan actual</span>
+        } @else if (plan.is_free) {
+          <span class="badge">Sin costo</span>
+        } @else if (firstTime() && plan.trial_days) {
+          <span class="badge badge-brand">{{ plan.trial_days }} días de prueba</span>
+        }
+      </span>
+
+      <span class="mt-2 block">
+        @if (plan.is_free) {
+          <span class="text-2xl font-bold text-ink">Gratis</span>
+        } @else {
+          <span class="text-2xl font-bold text-ink">{{ price(plan) | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</span>
+          <span class="text-sm text-muted-text"> / {{ interval() === 'year' ? 'año' : 'mes' }}</span>
+          @if (interval() === 'year') {
+            <span class="block text-xs text-success-text">
+              Equivale a {{ monthlyEquivalent(plan) | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} al mes
+            </span>
+          }
+        }
+      </span>
+
+      <span class="mt-3 block text-sm text-ink-soft">
+        <i class="bi bi-people" aria-hidden="true"></i> {{ plan.included_employees }} empleados ·
+        {{ plan.included_offices }} {{ plan.included_offices === 1 ? 'oficina' : 'oficinas' }}
+      </span>
+      <span class="mt-1 block text-sm" [class.text-ink-soft]="plan.includes_payroll" [class.text-muted-text]="!plan.includes_payroll">
+        <i class="bi" [class.bi-check2]="plan.includes_payroll" [class.bi-x]="!plan.includes_payroll" aria-hidden="true"></i>
+        Pre-nómina y bonos
+      </span>
+      @if (plan.description) {
+        <span class="mt-2 block text-xs text-muted-text">{{ plan.description }}</span>
+      }
+    </button>
+  }
+</div>
+
+<!-- Resumen y pago -->
+@if (selected(); as plan) {
+  <div class="mt-5 rounded-2xl border border-line bg-surface/60 p-4">
+    @if (plan.is_free) {
+      <p class="text-sm text-ink-soft">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        El plan Free no tiene costo ni periodo de prueba. Incluye hasta
+        {{ plan.included_employees }} empleados y <strong>no incluye pre-nómina ni bonos</strong>.
+        Puedes mejorar tu plan cuando quieras.
+      </p>
+    } @else {
+      @if (firstTime() && plan.trial_days) {
+        <p class="text-sm text-ink-soft">
+          <i class="bi bi-calendar-check" aria-hidden="true"></i>
+          Hoy no se te cobra nada. Tu prueba de {{ plan.trial_days }} días termina el
+          <strong>{{ trialEnds() | date: "d 'de' MMMM" }}</strong>. Un día antes, el
+          <strong>{{ chargeOn() | date: "d 'de' MMMM" }}</strong>, se cobrará
+          <strong>{{ price(plan) | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</strong>
+          ({{ interval() === 'year' ? 'anual' : 'mensual' }}). Puedes cancelar cuando quieras.
+        </p>
+      } @else {
+        <p class="text-sm text-ink-soft">
+          <i class="bi bi-credit-card" aria-hidden="true"></i>
+          Se cobrará <strong>{{ price(plan) | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</strong>
+          ({{ interval() === 'year' ? 'anual' : 'mensual' }}) al confirmar. Puedes cancelar cuando
+          quieras.
+        </p>
+      }
+
+      <div class="mt-4">
+        @if (demo()) {
+          <div class="alert alert-info !mb-0">
+            <i class="bi bi-cone-striped" aria-hidden="true"></i>
+            Stripe no está configurado (modo demo): no se pedirá tarjeta ni se hará ningún cargo.
+          </div>
+        } @else {
+          <p class="mb-2 text-sm font-medium text-ink">Tarjeta de crédito o débito</p>
+          <div #card class="min-h-12"></div>
+          @if (cardLoading()) {
+            <p class="text-sm text-muted-text">
+              <i class="bi bi-arrow-repeat animate-spin" aria-hidden="true"></i> Cargando formulario seguro de Stripe…
+            </p>
+          }
+          @if (cardError()) {
+            <div class="alert alert-error mt-2 !mb-0">{{ cardError() }}</div>
+          }
+          <p class="mt-2 text-xs text-muted-text">
+            <i class="bi bi-lock" aria-hidden="true"></i> Los datos de tu tarjeta van directo a
+            Stripe; AsistControl no los guarda.
+          </p>
+        }
+      </div>
+    }
+  </div>
+}
+
+<div class="mt-5 flex justify-end">
+  <button class="btn btn-primary btn-lg" type="button" (click)="submit()" [disabled]="!canSubmit()">
+    @if (submitting()) {
+      <i class="bi bi-arrow-repeat animate-spin" aria-hidden="true"></i> Activando…
+    } @else if (!selected()) {
+      Elige un plan
+    } @else if (selected()!.is_free) {
+      Usar plan Free
+    } @else if (firstTime() && selected()!.trial_days) {
+      Comenzar prueba gratis
+    } @else {
+      Pagar y cambiar de plan
+    }
+  </button>
+</div>

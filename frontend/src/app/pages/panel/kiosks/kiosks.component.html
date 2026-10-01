@@ -1,0 +1,95 @@
+<app-page-header
+  heading="Kioskos"
+  description="Tabletas o PCs en la entrada para quienes checan con credencial QR o PIN."
+>
+  <button class="btn btn-primary" type="button" (click)="creating.set(true)">+ Nuevo kiosko</button>
+</app-page-header>
+
+@if (newToken(); as token) {
+  <div class="card token-card">
+    <h3>Configura el kiosko</h3>
+    <ol>
+      <li>
+        En la tableta o PC de la entrada abre <strong>{{ kioskUrl }}</strong>
+      </li>
+      <li>Pega este código de activación. <strong>Solo se muestra una vez.</strong></li>
+    </ol>
+    <code class="token">{{ token }}</code>
+    <div class="flex flex-wrap items-center gap-3" style="margin-top: 0.75rem">
+      <button class="btn" type="button" (click)="copy(token)">
+        {{ copied() ? '¡Copiado!' : 'Copiar código' }}
+      </button>
+      <button class="btn btn-ghost" type="button" (click)="newToken.set(null)">Listo</button>
+    </div>
+  </div>
+}
+
+@if (loading()) {
+  <app-skeleton type="table" [rows]="3" [columns]="4" />
+} @else {
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Kiosko</th>
+          <th>Oficina</th>
+          <th>Última conexión</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (kiosk of kiosks(); track kiosk.id) {
+          <tr>
+            <td>
+              <strong>{{ kiosk.name }}</strong>
+            </td>
+            <td>{{ kiosk.office?.name }}</td>
+            <td class="text-sm text-muted-text">
+              {{ kiosk.last_seen_at ? (kiosk.last_seen_at | date: 'short') : 'Nunca' }}
+            </td>
+            <td>
+              <span class="badge" [class.active]="kiosk.is_active">{{
+                kiosk.is_active ? 'Activo' : 'Desactivado'
+              }}</span>
+            </td>
+            <td class="flex flex-wrap items-center gap-3" style="justify-content: flex-end">
+              <button class="btn btn-sm" type="button" (click)="regenerate(kiosk)">
+                Nuevo código
+              </button>
+              <button class="btn btn-sm" type="button" (click)="toggle(kiosk)">
+                {{ kiosk.is_active ? 'Desactivar' : 'Activar' }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="empty">Aún no tienes kioskos.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (creating()) {
+  <app-modal heading="Nuevo kiosko" (closed)="creating.set(false)">
+    <div class="field">
+      <label>Nombre</label><input [(ngModel)]="draft.name" placeholder="Ej. Entrada almacén" />
+    </div>
+    <div class="field">
+      <label>Oficina</label>
+      <select [(ngModel)]="draft.office_id">
+        @for (office of offices(); track office.id) {
+          <option [ngValue]="office.id">{{ office.name }}</option>
+        }
+      </select>
+    </div>
+    <div modal-footer>
+      <button class="btn" type="button" (click)="creating.set(false)">Cancelar</button>
+      <button class="btn btn-primary" type="button" (click)="create()" [disabled]="!draft.name">
+        Crear
+      </button>
+    </div>
+  </app-modal>
+}

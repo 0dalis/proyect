@@ -1,0 +1,28 @@
+<div class="glass flex flex-wrap items-center gap-2 rounded-2xl p-2">
+  @for (preset of presets; track preset.key) {
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-ghost]="!isActive(preset.period)"
+      [class.btn-primary]="isActive(preset.period)"
+      (click)="period.set(preset.period)"
+    >
+      {{ preset.label }}
+    </button>
+  }
+  <span class="mx-1 h-6 w-px bg-line"></span>
+  <input
+    type="date"
+    class="!w-auto !py-1 text-sm"
+    [ngModel]="period().from"
+    (ngModelChange)="period.set({ from: $event, to: period().to })"
+  />
+  <span class="text-muted">–</span>
+  <input
+    type="date"
+    class="!w-auto !py-1 text-sm"
+    [ngModel]="period().to"
+    (ngModelChange)="period.set({ from: period().from, to: $event })"
+  />
+  <ng-content />
+</div>

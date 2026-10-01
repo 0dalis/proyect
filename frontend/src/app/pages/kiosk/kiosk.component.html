@@ -1,0 +1,274 @@
+@if (!info()) {
+  <div class="grid min-h-screen place-items-center p-4">
+    <div class="card w-full max-w-md !p-8">
+      <h1 class="text-2xl">Activar kiosko</h1>
+      <p class="mb-5 text-sm text-muted-text">
+        En el panel ve a
+        <strong
+          >Kioskos <i class="bi bi-chevron-right text-xs" aria-hidden="true"></i> Nuevo
+          kiosko</strong
+        >
+        y pega aquí el código de activación.
+      </p>
+      @if (activationError()) {
+        <div class="alert alert-error">{{ activationError() }}</div>
+      }
+      <div class="field">
+        <label for="code">Código de activación</label>
+        <input id="code" [(ngModel)]="activationCode" placeholder="1|3|AbC..." />
+      </div>
+      <button
+        class="btn btn-primary btn-lg w-full"
+        type="button"
+        (click)="activate()"
+        [disabled]="!activationCode"
+      >
+        Activar
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="flex min-h-screen flex-col p-4 lg:p-6">
+    <header class="glass glass-bar mb-5 flex items-center px-6 py-4">
+      <div>
+        <div class="text-xl font-bold text-ink">{{ info()!.company.name }}</div>
+        <div class="text-sm text-muted-text">
+          {{ info()!.office.name }} · {{ info()!.kiosk.name }}
+        </div>
+      </div>
+      <span class="flex-1"></span>
+      <app-theme-toggle />
+      <button
+        class="btn btn-ghost btn-sm"
+        type="button"
+        (click)="deactivate()"
+        title="Desvincular kiosko"
+      >
+        <i class="bi bi-gear" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <main class="grid flex-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
+      <section class="glass flex flex-col items-center p-6">
+        <div class="text-7xl font-extrabold text-ink tabular-nums md:text-8xl">
+          {{ now() | tzDate: 'time' : info()?.office?.timezone
+          }}<span class="text-3xl text-muted">{{ now() | date: ':ss' }}</span>
+        </div>
+        <div class="mb-6 text-lg text-muted-text capitalize">
+          {{ now() | date: "EEEE d 'de' MMMM" }}
+        </div>
+
+        <div
+          class="relative aspect-[4/3] w-full max-w-lg overflow-hidden rounded-3xl border-4 border-glass bg-surface/40 shadow-xl shadow-black/10"
+        >
+          <video #video playsinline muted class="size-full -scale-x-100 object-cover"></video>
+          @if (cameraReady()) {
+            <div
+              class="absolute inset-x-[25%] inset-y-[18%] rounded-2xl border-4 border-glass shadow-[0_0_0_999px_color-mix(in_oklab,var(--color-surface)_35%,transparent)]"
+            ></div>
+            <div class="absolute inset-x-0 bottom-4 text-center font-semibold text-ink drop-shadow">
+              Acerca el QR de tu credencial
+            </div>
+          } @else {
+            <div class="absolute inset-0 grid place-items-center p-6 text-center text-muted-text">
+              {{ cameraError() ?? 'Encendiendo cámara…' }}
+            </div>
+          }
+        </div>
+
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+          <button class="btn btn-lg !px-8 !py-4 !text-lg" type="button" (click)="openKeypad('punch')">
+            <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> Checar con código y PIN
+          </button>
+          <button class="btn btn-ghost btn-lg !px-6 !py-4 !text-lg" type="button" (click)="openKeypad('history')">
+            <i class="bi bi-calendar-week" aria-hidden="true"></i> Consultar mi asistencia
+          </button>
+        </div>
+      </section>
+
+      <aside class="glass max-h-[calc(100vh-9rem)] overflow-y-auto p-6">
+        <h2 class="text-xl">Noticias de la empresa</h2>
+        @for (item of news(); track item.id) {
+          <article class="border-b border-glass py-4 last:border-0">
+            <h3 class="text-lg">{{ item.title }}</h3>
+            <p class="text-ink-soft">{{ item.body }}</p>
+            <span class="text-xs text-muted">{{ item.created_at | date: 'd MMM' }}</span>
+          </article>
+        } @empty {
+          <p class="text-muted-text">Sin noticias por ahora.</p>
+        }
+      </aside>
+    </main>
+
+    @if (keypadOpen()) {
+      <div class="modal-backdrop" (click)="closeKeypad()">
+        <div
+          class="glass w-full max-w-sm bg-surface/85 p-6 text-center"
+          (click)="$event.stopPropagation()"
+        >
+          @if (keypadPurpose() === 'history') {
+            <p class="!mb-1 text-sm font-semibold text-primary-active">Consultar mi asistencia</p>
+          }
+          <h2 class="text-xl">
+            {{ keypadStep() === 'number' ? 'Tu código de empleado' : 'Tu PIN' }}
+          </h2>
+          @if (keypadStep() === 'number') {
+            <p class="mt-1 text-sm text-muted-text">
+              Las cifras de tu credencial, sin las letras (ALDE-0006 → 0006)
+            </p>
+          }
+          <div
+            class="my-4 min-h-16 rounded-2xl bg-surface/80 p-3 text-4xl font-extrabold tracking-[0.25em] text-ink"
+          >
+            @if (keypadStep() === 'number') {
+              {{ employeeNumber() || '—' }}
+            } @else {
+              @for (_ of pin().split(''); track $index) {
+                <i class="bi bi-circle-fill mx-1 text-base" aria-hidden="true"></i>
+              }
+              @if (!pin()) {
+                —
+              }
+            }
+          </div>
+          @if (failure()) {
+            <div class="alert alert-error">{{ failure() }}</div>
+          }
+          <div class="mb-3 grid grid-cols-3 gap-2.5">
+            @for (key of keys; track key) {
+              <button
+                type="button"
+                class="cursor-pointer rounded-2xl border border-glass py-4 text-2xl font-bold shadow-sm transition active:scale-95 disabled:opacity-50"
+                [class]="
+                  key === 'ok'
+                    ? 'bg-primary text-base text-white'
+                    : 'bg-surface/80 text-ink hover:bg-surface'
+                "
+                [disabled]="busy()"
+                (click)="pressKey(key)"
+              >
+                @if (key === 'ok') {
+                  {{ keypadStep() === 'number' ? 'Siguiente' : keypadPurpose() === 'history' ? 'Consultar' : 'Checar' }}
+                } @else if (key === 'borrar') {
+                  <i class="bi bi-backspace" aria-label="Borrar"></i>
+                } @else {
+                  {{ key }}
+                }
+              </button>
+            }
+          </div>
+          <button class="btn btn-ghost" type="button" (click)="closeKeypad()">Cancelar</button>
+        </div>
+      </div>
+    }
+
+    @if (result(); as r) {
+      <div
+        class="fixed inset-0 z-[3000] grid place-items-center backdrop-blur-md"
+        [class]="
+          r.status === 'on_time'
+            ? 'bg-success-soft/90'
+            : r.status === 'absent'
+              ? 'bg-danger-soft/90'
+              : 'bg-warning-soft/90'
+        "
+      >
+        <div class="glass bg-surface/80 px-12 py-10 text-center">
+          <div
+            class="mx-auto mb-4 grid size-24 place-items-center rounded-full text-5xl font-extrabold text-white"
+            [class]="
+              r.status === 'on_time'
+                ? 'bg-status-good'
+                : r.status === 'absent'
+                  ? 'bg-status-critical'
+                  : 'bg-status-warning'
+            "
+          >
+            <i
+              class="bi"
+              [class]="r.status === 'on_time' ? 'bi-check-lg' : 'bi-exclamation-lg'"
+              aria-hidden="true"
+            ></i>
+          </div>
+          <h2 class="text-4xl">{{ r.employee.name }}</h2>
+          <p class="text-3xl font-bold text-ink">
+            {{ r.type === 'check_in' ? 'Entrada' : 'Salida' }} {{ r.local_time }}
+          </p>
+          <p class="mt-2 text-xl text-ink-soft">
+            {{ labels[r.status] }}
+            @if (r.minutes_late) {
+              · {{ r.minutes_late }} min
+            }
+            @if (r.duplicate) {
+              · ya estaba registrada
+            }
+          </p>
+        </div>
+      </div>
+    }
+
+    @if (history(); as h) {
+      <div class="modal-backdrop" (click)="closeHistory()">
+        <div
+          class="glass max-h-[90vh] w-full max-w-2xl overflow-y-auto bg-surface/90 p-6"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="mb-4 flex items-start gap-3">
+            <div class="flex-1">
+              <h2 class="!mb-0 text-2xl">{{ h.employee.name }}</h2>
+              <p class="!mb-0 text-sm text-muted-text">
+                {{ h.employee.employee_code }} · últimos 14 días
+                @if (h.late_count) {
+                  · <strong class="text-warning-text">{{ h.late_count }} retardo(s) sin justificar</strong>
+                }
+              </p>
+            </div>
+            <button class="btn" type="button" (click)="closeHistory()">
+              <i class="bi bi-x-lg" aria-hidden="true"></i> Cerrar
+            </button>
+          </div>
+          <table class="w-full text-left text-lg">
+            <thead>
+              <tr class="text-sm text-muted-text">
+                <th class="py-2">Día</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (day of h.days; track day.date) {
+                <tr class="border-t border-glass">
+                  <td class="py-2 capitalize">{{ day.date + 'T12:00:00' | date: 'EEE d MMM' }}</td>
+                  <td class="tabular-nums">{{ day.check_in ?? '—' }}</td>
+                  <td class="tabular-nums">{{ day.check_out ?? '—' }}</td>
+                  <td>
+                    @if (day.status) {
+                      <span class="badge" [class]="day.status">{{ day.status_label }}</span>
+                      @if (day.is_justified) {
+                        <span class="badge approved">Justificado</span>
+                      }
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="py-6 text-center text-muted-text">Sin checadas en estos días.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <p class="mt-4 text-center text-xs text-muted-text">Esta ventana se cierra sola en 30 segundos.</p>
+        </div>
+      </div>
+    }
+
+    @if (failure() && !keypadOpen()) {
+      <div
+        class="fixed bottom-8 left-1/2 z-[3000] -translate-x-1/2 rounded-2xl border border-danger/30 bg-danger-soft px-6 py-4 font-semibold text-danger-text shadow-lg backdrop-blur"
+      >
+        {{ failure() }}
+      </div>
+    }
+  </div>
+}

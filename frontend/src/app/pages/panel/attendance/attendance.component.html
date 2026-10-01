@@ -1,0 +1,174 @@
+<app-page-header
+  heading="Asistencia"
+  description="Checadas de app, kiosko y registros manuales. Toca una fila para ver dónde se registró."
+>
+  @if (canManage) {
+    <button type="button" class="btn btn-primary" (click)="openManual()">+ Registro manual</button>
+  }
+</app-page-header>
+
+<div class="glass mb-4 flex flex-wrap items-center gap-3 rounded-2xl p-3">
+  <label class="flex items-center gap-2 text-sm text-ink-soft"
+    >Desde <input type="date" class="!w-auto !py-1" [(ngModel)]="from" (change)="load()"
+  /></label>
+  <label class="flex items-center gap-2 text-sm text-ink-soft"
+    >Hasta <input type="date" class="!w-auto !py-1" [(ngModel)]="to" (change)="load()"
+  /></label>
+  <select class="!w-auto !py-1 text-sm" [(ngModel)]="status" (change)="load()">
+    <option value="">Todos los estados</option>
+    <option value="on_time">A tiempo</option>
+    <option value="late">Retardos</option>
+    <option value="absent">Faltas</option>
+    <option value="early_leave">Salidas anticipadas</option>
+  </select>
+  @if (myEmployeeId && auth.user()?.role !== 'employee') {
+    <label class="check"
+      ><input type="checkbox" [(ngModel)]="onlyMine" (change)="load()" /> Solo mis checadas</label
+    >
+  }
+</div>
+
+@if (loading()) {
+  <app-skeleton type="table" [rows]="8" [columns]="6" />
+} @else {
+  <div class="card overflow-x-auto p-0">
+    <table>
+      <thead>
+        <tr>
+          <th class="pl-5">Empleado</th>
+          <th>Jornada</th>
+          <th>Movimiento</th>
+          <th>Hora</th>
+          <th>Estado</th>
+          <th>Canal</th>
+          <th>Ubicación</th>
+          @if (canManage) {
+            <th class="pr-5"></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (record of records(); track record.id) {
+          <tr class="cursor-pointer hover:bg-surface/50" (click)="selected.set(record)">
+            <td class="pl-5 font-semibold">
+              {{ record.employee?.first_name }} {{ record.employee?.last_name }}
+            </td>
+            <td class="text-sm text-ink-soft">{{ record.work_date | date: 'EEE d MMM' }}</td>
+            <td>{{ record.type === 'check_in' ? 'Entrada' : 'Salida' }}</td>
+            <td class="tabular-nums" [title]="record.office?.timezone ?? ''">
+              {{ record.recorded_at | tzDate: 'time' : record.office?.timezone }}
+              @if (record.overtime_minutes) {
+                <span class="block text-xs text-info-text">+{{ hours(record.overtime_minutes) }} extra</span>
+              }
+            </td>
+            <td>
+              <span class="badge" [class]="record.status">{{ labels[record.status] }}</span>
+              @if (record.minutes_late) {
+                <span class="text-xs text-muted-text"> {{ record.minutes_late }} min</span>
+              }
+              @if (record.is_justified) {
+                <span class="badge badge-brand ml-1">Justificado</span>
+              }
+            </td>
+            <td class="text-sm text-ink-soft">{{ channels[record.channel] }}</td>
+            <td class="text-sm">
+              @if (record.geofence_skipped) {
+                <span class="badge badge-brand">Home office</span>
+              } @else if (record.distance_meters !== null) {
+                a {{ record.distance_meters | number: '1.0-0' }} m
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+            @if (canManage) {
+              <td class="pr-5 text-right" (click)="$event.stopPropagation()">
+                @if (record.status !== 'on_time') {
+                  <button type="button" class="btn btn-sm" (click)="toggleJustified(record)">
+                    {{ record.is_justified ? 'Quitar justificación' : 'Justificar' }}
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty">No hay checadas en este periodo.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (selected(); as record) {
+  <app-modal
+    heading="{{ record.employee?.first_name }} {{ record.employee?.last_name }}"
+    size="lg"
+    (closed)="selected.set(null)"
+  >
+    <p class="mb-3 text-sm text-muted-text">
+      {{ record.type === 'check_in' ? 'Entrada' : 'Salida' }} ·
+      {{ record.recorded_at | tzDate: 'datetime' : record.office?.timezone }} (hora de
+      {{ record.office?.name }}) · {{ channels[record.channel] }}
+      @if (record.accuracy_meters) {
+        · precisión GPS ±{{ record.accuracy_meters | number: '1.0-0' }} m
+      }
+    </p>
+    @if (record.latitude !== null && record.office?.latitude) {
+      <div class="h-80">
+        <app-geofence-map
+          [latitude]="record.office!.latitude"
+          [longitude]="record.office!.longitude"
+          [radius]="record.office!.geofence_radius"
+          [marker]="{
+            latitude: record.latitude!,
+            longitude: record.longitude!,
+            label: 'Checó aquí',
+          }"
+        />
+      </div>
+    } @else {
+      <p class="empty">Checada sin coordenadas (kiosko, registro manual o sin GPS).</p>
+    }
+    <div modal-footer>
+      <button class="btn" type="button" (click)="selected.set(null)">Cerrar</button>
+    </div>
+  </app-modal>
+}
+
+@if (manualOpen()) {
+  <app-modal heading="Registro manual" (closed)="manualOpen.set(false)">
+    <p class="mb-4 text-sm text-muted-text">
+      Para cuando alguien olvidó checar o falló el kiosko. Se aplican las reglas de su turno; si ya
+      tiene entrada ese día, se registra como salida.
+    </p>
+    @if (manualError()) {
+      <div class="alert alert-error">{{ manualError() }}</div>
+    }
+    <div class="field">
+      <label>Empleado</label>
+      <select [(ngModel)]="manual.employee_id">
+        @for (employee of employees(); track employee.id) {
+          <option [ngValue]="employee.id">
+            {{ employee.first_name }} {{ employee.last_name }} · {{ employee.employee_code }}
+          </option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>Fecha y hora (de la oficina del empleado)</label
+      ><input type="datetime-local" [(ngModel)]="manual.recorded_at" />
+    </div>
+    <div modal-footer>
+      <button class="btn" type="button" (click)="manualOpen.set(false)">Cancelar</button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="saveManual()"
+        [disabled]="!manual.employee_id || !manual.recorded_at"
+      >
+        Registrar
+      </button>
+    </div>
+  </app-modal>
+}

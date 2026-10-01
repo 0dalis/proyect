@@ -1,0 +1,268 @@
+<app-page-header
+  heading="Turnos y áreas"
+  description="Cada empleado pertenece a una oficina, un turno y un área."
+/>
+
+@if (loading()) {
+  <app-skeleton type="table" [rows]="5" [columns]="6" />
+} @else {
+  <section class="card">
+    <div class="flex flex-wrap items-center gap-3">
+      <h3 style="margin: 0">Turnos</h3>
+      <span class="flex-1"></span>
+      <button class="btn btn-primary btn-sm" type="button" (click)="openShift()">
+        + Nuevo turno
+      </button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Turno</th>
+          <th>Oficina</th>
+          <th>Horario</th>
+          <th>Días</th>
+          <th>Tolerancia</th>
+          <th>Falta después de</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (shift of shifts(); track shift.id) {
+          <tr>
+            <td>
+              <strong>{{ shift.name }}</strong>
+            </td>
+            <td>{{ shift.office?.name }}</td>
+            <td>
+              {{ shift.starts_at.slice(0, 5) }} – {{ shift.ends_at.slice(0, 5) }}
+              @if (shift.ends_at <= shift.starts_at) {
+                <span class="badge badge-brand">Nocturno</span>
+              }
+              @for (label of specialLabels(shift); track label) {
+                <span class="block text-xs text-muted-text">
+                  <i class="bi bi-calendar-event" aria-hidden="true"></i> {{ label }}
+                </span>
+              }
+            </td>
+            <td>
+              <span class="days">
+                @for (day of weekdays; track day.value) {
+                  <span [class.on]="shift.weekdays.includes(day.value)">{{ day.short }}</span>
+                }
+              </span>
+            </td>
+            <td>{{ shift.tolerance_minutes }} min</td>
+            <td>{{ shift.absence_after_minutes }} min</td>
+            <td>
+              <button class="btn btn-sm" type="button" (click)="openShift(shift)">Editar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card" style="margin-top: 1rem">
+    <div class="flex flex-wrap items-center gap-3">
+      <h3 style="margin: 0">Áreas</h3>
+      <span class="flex-1"></span>
+      <button class="btn btn-primary btn-sm" type="button" (click)="openArea()">
+        + Nueva área
+      </button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Área</th>
+          <th>Empleados</th>
+          <th>Gerentes que la supervisan</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (area of areas(); track area.id) {
+          <tr>
+            <td>
+              <span class="dot" [style.background]="area.color || '#94a3b8'"></span>
+              <strong>{{ area.name }}</strong>
+            </td>
+            <td>{{ area.employees_count }}</td>
+            <td class="text-sm">
+              @for (manager of area.managers ?? []; track manager.id) {
+                <span class="badge">{{ manager.first_name }} {{ manager.last_name }}</span>
+              } @empty {
+                <span class="text-muted-text">Sin gerente</span>
+              }
+            </td>
+            <td>
+              <button class="btn btn-sm" type="button" (click)="openArea(area)">Editar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+}
+
+@if (shiftDraft(); as shift) {
+  <app-modal
+    heading="{{ shift.id ? 'Editar turno' : 'Nuevo turno' }}"
+    (closed)="shiftDraft.set(null)"
+  >
+    @if (modalError()) {
+      <div class="alert alert-error">{{ modalError() }}</div>
+    }
+    <div class="grid gap-4 sm:grid-cols-2" style="gap: 0 1rem">
+      <div class="field">
+        <label>Nombre</label
+        ><input [(ngModel)]="shift.name" placeholder="Ej. Vigilancia nocturna" />
+      </div>
+      <div class="field">
+        <label>Oficina</label>
+        <select [(ngModel)]="shift.office_id">
+          @for (office of offices(); track office.id) {
+            <option [ngValue]="office.id">{{ office.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Entrada</label><input type="time" [(ngModel)]="shift.starts_at" />
+      </div>
+      <div class="field">
+        <label>Salida</label><input type="time" [(ngModel)]="shift.ends_at" />
+        @if (shift.ends_at && shift.ends_at <= shift.starts_at) {
+          <span class="hint">Sale al día siguiente (turno nocturno).</span>
+        }
+      </div>
+      <div class="field">
+        <label>Comida o descanso (min)</label
+        ><input type="number" min="0" max="240" step="5" [(ngModel)]="shift.break_minutes" />
+        <span class="hint">Define las horas de la jornada, para el valor de la hora extra.</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Días activos</label>
+      <div class="flex flex-wrap items-center gap-3">
+        @for (day of weekdays; track day.value) {
+          <label class="check"
+            ><input
+              type="checkbox"
+              [checked]="shift.weekdays.includes(day.value)"
+              (change)="toggleDay(shift, day.value)"
+            />
+            {{ day.label }}</label
+          >
+        }
+      </div>
+      <div class="flex flex-wrap items-center gap-3" style="margin-top: 0.4rem">
+        <button class="btn btn-sm" type="button" (click)="shift.weekdays = [1, 2, 3, 4, 5]">
+          Lunes a viernes
+        </button>
+        <button class="btn btn-sm" type="button" (click)="shift.weekdays = [1, 2, 3, 4, 5, 6]">
+          Lunes a sábado
+        </button>
+        <button class="btn btn-sm" type="button" (click)="shift.weekdays = [1, 2, 3, 4, 5, 6, 7]">
+          Todos los días
+        </button>
+      </div>
+    </div>
+
+    <!-- Días con otro horario: ej. lunes a jueves de 9 a 18 y viernes de 9 a 17 -->
+    <div class="field">
+      <label>Horario especial</label>
+      <span class="hint !mt-0 mb-2 block">
+        Para días activos con otro horario, por ejemplo salir más temprano los viernes. Los demás
+        días usan el horario de arriba.
+      </span>
+      @for (special of shift.special; track special) {
+        <div class="special-row">
+          <select [(ngModel)]="special.day" aria-label="Día">
+            @for (day of availableSpecialDays(shift, special); track day.value) {
+              <option [ngValue]="day.value">{{ day.label }}</option>
+            }
+          </select>
+          <input type="time" [(ngModel)]="special.starts_at" aria-label="Entrada" />
+          <span class="text-muted-text">a</span>
+          <input type="time" [(ngModel)]="special.ends_at" aria-label="Salida" />
+          <input
+            type="number"
+            min="0"
+            max="240"
+            step="5"
+            [(ngModel)]="special.break_minutes"
+            aria-label="Comida en minutos"
+            title="Comida (min)"
+            class="!w-20"
+          />
+          <span class="text-xs text-muted-text">min comida</span>
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            (click)="removeSpecialDay(shift, special)"
+            aria-label="Quitar horario especial"
+          >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+      }
+      <button
+        class="btn btn-sm"
+        type="button"
+        (click)="addSpecialDay(shift)"
+        [disabled]="!availableSpecialDays(shift).length"
+      >
+        <i class="bi bi-calendar-plus" aria-hidden="true"></i> Agregar día especial
+      </button>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2" style="gap: 0 1rem">
+      <div class="field">
+        <label>Tolerancia (min)</label
+        ><input type="number" min="0" [(ngModel)]="shift.tolerance_minutes" />
+        <span class="hint">Hasta aquí cuenta como asistencia a tiempo.</span>
+      </div>
+      <div class="field">
+        <label>Falta después de (min)</label
+        ><input type="number" min="0" [(ngModel)]="shift.absence_after_minutes" />
+        <span class="hint">Entre la tolerancia y este límite es retardo.</span>
+      </div>
+    </div>
+    <div modal-footer>
+      <button class="btn" type="button" (click)="shiftDraft.set(null)">Cancelar</button>
+      <button class="btn btn-primary" type="button" (click)="saveShift(shift)">Guardar</button>
+    </div>
+  </app-modal>
+}
+
+@if (areaDraft(); as area) {
+  <app-modal heading="{{ area.id ? 'Editar área' : 'Nueva área' }}" (closed)="areaDraft.set(null)">
+    @if (modalError()) {
+      <div class="alert alert-error">{{ modalError() }}</div>
+    }
+    <div class="grid gap-4 sm:grid-cols-2" style="gap: 0 1rem">
+      <div class="field"><label>Nombre</label><input [(ngModel)]="area.name" /></div>
+      <div class="field">
+        <label>Color</label><input type="color" [(ngModel)]="area.color" style="height: 42px" />
+      </div>
+    </div>
+    @if (area.id) {
+      <div class="field">
+        <label>Gerentes que supervisan esta área</label>
+        <select multiple size="6" [(ngModel)]="area.managerIds">
+          @for (employee of employees(); track employee.id) {
+            <option [ngValue]="employee.id">
+              {{ employee.first_name }} {{ employee.last_name }} · {{ employee.area?.name }}
+            </option>
+          }
+        </select>
+        <span class="hint"
+          >Ctrl + clic para elegir varios. Un gerente puede supervisar varias áreas; también
+          necesita el rol Gerente en Usuarios y roles.</span
+        >
+      </div>
+    }
+    <div modal-footer>
+      <button class="btn" type="button" (click)="areaDraft.set(null)">Cancelar</button>
+      <button class="btn btn-primary" type="button" (click)="saveArea(area)">Guardar</button>
+    </div>
+  </app-modal>
+}

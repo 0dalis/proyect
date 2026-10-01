@@ -1,0 +1,79 @@
+:host {
+  display: block;
+}
+
+.list-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-soft);
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 0.875rem;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.rank {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Barra apilada por oficina o turno, con 2px de separación entre segmentos */
+.stacked {
+  display: flex;
+  gap: 2px;
+  height: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-line);
+
+  span {
+    min-width: 4px;
+    height: 100%;
+    transition: filter 0.15s ease;
+
+    &:first-child {
+      border-radius: 999px 0 0 999px;
+    }
+
+    &:last-child {
+      border-radius: 0 999px 999px 0;
+    }
+
+    &:only-child {
+      border-radius: 999px;
+    }
+
+    &:hover {
+      filter: brightness(1.1);
+    }
+  }
+}
+
+.metric {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+}

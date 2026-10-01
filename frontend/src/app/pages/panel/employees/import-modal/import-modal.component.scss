@@ -1,0 +1,14 @@
+:host {
+  display: contents;
+}
+
+tr.has-error td {
+  background: var(--color-danger-soft);
+}
+
+code {
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.35rem;
+  background: var(--color-canvas);
+  font-size: 0.85em;
+}

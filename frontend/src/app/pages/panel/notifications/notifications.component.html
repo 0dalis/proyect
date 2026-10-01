@@ -1,0 +1,106 @@
+<app-page-header
+  heading="Notificaciones"
+  [description]="
+    auth.hasRole('owner', 'admin')
+      ? 'Solicitudes de tus empleados que requieren revisión.'
+      : 'Tus solicitudes revisadas, lo que te toca revisar y los avisos de tu empresa.'
+  "
+>
+  @if (isEmployee()) {
+    <div class="glass glass-soft flex gap-1 rounded-xl p-1" role="tablist">
+      <button type="button" role="tab" class="btn btn-sm" [class.btn-ghost]="tab() !== 'historial'" [attr.aria-selected]="tab() === 'historial'" (click)="tab.set('historial')">
+        Historial
+      </button>
+      <button type="button" role="tab" class="btn btn-sm" [class.btn-ghost]="tab() !== 'avisos'" [attr.aria-selected]="tab() === 'avisos'" (click)="tab.set('avisos')">
+        Avisos
+      </button>
+      <button type="button" role="tab" class="btn btn-sm" [class.btn-ghost]="tab() !== 'noticias'" [attr.aria-selected]="tab() === 'noticias'" (click)="tab.set('noticias')">
+        Noticias empresa
+      </button>
+    </div>
+  }
+</app-page-header>
+
+@if (loading()) {
+  <app-skeleton type="list" [rows]="5" />
+} @else if (tab() === 'historial') {
+  <div class="mb-3 flex flex-wrap items-center gap-2">
+    <div class="glass glass-soft flex gap-1 rounded-xl p-1">
+      <button type="button" class="btn btn-sm" [class.btn-ghost]="onlyUnread()" (click)="setFilter(false)">Todas</button>
+      <button type="button" class="btn btn-sm" [class.btn-ghost]="!onlyUnread()" (click)="setFilter(true)">
+        Sin leer
+        @if (notifications.unread()) {
+          <span class="badge badge-brand">{{ notifications.unread() }}</span>
+        }
+      </button>
+    </div>
+    <span class="flex-1"></span>
+    @if (notifications.unread()) {
+      <button type="button" class="btn btn-sm" (click)="markAll()">
+        <i class="bi bi-check2-all" aria-hidden="true"></i> Marcar todas como leídas
+      </button>
+    }
+  </div>
+
+  <div class="grid gap-2">
+    @for (item of history(); track item.id) {
+      <button type="button" class="card history-item" [class.unread]="!item.read_at" (click)="open(item)">
+        <span class="icon" [attr.data-tone]="style[item.type].tone">
+          <i class="bi" [class]="'bi-' + style[item.type].icon" aria-hidden="true"></i>
+        </span>
+        <span class="min-w-0 flex-1 text-left">
+          <span class="flex flex-wrap items-baseline gap-2">
+            <span class="font-semibold text-ink">{{ item.title }}</span>
+            <span class="text-xs text-muted-text">{{ item.created_at | date: "d MMM, h:mm a" }}</span>
+          </span>
+          @if (item.body) {
+            <span class="mt-0.5 block text-sm text-ink-soft">{{ item.body }}</span>
+          }
+          <span class="mt-1 inline-block text-xs text-muted-text">{{ style[item.type].label }}</span>
+        </span>
+        @if (!item.read_at) {
+          <span class="mt-2 size-2.5 shrink-0 rounded-full bg-primary" aria-label="Sin leer"></span>
+        }
+      </button>
+    } @empty {
+      <div class="card empty">
+        {{ onlyUnread() ? 'No tienes notificaciones sin leer.' : 'Aún no tienes notificaciones.' }}
+      </div>
+    }
+  </div>
+
+  @if (page() < lastPage()) {
+    <div class="mt-4 text-center">
+      <button type="button" class="btn" (click)="loadMore()">Ver más</button>
+    </div>
+  }
+} @else {
+  <div class="grid gap-3">
+    @for (item of tab() === 'avisos' ? inbox() : news(); track item.id) {
+      <article class="card" [class.!bg-primary-soft]="tab() === 'avisos' && !item.pivot?.read_at">
+        <div class="flex items-start gap-3">
+          @if (tab() === 'avisos' && !item.pivot?.read_at) {
+            <span class="mt-1.5 size-2.5 shrink-0 rounded-full bg-primary" title="Sin leer"></span>
+          }
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-baseline gap-2">
+              <h3 class="text-base">{{ item.title }}</h3>
+              <span class="text-xs text-muted-text">{{ item.created_at | date: "d MMM, h:mm a" }}</span>
+            </div>
+            <p class="mt-1 text-sm whitespace-pre-line text-ink-soft">{{ item.body }}</p>
+            @if (item.link_url) {
+              <a [href]="item.link_url" target="_blank" rel="noopener" class="mt-2 inline-block text-sm font-semibold">
+                Abrir enlace <i class="bi bi-box-arrow-up-right text-xs" aria-hidden="true"></i>
+              </a>
+            }
+          </div>
+          @if (tab() === 'avisos' && !item.pivot?.read_at) {
+            <button type="button" class="btn btn-sm" (click)="markAnnouncementRead(item)">Marcar leído</button>
+          }
+        </div>
+      </article>
+    } @empty {
+      <div class="card empty">No hay nada por aquí todavía.</div>
+    }
+  </div>
+}

@@ -1,0 +1,183 @@
+<a routerLink="/panel/empleados" class="mb-4 inline-flex items-center gap-1 text-sm text-muted-text">
+  <i class="bi bi-arrow-left" aria-hidden="true"></i> Empleados
+</a>
+
+<app-page-header
+  heading="Organizar empleados"
+  description="Selecciona varios, elige oficina, turno, área y tipo y aplícalo de una vez. Quien tenga la app recibe su acceso por correo."
+/>
+
+@if (loading()) {
+  <app-skeleton type="table" [rows]="8" [columns]="7" />
+} @else if (!rows().length) {
+  <div class="card empty text-center">
+    <i class="bi bi-check2-circle text-3xl text-success-text" aria-hidden="true"></i>
+    <p class="mt-2">Todos tus empleados ya están organizados.</p>
+    <a routerLink="/panel/empleados" class="btn btn-primary">Volver a Empleados</a>
+  </div>
+} @else {
+  <!-- Aplicar a los seleccionados -->
+  <section class="card mb-4">
+    <div class="mb-3 flex items-center gap-2">
+      <h3 class="!mb-0 flex-1 text-base">Aplicar a seleccionados</h3>
+      <span class="badge badge-brand">{{ selectedCount() }} de {{ rows().length }}</span>
+    </div>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="field !mb-0">
+        <label for="bulk-office">Oficina</label>
+        <select id="bulk-office" [(ngModel)]="bulk.office_id" (ngModelChange)="onBulkOffice()">
+          <option [ngValue]="null">—</option>
+          @for (office of offices(); track office.id) {
+            <option [ngValue]="office.id">{{ office.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field !mb-0">
+        <label for="bulk-shift">Turno</label>
+        <select id="bulk-shift" [(ngModel)]="bulk.shift_id" [disabled]="!bulk.office_id">
+          <option [ngValue]="null">—</option>
+          @for (shift of shiftsOf(bulk.office_id); track shift.id) {
+            <option [ngValue]="shift.id">{{ shift.name }} ({{ shift.starts_at.slice(0, 5) }}–{{ shift.ends_at.slice(0, 5) }})</option>
+          }
+        </select>
+      </div>
+      <div class="field !mb-0">
+        <label for="bulk-area">Área</label>
+        <select id="bulk-area" [(ngModel)]="bulk.area_id">
+          <option [ngValue]="null">—</option>
+          @for (area of areas(); track area.id) {
+            <option [ngValue]="area.id">{{ area.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field !mb-0">
+        <label for="bulk-type">Tipo</label>
+        <select id="bulk-type" [(ngModel)]="bulk.employment_type">
+          <option [ngValue]="null">—</option>
+          <option value="permanent">Planta</option>
+          <option value="temporary">Temporal</option>
+        </select>
+      </div>
+      @if (bulk.employment_type === 'temporary') {
+        <div class="field !mb-0">
+          <label for="bulk-contract">Fin de contrato</label>
+          <input id="bulk-contract" type="date" [(ngModel)]="bulk.contract_ends_on" />
+        </div>
+      }
+    </div>
+    <div class="mt-3 flex justify-end">
+      <button class="btn btn-primary" type="button" (click)="applyToSelected()" [disabled]="!selectedCount()">
+        <i class="bi bi-ui-checks" aria-hidden="true"></i> Aplicar a {{ selectedCount() }} seleccionados
+      </button>
+    </div>
+  </section>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+
+  <div class="card overflow-x-auto p-0">
+    <table class="organize">
+      <thead>
+        <tr>
+          <th class="w-10 pl-4">
+            <input
+              type="checkbox"
+              aria-label="Seleccionar todos"
+              [checked]="allSelected()"
+              (change)="toggleAll($any($event.target).checked)"
+            />
+          </th>
+          <th>Empleado</th>
+          <th>Oficina</th>
+          <th>Turno</th>
+          <th>Área</th>
+          <th>Tipo</th>
+          <th>App</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.employee.id) {
+          <tr [class.selected]="row.selected">
+            <td class="pl-4">
+              <input
+                type="checkbox"
+                [attr.aria-label]="'Seleccionar a ' + row.employee.first_name"
+                [checked]="row.selected"
+                (change)="toggle(row, $any($event.target).checked)"
+              />
+            </td>
+            <td>
+              <div class="font-semibold text-ink">{{ row.employee.first_name }} {{ row.employee.last_name }}</div>
+              <div class="text-xs text-muted-text">
+                {{ row.employee.employee_code }}
+                @if (isReady(row)) {
+                  · <span class="text-success-text"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Listo</span>
+                }
+              </div>
+            </td>
+            <td>
+              <select [(ngModel)]="row.office_id" (ngModelChange)="onRowOffice(row)" aria-label="Oficina">
+                <option [ngValue]="null">—</option>
+                @for (office of offices(); track office.id) {
+                  <option [ngValue]="office.id">{{ office.name }}</option>
+                }
+              </select>
+            </td>
+            <td>
+              <select [(ngModel)]="row.shift_id" [disabled]="!row.office_id" aria-label="Turno">
+                <option [ngValue]="null">—</option>
+                @for (shift of shiftsOf(row.office_id); track shift.id) {
+                  <option [ngValue]="shift.id">{{ shift.name }}</option>
+                }
+              </select>
+            </td>
+            <td>
+              <select [(ngModel)]="row.area_id" aria-label="Área">
+                <option [ngValue]="null">—</option>
+                @for (area of areas(); track area.id) {
+                  <option [ngValue]="area.id">{{ area.name }}</option>
+                }
+              </select>
+            </td>
+            <td>
+              <select [(ngModel)]="row.employment_type" aria-label="Tipo">
+                <option [ngValue]="null">—</option>
+                <option value="permanent">Planta</option>
+                <option value="temporary">Temporal</option>
+              </select>
+              @if (row.employment_type === 'temporary') {
+                <input type="date" class="mt-1" [(ngModel)]="row.contract_ends_on" aria-label="Fin de contrato" />
+              }
+            </td>
+            <td>
+              <div class="flex items-center gap-2">
+                <label class="switch">
+                  <input type="checkbox" role="switch" [(ngModel)]="row.app_access" aria-label="Acceso a la app" />
+                  <span aria-hidden="true"></span>
+                </label>
+                @if (row.app_access) {
+                  <input type="email" placeholder="correo@empresa.com" [(ngModel)]="row.email" aria-label="Correo" class="min-w-44" />
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sticky bottom-3 mt-4 flex flex-wrap items-center gap-3 glass p-3">
+    <span class="flex-1 text-sm text-ink-soft">
+      <strong>{{ readyCount() }}</strong> de {{ rows().length }} listos para guardar. Los incompletos
+      siguen pendientes.
+    </span>
+    <button class="btn btn-primary" type="button" (click)="save()" [disabled]="!readyCount() || saving()">
+      @if (saving()) {
+        <i class="bi bi-arrow-repeat animate-spin" aria-hidden="true"></i> Guardando…
+      } @else {
+        <i class="bi bi-check2-all" aria-hidden="true"></i> Guardar {{ readyCount() }}
+      }
+    </button>
+  </div>
+}

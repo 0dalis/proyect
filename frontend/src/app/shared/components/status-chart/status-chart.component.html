@@ -1,0 +1,31 @@
+@if (showTable()) {
+  <div class="overflow-x-auto">
+    <table>
+      <thead>
+        <tr>
+          <th>Periodo</th>
+          @for (serie of keys(); track serie.key) {
+            <th class="text-right">{{ serie.label }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index) {
+          <tr>
+            <td class="capitalize">{{ row.long }}</td>
+            @for (serie of keys(); track serie.key) {
+              <td class="text-right tabular-nums">{{ value(row.point, serie.key) }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <app-chart type="line" [labels]="labels()" [series]="series()" [height]="height()" [description]="description()" />
+}
+<div class="mt-1 text-right">
+  <button type="button" class="btn btn-sm btn-ghost" (click)="showTable.set(!showTable())">
+    {{ showTable() ? 'Ver gráfica' : 'Ver tabla' }}
+  </button>
+</div>

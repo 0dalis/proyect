@@ -1,0 +1,50 @@
+@if (ratings.modalOpen()) {
+  <app-modal [heading]="existing() ? 'Tu opinión sobre AsistControl' : '¿Qué te parece AsistControl?'" (closed)="later()">
+    <p class="mb-4 text-sm text-muted-text">
+      Califica de 1 a 5 estrellas; toca la mitad izquierda de una estrella para dar media.
+    </p>
+
+    <div class="mb-5 flex justify-center">
+      <app-star-rating [(value)]="score" size="lg" label="Calificación de AsistControl" />
+    </div>
+
+    <div class="field">
+      <label for="rating-comment">Cuéntanos más (opcional)</label>
+      <textarea
+        id="rating-comment"
+        rows="4"
+        maxlength="500"
+        placeholder="¿Qué es lo que más te sirve? ¿Qué mejorarías?"
+        [(ngModel)]="comment"
+      ></textarea>
+      <small class="text-muted-text">{{ comment.length }}/500</small>
+    </div>
+
+    <label class="check !items-start !font-normal">
+      <input type="checkbox" class="mt-1" [(ngModel)]="allowPublish" />
+      <span class="text-sm">
+        Acepto que mi opinión aparezca en la página de AsistControl con mi nombre, la inicial de mi
+        apellido y el nombre de mi empresa.
+      </span>
+    </label>
+
+    @if (existing(); as rating) {
+      <p class="mt-3 text-xs text-muted-text">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        @switch (rating.status) {
+          @case ('published') { Tu opinión se muestra en la página. Si la cambias, volverá a revisión. }
+          @case ('hidden') { Tu opinión la recibimos, pero no se muestra en la página. }
+          @default { Tu opinión está en revisión. }
+        }
+      </p>
+    }
+
+    <div modal-footer>
+      <button type="button" class="btn" (click)="later()">{{ existing() ? 'Cerrar' : 'Ahora no' }}</button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!score() || saving()">
+        <i class="bi bi-send" aria-hidden="true"></i>
+        {{ saving() ? 'Enviando…' : existing() ? 'Guardar cambios' : 'Enviar opinión' }}
+      </button>
+    </div>
+  </app-modal>
+}

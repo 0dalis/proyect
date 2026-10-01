@@ -1,0 +1,152 @@
+<h1>Aviso de privacidad integral</h1>
+<p class="meta">Última actualización: {{ legal.updatedAt }} · Versión {{ legal.version }}</p>
+
+<p>
+  <strong>{{ legal.provider }}</strong> ("{{ legal.providerShort }}"), con domicilio en
+  {{ legal.address }}, es la empresa que diseña, opera y da soporte a
+  <strong>{{ legal.product }}</strong
+  >. Este aviso explica qué datos personales tratamos, para qué y cómo puedes ejercer tus derechos,
+  conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares y
+  demás normativa aplicable en México.
+</p>
+
+<h2>1. ¿Quién es responsable de tus datos?</h2>
+<ul>
+  <li>
+    <strong>Datos de las empresas cliente y de sus usuarios administradores</strong> (nombre,
+    correo, datos de facturación): {{ legal.providerShort }} es el <strong>responsable</strong>.
+  </li>
+  <li>
+    <strong>Datos de los empleados</strong> que cada empresa registra en {{ legal.product }}: la
+    <strong>empresa empleadora es la responsable</strong> y {{ legal.providerShort }} actúa como
+    <strong>encargado</strong>, tratándolos solo para prestar el servicio y según sus instrucciones.
+    Si eres empleado, dirige tus solicitudes primero a tu empleador.
+  </li>
+</ul>
+
+<h2>2. Datos que tratamos</h2>
+<ul>
+  <li>
+    <strong>Identificación y contacto:</strong> nombre, correo, teléfono, puesto, número de
+    empleado.
+  </li>
+  <li>
+    <strong>Laborales:</strong> área, oficina, turno, fecha de ingreso, tipo de contrato y, si la
+    empresa activa el módulo, sueldo.
+  </li>
+  <li>
+    <strong>Asistencia:</strong> fecha y hora de cada checada;
+    <strong>ubicación GPS únicamente en el momento de checar</strong>
+    desde la app (no hay rastreo continuo); fotografía tomada por el kiosko al checar; solicitudes
+    de permisos y vacaciones.
+  </li>
+  <li>
+    <strong>Dispositivo:</strong> identificador del celular registrado y una llave pública
+    criptográfica.
+  </li>
+  <li>
+    <strong>Técnicos:</strong> navegador y la bitácora de acciones realizadas en el sistema (quién
+    hizo qué y cuándo). No guardamos la dirección IP en la bitácora.
+  </li>
+  <li>
+    <strong>Facturación:</strong> los datos de tarjeta los procesa directamente Stripe; nosotros no
+    los almacenamos.
+  </li>
+</ul>
+
+<div class="callout">
+  <strong>No recabamos datos biométricos.</strong> La huella, el Face ID o el PIN del celular se
+  verifican exclusivamente dentro del teléfono del empleado; {{ legal.product }} solo recibe una
+  firma digital que confirma la verificación. Ninguna huella ni imagen facial llega a nuestros
+  servidores.
+</div>
+
+<p>
+  La ubicación y la fotografía pueden considerarse datos de mayor riesgo. La empresa empleadora debe
+  informar a sus empleados y, cuando la ley lo requiera, obtener su consentimiento antes de usar
+  estas funciones.
+</p>
+
+<h2>3. Finalidades</h2>
+<h3>Necesarias para el servicio</h3>
+<ul>
+  <li>Crear y administrar la cuenta de la empresa y sus usuarios.</li>
+  <li>Registrar y validar la asistencia (turnos, tolerancias, geocerca, kiosko).</li>
+  <li>Gestionar permisos, vacaciones, avisos, reportes, pre-nómina y bonos.</li>
+  <li>Seguridad: autenticación, prevención de fraudes y bitácora de actividad.</li>
+  <li>Soporte técnico, facturación y cumplimiento de obligaciones legales.</li>
+</ul>
+<h3>Secundarias (puedes negarte)</h3>
+<ul>
+  <li>Enviar novedades del producto y encuestas de satisfacción a los administradores.</li>
+</ul>
+<p>
+  Si no deseas las finalidades secundarias, escribe a {{ legal.privacyEmail }}. Negarte no afecta el
+  servicio.
+</p>
+
+<h2>4. Con quién compartimos los datos</h2>
+<p>
+  No vendemos datos personales. Solo los compartimos con proveedores que nos ayudan a prestar el
+  servicio:
+</p>
+<ul>
+  <li>Infraestructura y hospedaje de servidores y bases de datos.</li>
+  <li>Envío de correos (verificación de cuenta, avisos).</li>
+  <li>Stripe, para el cobro de suscripciones.</li>
+  <li>Firebase Cloud Messaging, para enviar notificaciones al celular.</li>
+</ul>
+<p>También podemos entregar datos cuando una autoridad competente lo requiera conforme a la ley.</p>
+
+<h2>5. Derechos ARCO y revocación del consentimiento</h2>
+<p>
+  Puedes solicitar el <strong>acceso, rectificación, cancelación u oposición</strong> al tratamiento
+  de tus datos, así como revocar tu consentimiento, escribiendo a
+  <strong>{{ legal.privacyEmail }}</strong> con tu nombre, la empresa, una copia de tu
+  identificación y la descripción de lo que solicitas. Responderemos en un plazo máximo de 20 días
+  hábiles. Si eres empleado de una empresa cliente, canalizaremos tu solicitud con ella como
+  responsable.
+</p>
+
+<h2>6. Conservación y eliminación</h2>
+<p>
+  Conservamos los datos mientras la empresa mantenga su cuenta. Los registros cuyo correo no se
+  confirma se eliminan a los 30 días.
+</p>
+<p>
+  Cuando el dueño solicita eliminar la empresa, los datos se bloquean de inmediato: nadie puede
+  consultarlos ni usarlos. Durante los 30 días siguientes el dueño puede descargar una copia (el
+  enlace dura 48 horas y soporte puede enviar uno nuevo en ese plazo). Al terminar los 30 días
+  eliminamos de forma definitiva la información de la empresa, de sus usuarios y de sus empleados.
+  Los respaldos que aún la contengan se eliminan en su ciclo normal de rotación.
+</p>
+<p>
+  Solo conservamos lo que la ley nos obliga: los comprobantes fiscales de los pagos (5 años, Código
+  Fiscal de la Federación) y un registro de la baja sin datos personales (nombre de la empresa,
+  último plan, tiempo de uso y motivo).
+</p>
+
+<h2>7. Seguridad</h2>
+<ul>
+  <li>
+    Cifrado en tránsito (HTTPS) y sesiones en cookies protegidas que el código del navegador no
+    puede leer.
+  </li>
+  <li>Protección contra falsificación de peticiones (CSRF) y control de origen (CORS).</li>
+  <li>
+    Aislamiento de la información de cada empresa y bases de datos dedicadas en el plan Premium.
+  </li>
+  <li>Permisos por rol y bitácora de quién hizo cada acción.</li>
+</ul>
+
+<h2>8. Cookies</h2>
+<p>
+  Usamos solo cookies necesarias para mantener tu sesión segura. Consulta la
+  <a routerLink="/legal/cookies">Política de cookies</a>.
+</p>
+
+<h2>9. Cambios a este aviso</h2>
+<p>
+  Publicaremos cualquier cambio en esta página e indicaremos la fecha de actualización. Si el cambio
+  es relevante, lo notificaremos por correo al usuario dueño de cada empresa.
+</p>

@@ -1,0 +1,5 @@
+:host {
+  display: block;
+  /* El kiosko corre en tablet: menos desenfoque para cuidar el rendimiento */
+  --glass-blur: 10px;
+}

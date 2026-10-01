@@ -1,0 +1,62 @@
+<div class="mb-5">
+  <p class="label">Modo</p>
+  <div class="segment" role="radiogroup" aria-label="Modo">
+    @for (mode of modes; track mode.key) {
+      <button
+        type="button"
+        role="radio"
+        [attr.aria-checked]="theme.mode() === mode.key"
+        [class.active]="theme.mode() === mode.key"
+        (click)="theme.setMode(mode.key)"
+      >
+        <i class="bi" [class]="'bi-' + mode.icon" aria-hidden="true"></i> {{ mode.label }}
+      </button>
+    }
+  </div>
+</div>
+
+<div class="mb-5">
+  <p class="label">Color de acento</p>
+  <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7" role="radiogroup" aria-label="Color de acento">
+    @for (accent of accents; track accent.key) {
+      <button
+        type="button"
+        role="radio"
+        class="swatch"
+        [class.active]="theme.accent() === accent.key"
+        [attr.aria-checked]="theme.accent() === accent.key"
+        (click)="theme.setAccent(accent.key)"
+      >
+        <span class="dot" [style.background]="accent.swatch">
+          @if (theme.accent() === accent.key) {
+            <i class="bi bi-check-lg" aria-hidden="true"></i>
+          }
+        </span>
+        <span class="text-xs">{{ accent.label }}</span>
+      </button>
+    }
+  </div>
+  <p class="mt-2 text-xs text-muted-text">
+    Los colores de estado (a tiempo, retardo, falta) no cambian para que siempre signifiquen lo mismo.
+  </p>
+</div>
+
+<div>
+  <p class="label">Tipografía</p>
+  <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5" role="radiogroup" aria-label="Tipografía">
+    @for (font of fonts; track font.key) {
+      <button
+        type="button"
+        role="radio"
+        class="font"
+        [class.active]="theme.font() === font.key"
+        [attr.aria-checked]="theme.font() === font.key"
+        [style.font-family]="font.family"
+        (click)="theme.setFont(font.key)"
+      >
+        <span class="text-sm font-semibold text-ink">{{ font.label }}</span>
+        <span class="text-xs text-muted-text">Entrada 09:00</span>
+      </button>
+    }
+  </div>
+</div>

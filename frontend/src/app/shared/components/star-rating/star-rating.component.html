@@ -1,0 +1,45 @@
+@if (readonly()) {
+  <span class="stars" role="img" [attr.aria-label]="value() + ' de 5 estrellas'">
+    @for (state of states(); track $index) {
+      <i
+        class="bi"
+        [class.bi-star-fill]="state === 'full'"
+        [class.bi-star-half]="state === 'half'"
+        [class.bi-star]="state === 'empty'"
+        aria-hidden="true"
+      ></i>
+    }
+  </span>
+} @else {
+  <div
+    class="stars"
+    role="slider"
+    tabindex="0"
+    aria-valuemin="1"
+    aria-valuemax="5"
+    [attr.aria-valuenow]="value() || null"
+    [attr.aria-valuetext]="value() ? value() + ' de 5 estrellas, ' + text() : 'Sin calificar'"
+    [attr.aria-label]="label()"
+    (keydown)="onKeydown($event)"
+    (mouseleave)="hovered.set(0)"
+  >
+    @for (state of states(); track $index) {
+      <span class="star" (mousemove)="hover($event, $index + 1)" (click)="pick($event, $index + 1)">
+        <i
+          class="bi"
+          [class.bi-star-fill]="state === 'full'"
+          [class.bi-star-half]="state === 'half'"
+          [class.bi-star]="state === 'empty'"
+          aria-hidden="true"
+        ></i>
+      </span>
+    }
+  </div>
+  <p class="score-text" aria-hidden="true">
+    @if (shown()) {
+      <strong>{{ shown() }}</strong> de 5 · {{ text() }}
+    } @else {
+      Elige de 1 a 5 estrellas (puedes usar medias)
+    }
+  </p>
+}

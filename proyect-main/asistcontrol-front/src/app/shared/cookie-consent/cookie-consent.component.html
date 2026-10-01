@@ -1,0 +1,18 @@
+<div *ngIf="visible" class="cookie-banner">
+  <div class="glass-strong cookie-card">
+    <div class="flex items-start gap-3">
+      <i class="bi bi-cookie text-xl text-primary-medium mt-0.5"></i>
+      <div class="flex-1">
+        <p class="text-xs font-semibold text-text-title">Uso de cookies</p>
+        <p class="text-[11px] text-text-body mt-1 leading-relaxed">
+          Usamos cookies técnicas y funcionales para el funcionamiento del sistema y para recordar tus
+          preferencias (tema, modo y tipografía). Puedes consultar el detalle en nuestra
+          <a [href]="policyUrl" target="_blank" rel="noopener" class="cookie-link">Política de Cookies</a>.
+        </p>
+      </div>
+    </div>
+    <div class="flex justify-end mt-4">
+      <button type="button" (click)="accept()" class="cookie-accept">Aceptar</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,184 @@
+<app-page-header
+  heading="Suscripción"
+  description="Tu plan, lo que estás usando y cuánto pagarías al mes."
+/>
+
+@if (loading()) {
+  <div class="grid gap-5">
+    <app-skeleton type="cards" [cards]="3" /><app-skeleton type="lines" [rows]="6" />
+  </div>
+} @else {
+  @if (sub(); as s) {
+    <div class="grid gap-5 lg:grid-cols-3">
+      <section class="card lg:col-span-2">
+        <div class="flex flex-wrap items-start gap-3">
+          <div class="flex-1">
+            <div class="stat-label">Plan actual</div>
+            <div class="text-3xl font-bold text-ink">{{ s.plan.name }}</div>
+            <div class="mt-1 text-sm text-muted-text">
+              @if (s.billing_interval) {
+                Pago {{ s.billing_interval === 'year' ? 'anual (11 meses, 1 de regalo)' : 'mensual' }} ·
+              }
+              Base de datos {{ s.database_tier.toLowerCase() }}
+            </div>
+          </div>
+          <span
+            class="badge"
+            [class.active]="s.status === 'active'"
+            [class.pending]="s.status === 'trial'"
+            [class.rejected]="s.status === 'past_due'"
+            >{{ s.status_label }}</span
+          >
+        </div>
+        @if (s.status === 'trial') {
+          <div class="alert alert-info mt-4">
+            Tu prueba termina el <strong>{{ s.trial_ends_at | date: 'longDate' }}</strong
+            >.
+          </div>
+        }
+
+        @if (s.usage.employees.locked) {
+          <div class="alert alert-warning mt-4">
+            <i class="bi bi-lock" aria-hidden="true"></i>
+            <span>
+              {{ s.usage.employees.locked }}
+              {{ s.usage.employees.locked === 1 ? 'empleado está bloqueado' : 'empleados están bloqueados' }}
+              por el límite de tu plan: aparecen en las listas, pero no pueden checar, entrar ni
+              modificarse. Se desbloquean al mejorar tu plan.
+            </span>
+          </div>
+        }
+
+        <h3 class="mt-5 mb-3 text-base">Uso del plan</h3>
+        @for (item of usageItems(s); track item.label) {
+          <div class="mb-4">
+            <div class="mb-1 flex text-sm">
+              <span class="font-medium text-ink-soft">{{ item.label }}</span>
+              <span class="flex-1"></span>
+              <span class="tabular-nums text-ink-soft">{{ item.used }} de {{ item.limit }}</span>
+            </div>
+            <div class="h-2.5 overflow-hidden rounded-full bg-surface/80">
+              <div
+                class="h-full rounded-full transition-all"
+                [style.width.%]="percent(item.used, item.limit)"
+                [class]="
+                  percent(item.used, item.limit) >= 90
+                    ? 'bg-status-critical'
+                    : percent(item.used, item.limit) >= 75
+                      ? 'bg-status-warning'
+                      : 'bg-series-1'
+                "
+              ></div>
+            </div>
+            @if (percent(item.used, item.limit) >= 90) {
+              <div class="mt-1 text-xs text-danger-text">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Casi en el límite
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="card">
+        <div class="stat-label">Mensualidad estimada</div>
+        <div class="stat-value">
+          {{ s.monthly_price | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+        </div>
+        <dl class="mt-4 space-y-2 text-sm">
+          <div class="flex">
+            <dt class="text-muted-text">Plan {{ s.plan.name }}</dt>
+            <dd class="ml-auto tabular-nums">
+              {{ +s.plan.monthly_price | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+            </dd>
+          </div>
+          <div class="flex">
+            <dt class="text-muted-text">
+              {{ s.extras.extra_employee_blocks }} bloque(s) de
+              {{ s.plan.employee_block_size }} empleados
+            </dt>
+            <dd class="ml-auto tabular-nums">
+              {{
+                s.extras.extra_employee_blocks * +s.plan.employee_block_price
+                  | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+              }}
+            </dd>
+          </div>
+          <div class="flex">
+            <dt class="text-muted-text">{{ s.extras.extra_offices }} oficina(s) extra</dt>
+            <dd class="ml-auto tabular-nums">
+              {{
+                s.extras.extra_offices * +s.plan.extra_office_price
+                  | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+              }}
+            </dd>
+          </div>
+          <div class="flex">
+            <dt class="text-muted-text">{{ s.app_users }} empleado(s) con app</dt>
+            <dd class="ml-auto text-success-text">Sin costo</dd>
+          </div>
+        </dl>
+        <div class="mt-4 border-t border-glass pt-3 text-sm text-muted-text">
+          Método de pago: {{ s.payment_method ?? 'sin registrar' }}
+        </div>
+        <p class="mt-3 text-xs text-muted-text">
+          Los cobros se hacen con tarjeta a través de Stripe. Para agregar extras (empleados u
+          oficinas), contacta a soporte.
+        </p>
+      </section>
+    </div>
+
+    @if (auth.isOwner()) {
+      <section class="card mt-8">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1">
+            <h3 class="text-base">Cambiar de plan</h3>
+            <p class="text-sm text-muted-text">
+              Mensual o anual (pagas 11 meses). El cambio se cobra al confirmar.
+            </p>
+          </div>
+          @if (!changingPlan()) {
+            <button class="btn btn-primary" type="button" (click)="openPlanChange()">
+              <i class="bi bi-arrow-up-circle" aria-hidden="true"></i> Cambiar de plan
+            </button>
+          }
+        </div>
+        @if (changingPlan()) {
+          <div class="mt-5">
+            @if (planOptions(); as options) {
+              <app-plan-checkout context="billing" [options]="options" (completed)="planChanged($event)" />
+            } @else {
+              <app-skeleton type="cards" [cards]="4" />
+            }
+          </div>
+        }
+      </section>
+    } @else {
+    <h3 class="mt-8 mb-3 text-base">Planes disponibles</h3>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      @for (plan of s.available_plans; track plan.slug) {
+        <div
+          class="card"
+          [class.ring-2]="plan.slug === s.plan.slug"
+          [class.ring-primary]="plan.slug === s.plan.slug"
+        >
+          <div class="flex items-center">
+            <h3 class="text-base">{{ plan.name }}</h3>
+            <span class="flex-1"></span>
+            @if (plan.slug === s.plan.slug) {
+              <span class="badge badge-brand">Actual</span>
+            }
+          </div>
+          <div class="mt-1 text-2xl font-bold">
+            {{ +plan.monthly_price | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+            }}<span class="text-sm font-medium text-muted-text">/mes</span>
+          </div>
+          <ul class="mt-2 space-y-1 text-sm text-ink-soft">
+            <li>{{ plan.included_employees }} empleados</li>
+            <li>{{ plan.included_offices }} oficina(s)</li>
+          </ul>
+        </div>
+      }
+    </div>
+    }
+  }
+}

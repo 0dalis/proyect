@@ -1,0 +1,661 @@
+@import 'tailwindcss';
+
+/* Modo oscuro por clase en <html> (ThemeService), no solo por el sistema */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Paleta corporativa. Los componentes usan estos roles, no colores sueltos:
+ *   ink       Azul Medianoche: texto principal y estructura
+ *   primary   Azul Pizarra: acciones (hover / active / focus / disabled)
+ *   muted     Gris Hielo: bordes, iconos y elementos secundarios
+ *   canvas    Plata Claro: fondo de la aplicación
+ *   success / warning / danger / info: estados del sistema
+ * Los *-text son versiones oscuras de cada estado con contraste AA sobre blanco.
+ *   line / glass: separadores y borde de las superficies de vidrio
+ * `static`: las variables existen aunque ninguna clase las use (SCSS y SVG las leen).
+ */
+@theme static {
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-ink: #1e293b;
+  --color-ink-soft: #334155;
+  --color-muted: #94a3b8;
+  --color-muted-text: #64748b;
+  --color-canvas: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-line: #e2e8f0;
+  --color-glass: rgb(255 255 255 / 0.6);
+
+  /* Receta de vidrio que comparten .glass y sus variantes (CSS puro) */
+  --glass-tint: rgb(255 255 255 / 0.62);
+  --glass-blur: 14px;
+  --glass-saturate: 160%;
+  --glass-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.3), rgb(255 255 255 / 0.04));
+  --glass-highlight: rgb(255 255 255 / 0.75);
+  --glass-shadow: 0 8px 32px rgb(15 23 42 / 0.1);
+  --glass-shadow-strong: 0 24px 64px rgb(15 23 42 / 0.18);
+
+  /* Fondo aurora (tokens para poder cambiar la paleta por tema) */
+  --aurora-1: color-mix(in oklab, var(--color-primary) 30%, transparent);
+  --aurora-2: color-mix(in oklab, var(--color-info) 24%, transparent);
+  --aurora-3: color-mix(in oklab, var(--color-success) 20%, transparent);
+  --aurora-4: color-mix(in oklab, var(--color-warning) 16%, transparent);
+  --aurora-opacity: 0.45;
+
+  /* Velo de modales/overlays: oscuro en ambos temas (no usa ink, que se invierte) */
+  --color-scrim: #0f172a;
+
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-active: #1d4ed8;
+  --color-primary-focus: #93c5fd;
+  --color-primary-soft: #eff6ff;
+  --color-disabled: #cbd5e1;
+
+  --color-success: #10b981;
+  --color-success-text: #047857;
+  --color-success-soft: #ecfdf5;
+  --color-warning: #f59e0b;
+  --color-warning-text: #b45309;
+  --color-warning-soft: #fffbeb;
+  --color-danger: #ef4444;
+  --color-danger-text: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-info: #06b6d4;
+  --color-info-text: #0e7490;
+  --color-info-soft: #ecfeff;
+
+  /* Gráficas: una serie en azul pizarra; estados validados para daltonismo */
+  --color-series-1: #3b82f6;
+  --color-status-good: #10b981;
+  --color-status-warning: #f59e0b;
+  --color-status-critical: #ef4444;
+
+  /* Brillo del skeleton de carga */
+  --color-skeleton: rgb(148 163 184 / 0.14);
+  --color-skeleton-shine: rgb(255 255 255 / 0.55);
+}
+
+/*
+ * Modo oscuro: los mismos roles con valores para fondo oscuro. El azul de
+ * acción y los colores de estado se mantienen; los textos de estado se
+ * aclaran para conservar el contraste.
+ */
+.dark {
+  color-scheme: dark;
+
+  /* Base "Petróleo": verde-mar profundo en lugar del azul genérico */
+  --color-ink: #e6f1ec;
+  --color-ink-soft: #c3d8d0;
+  --color-muted: #5f8077;
+  --color-muted-text: #93b3a8;
+  --color-canvas: #06110e;
+  --color-surface: #0e1d19;
+  --color-line: #1e332d;
+  --color-glass: rgb(147 179 168 / 0.22);
+
+  /* Vidrio en oscuro: tinte del propio petróleo, opaco y con menos saturación */
+  --glass-tint: color-mix(in oklab, var(--color-surface) 76%, transparent);
+  --glass-saturate: 130%;
+  --glass-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.01));
+  --glass-highlight: rgb(255 255 255 / 0.12);
+  --glass-shadow: 0 8px 32px rgb(0 0 0 / 0.45);
+  --glass-shadow-strong: 0 24px 64px rgb(0 0 0 / 0.6);
+
+  /* Aurora cálida y multicolor: violeta, turquesa, ámbar y rosa */
+  --aurora-1: rgb(139 92 246 / 0.34);
+  --aurora-2: rgb(45 212 191 / 0.26);
+  --aurora-3: rgb(251 191 36 / 0.16);
+  --aurora-4: rgb(244 114 182 / 0.2);
+  --aurora-opacity: 0.4;
+
+  --color-scrim: #030c0a;
+
+  --color-primary-soft: rgb(59 130 246 / 0.16);
+  --color-primary-active: #93c5fd;
+  --color-primary-focus: #1d4ed8;
+  --color-disabled: #334155;
+
+  --color-success-text: #34d399;
+  --color-success-soft: rgb(16 185 129 / 0.14);
+  --color-warning-text: #fbbf24;
+  --color-warning-soft: rgb(245 158 11 / 0.14);
+  --color-danger-text: #f87171;
+  --color-danger-soft: rgb(239 68 68 / 0.14);
+  --color-info-text: #22d3ee;
+  --color-info-soft: rgb(6 182 212 / 0.14);
+
+  --color-skeleton: rgb(148 163 184 / 0.1);
+  --color-skeleton-shine: rgb(148 163 184 / 0.12);
+}
+
+/*
+ * Color de acento elegido por el usuario (Mi perfil → Apariencia). Solo
+ * cambia el color de acción; los colores de estado (éxito, alerta, error)
+ * no cambian para que sigan significando lo mismo. Sin atributo = azul corporativo.
+ */
+html[data-accent='indigo'] {
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-active: #4338ca;
+  --color-primary-focus: #a5b4fc;
+  --color-primary-soft: #eef2ff;
+}
+
+html.dark[data-accent='indigo'] {
+  --color-primary-soft: rgb(99 102 241 / 0.16);
+  --color-primary-active: #a5b4fc;
+  --color-primary-focus: #4338ca;
+}
+
+html[data-accent='purple'] {
+  --color-primary: #9333ea;
+  --color-primary-hover: #7e22ce;
+  --color-primary-active: #6b21a8;
+  --color-primary-focus: #d8b4fe;
+  --color-primary-soft: #faf5ff;
+}
+
+html.dark[data-accent='purple'] {
+  --color-primary-soft: rgb(147 51 234 / 0.16);
+  --color-primary-active: #d8b4fe;
+  --color-primary-focus: #7e22ce;
+}
+
+html[data-accent='green'] {
+  --color-primary: #16a34a;
+  --color-primary-hover: #15803d;
+  --color-primary-active: #166534;
+  --color-primary-focus: #86efac;
+  --color-primary-soft: #f0fdf4;
+}
+
+html.dark[data-accent='green'] {
+  --color-primary-soft: rgb(22 163 74 / 0.16);
+  --color-primary-active: #86efac;
+  --color-primary-focus: #15803d;
+}
+
+html[data-accent='teal'] {
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-primary-active: #115e59;
+  --color-primary-focus: #5eead4;
+  --color-primary-soft: #f0fdfa;
+}
+
+html.dark[data-accent='teal'] {
+  --color-primary-soft: rgb(13 148 136 / 0.16);
+  --color-primary-active: #5eead4;
+  --color-primary-focus: #0f766e;
+}
+
+html[data-accent='orange'] {
+  --color-primary: #ea580c;
+  --color-primary-hover: #c2410c;
+  --color-primary-active: #9a3412;
+  --color-primary-focus: #fdba74;
+  --color-primary-soft: #fff7ed;
+}
+
+html.dark[data-accent='orange'] {
+  --color-primary-soft: rgb(234 88 12 / 0.16);
+  --color-primary-active: #fdba74;
+  --color-primary-focus: #c2410c;
+}
+
+html[data-accent='rose'] {
+  --color-primary: #e11d48;
+  --color-primary-hover: #be123c;
+  --color-primary-active: #9f1239;
+  --color-primary-focus: #fda4af;
+  --color-primary-soft: #fff1f2;
+}
+
+html.dark[data-accent='rose'] {
+  --color-primary-soft: rgb(225 29 72 / 0.16);
+  --color-primary-active: #fda4af;
+  --color-primary-focus: #be123c;
+}
+
+/* Tipografía elegida por el usuario (se carga de Google Fonts al elegirla) */
+html[data-font='poppins'] {
+  --font-sans: 'Poppins', system-ui, sans-serif;
+}
+
+html[data-font='montserrat'] {
+  --font-sans: 'Montserrat', system-ui, sans-serif;
+}
+
+html[data-font='nunito'] {
+  --font-sans: 'Nunito', system-ui, sans-serif;
+}
+
+html[data-font='lora'] {
+  --font-sans: 'Lora', Georgia, serif;
+}
+
+html[data-font] body {
+  font-family: var(--font-sans);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    /* El color base vive en <html> para que la aurora (body::before) sea visible */
+    background-color: var(--color-canvas);
+  }
+
+  /* Cambio de tema suave, sin animar todo lo demás */
+  html.theme-transition,
+  html.theme-transition * {
+    transition:
+      background-color 250ms ease,
+      border-color 250ms ease,
+      color 250ms ease !important;
+  }
+
+  body {
+    @apply min-h-screen font-sans text-ink antialiased;
+    background-color: transparent;
+  }
+
+  /* Fondo aurora: manchas de color difuminadas que derivan despacio tras el vidrio */
+  @keyframes aurora-drift {
+    0% {
+      transform: translate3d(-3%, -2%, 0) scale(1.05);
+    }
+    50% {
+      transform: translate3d(3%, 2%, 0) scale(1.15);
+    }
+    100% {
+      transform: translate3d(-3%, -2%, 0) scale(1.05);
+    }
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -15%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(40rem 32rem at 16% 20%, var(--aurora-1), transparent 62%),
+      radial-gradient(34rem 28rem at 84% 16%, var(--aurora-2), transparent 60%),
+      radial-gradient(42rem 34rem at 70% 86%, var(--aurora-3), transparent 62%),
+      radial-gradient(32rem 26rem at 24% 90%, var(--aurora-4), transparent 60%);
+    filter: blur(64px);
+    opacity: var(--aurora-opacity, 0.45);
+    animation: aurora-drift 28s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body::before {
+      animation: none;
+    }
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight text-ink;
+  }
+
+  h2,
+  h3 {
+    @apply mb-2;
+  }
+
+  a {
+    @apply text-primary-hover hover:text-primary-active;
+  }
+
+  hr {
+    @apply my-5 border-line;
+  }
+
+  ol {
+    @apply list-decimal space-y-1 pl-5;
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    @apply w-full rounded-xl border border-line bg-surface/90 px-3 py-2 text-ink shadow-sm placeholder:text-muted focus:border-primary focus:ring-3 focus:ring-primary-focus/60 focus:outline-none disabled:bg-canvas disabled:text-muted;
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      inset 0 2px 6px rgb(15 23 42 / 0.04);
+  }
+
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'] {
+    @apply accent-primary;
+  }
+
+  table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  th {
+    @apply border-b border-line px-3 py-2.5 text-left text-xs font-semibold tracking-wide text-muted-text uppercase;
+  }
+
+  td {
+    @apply border-b border-line/60 px-3 py-3 align-middle;
+  }
+
+  tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .bi {
+    @apply inline-block leading-none;
+  }
+}
+
+/*
+ * Superficie de vidrio. La receta vive aquí en CSS puro: tinte + brillo en
+ * gradiente + luz interior en el borde + desenfoque del fondo. Las variantes
+ * (.glass-bar, .glass-strong, .glass-soft) solo cambian las variables que lee
+ * esta utilidad, así que se combinan con ella: class="glass glass-bar".
+ */
+@utility glass {
+  border: 1px solid var(--color-glass);
+  border-radius: 1rem;
+  background-color: var(--glass-bg, var(--glass-tint));
+  background-image: var(--glass-sheen);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-saturate, 160%));
+  backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-saturate, 160%));
+}
+
+@layer components {
+  /* Variantes de vidrio: ajustan desenfoque, tinte y sombra de .glass */
+  .glass-bar {
+    --glass-blur: 12px;
+    --glass-bg: color-mix(in oklab, var(--color-surface) 55%, transparent);
+  }
+
+  .glass-strong {
+    --glass-blur: 20px;
+    --glass-bg: color-mix(in oklab, var(--color-surface) 84%, transparent);
+    --glass-shadow: var(--glass-shadow-strong);
+  }
+
+  .glass-soft {
+    --glass-blur: 8px;
+    --glass-bg: color-mix(in oklab, var(--color-surface) 46%, transparent);
+    --glass-highlight: transparent;
+  }
+
+  .card {
+    @apply glass p-5;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink-soft shadow-sm transition hover:border-muted/60 hover:bg-canvas focus-visible:ring-3 focus-visible:ring-primary-focus/70 focus-visible:outline-none active:translate-y-px disabled:cursor-not-allowed disabled:border-disabled disabled:bg-canvas disabled:text-muted;
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .btn-primary {
+    @apply border-primary bg-primary text-white shadow-primary/25 hover:border-primary-hover hover:bg-primary-hover active:border-primary-active active:bg-primary-active disabled:border-disabled disabled:bg-disabled disabled:text-white;
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0) 55%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 8px 20px -8px color-mix(in oklab, var(--color-primary) 70%, transparent);
+  }
+
+  .btn-danger {
+    @apply text-danger-text hover:border-danger/40 hover:bg-danger-soft;
+  }
+
+  .btn-ok {
+    @apply text-success-text hover:border-success/40 hover:bg-success-soft;
+  }
+
+  .btn-sm {
+    @apply rounded-lg px-2.5 py-1 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  .btn-ghost {
+    @apply border-transparent bg-transparent shadow-none hover:border-transparent hover:bg-surface/70;
+  }
+
+  .field {
+    @apply mb-4 flex flex-col gap-1.5;
+  }
+
+  .field > label {
+    @apply text-sm font-medium text-ink-soft;
+  }
+
+  .hint {
+    @apply text-xs text-muted-text;
+  }
+
+  .check {
+    @apply flex cursor-pointer items-center gap-2 text-sm font-medium text-ink-soft;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border border-line bg-surface px-2.5 py-0.5 text-xs font-semibold text-ink-soft;
+  }
+
+  .badge-brand {
+    @apply border-primary/25 bg-primary-soft text-primary-active;
+  }
+
+  /* Estados: siempre con texto, nunca solo color */
+  .badge.on_time,
+  .badge.approved,
+  .badge.active {
+    @apply border-success/30 bg-success-soft text-success-text;
+  }
+
+  .badge.late,
+  .badge.pending,
+  .badge.early_leave {
+    @apply border-warning/35 bg-warning-soft text-warning-text;
+  }
+
+  .badge.absent,
+  .badge.rejected,
+  .badge.terminated {
+    @apply border-danger/30 bg-danger-soft text-danger-text;
+  }
+
+  .alert {
+    @apply mb-4 flex items-start gap-2 rounded-xl border px-4 py-3 text-sm;
+  }
+
+  .alert-error {
+    @apply border-danger/30 bg-danger-soft text-danger-text;
+  }
+
+  .alert-success {
+    @apply border-success/30 bg-success-soft text-success-text;
+  }
+
+  .alert-info {
+    @apply border-info/30 bg-info-soft text-info-text;
+  }
+
+  .alert-warning {
+    @apply border-warning/35 bg-warning-soft text-warning-text;
+  }
+
+  /* Interruptor deslizable: <label class="switch"><input type="checkbox" role="switch" /><span></span></label> */
+  .switch {
+    @apply relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center;
+
+    input {
+      @apply absolute inset-0 z-10 m-0 cursor-pointer opacity-0;
+    }
+
+    span {
+      @apply pointer-events-none h-6 w-11 rounded-full border border-line bg-canvas transition-colors;
+    }
+
+    span::after {
+      content: '';
+      @apply absolute top-1 left-1 size-4 rounded-full bg-muted shadow transition-transform;
+    }
+
+    input:checked + span {
+      @apply border-primary bg-primary;
+    }
+
+    input:checked + span::after {
+      @apply translate-x-5 bg-white;
+    }
+
+    input:focus-visible + span {
+      @apply ring-2 ring-primary/40;
+    }
+
+    input:disabled + span {
+      @apply opacity-50;
+    }
+  }
+
+  .link-button {
+    @apply cursor-pointer border-0 bg-transparent p-0 font-medium text-primary-active hover:underline;
+  }
+
+  .page-head {
+    @apply mb-6 flex flex-wrap items-center justify-between gap-4;
+  }
+
+  .page-head h1 {
+    @apply text-2xl;
+  }
+
+  .page-head p {
+    @apply mt-1 text-sm text-muted-text;
+  }
+
+  .modal-backdrop {
+    @apply fixed inset-0 z-[2000] grid place-items-center bg-scrim/45 p-4 backdrop-blur-sm;
+  }
+
+  .modal {
+    --glass-blur: 20px;
+    @apply glass max-h-[90vh] w-full max-w-xl overflow-y-auto bg-surface/90 p-6;
+  }
+
+  .modal h2 {
+    @apply mb-4 text-xl;
+  }
+
+  .modal-actions {
+    @apply mt-5 flex justify-end gap-2;
+  }
+
+  .empty {
+    @apply py-8 text-center text-sm text-muted-text;
+  }
+
+  .dot {
+    @apply inline-block size-2.5 rounded-full;
+  }
+
+  .token {
+    @apply block rounded-xl border border-line bg-canvas p-3 font-mono text-sm break-all text-ink;
+  }
+
+  .stat-value {
+    @apply mt-1 text-3xl font-bold text-ink;
+  }
+
+  .stat-label {
+    @apply text-sm text-muted-text;
+  }
+
+  /* Icono cuadrado de las tarjetas de estadística y de funciones */
+  .icon-tile {
+    @apply grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-lg text-primary-active;
+  }
+}
+
+/* Leaflet dentro de tarjetas de vidrio */
+.leaflet-container {
+  @apply rounded-xl;
+  font-family: inherit;
+}
+
+/* Mapa oscuro: se atenúan las teselas claras de OpenStreetMap hacia tonos fríos */
+.dark .leaflet-tile {
+  filter: invert(0.92) hue-rotate(160deg) brightness(0.9) contrast(0.85) saturate(0.7);
+}
+
+.dark .swal2-container.swal2-backdrop-show {
+  background: rgb(3 12 10 / 0.65);
+}
+
+/* SweetAlert2 con la paleta de la aplicación */
+.swal2-container {
+  z-index: 3500;
+}
+
+.swal2-container.swal2-backdrop-show {
+  background: rgb(30 41 59 / 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.app-swal {
+  --glass-blur: 20px;
+  @apply rounded-2xl border border-glass bg-surface/95 p-6 font-sans shadow-[0_24px_64px_rgba(30,41,59,0.2)] backdrop-blur-xl;
+}
+
+.app-swal__title {
+  @apply text-xl font-semibold text-ink;
+}
+
+.app-swal__text {
+  @apply text-sm text-muted-text;
+}
+
+.app-swal__actions {
+  @apply mt-5 gap-2;
+}
+
+.app-swal__label {
+  @apply mt-2 text-sm font-medium text-ink-soft;
+}
+
+.app-swal__input {
+  @apply mx-0 mt-2 w-full rounded-xl border border-line text-sm text-ink shadow-none focus:border-primary focus:ring-3 focus:ring-primary-focus/60;
+}
+
+.app-swal__validation {
+  @apply bg-danger-soft text-danger-text;
+}
+
+/* reCAPTCHA v3: la insignia flotante se oculta; cada formulario muestra la leyenda (app-recaptcha-notice) */
+.grecaptcha-badge {
+  visibility: hidden;
+}
+
+/*
+ * Sin soporte de backdrop-filter el vidrio pasa a una superficie casi opaca
+ * para no perder legibilidad. Va sin @layer para tener prioridad sobre las
+ * utilidades de Tailwind.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-bar,
+  .glass-strong,
+  .glass-soft {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: color-mix(in oklab, var(--color-surface) 92%, transparent);
+  }
+}

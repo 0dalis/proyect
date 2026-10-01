@@ -1,0 +1,33 @@
+@let b = balance();
+@if (b.entitled === 0) {
+  <p class="text-sm text-muted-text">
+    <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+    @if (b.next_entitlement_on) {
+      Aún no cumple un año. Tendrá 12 días de vacaciones a partir del
+      <strong>{{ date(b.next_entitlement_on) }}</strong>.
+    } @else {
+      Registra su fecha de ingreso para calcular sus vacaciones.
+    }
+  </p>
+} @else {
+  <div class="flex items-end gap-3" [class.mb-3]="!compact()">
+    <div>
+      <span class="text-3xl font-bold text-ink tabular-nums">{{ b.available }}</span>
+      <span class="text-sm text-muted-text"> de {{ b.entitled }} días disponibles</span>
+    </div>
+  </div>
+  <div class="bar" role="img" [attr.aria-label]="b.used + ' usados, ' + b.pending + ' por aprobar, ' + b.available + ' disponibles'">
+    <span class="used" [style.width.%]="usedPercent()"></span>
+    <span class="pending" [style.width.%]="pendingPercent()"></span>
+  </div>
+  <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-text">
+    <span><i class="dot used" aria-hidden="true"></i> {{ b.used }} usados</span>
+    @if (b.pending) {
+      <span><i class="dot pending" aria-hidden="true"></i> {{ b.pending }} por aprobar</span>
+    }
+    @if (!compact()) {
+      <span>{{ b.years_of_service }} {{ b.years_of_service === 1 ? 'año' : 'años' }} de antigüedad</span>
+      <span>Periodo: {{ date(b.period_from) }} al {{ date(b.period_to) }}</span>
+    }
+  </div>
+}

@@ -1,0 +1,68 @@
+<div class="kiosk-page">
+  <div class="kiosk-card glass-strong">
+    <div class="flex items-center justify-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary-medium to-primary-dark">
+        <i class="bi bi-fingerprint text-white"></i>
+      </div>
+      <div class="text-center">
+        <h1 class="text-xl font-bold text-text-title">Registro de asistencia</h1>
+        <p class="text-xs text-text-body">Modo kiosco</p>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Oficina</label>
+      <select [(ngModel)]="officeId" class="form-input">
+        <option value="">Selecciona la oficina</option>
+        <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+      </select>
+    </div>
+
+    <div class="flex gap-2 mb-4">
+      <button type="button" (click)="mode = 'code'" class="flex-1 py-2 rounded-lg text-xs font-semibold"
+        [ngClass]="mode === 'code' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">
+        <i class="bi bi-upc-scan"></i> Código
+      </button>
+      <button type="button" (click)="mode = 'pin'" class="flex-1 py-2 rounded-lg text-xs font-semibold"
+        [ngClass]="mode === 'pin' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">
+        <i class="bi bi-123"></i> PIN
+      </button>
+    </div>
+
+    <div class="mb-5">
+      <input *ngIf="mode === 'code'" type="text" [(ngModel)]="code" placeholder="Código de empleado (ej: ABCD123456)"
+        class="form-input text-center text-lg tracking-widest uppercase" (keyup.enter)="mark('check_in')">
+      <input *ngIf="mode === 'pin'" type="password" inputmode="numeric" [(ngModel)]="pin" placeholder="PIN"
+        class="form-input text-center text-lg tracking-widest" (keyup.enter)="mark('check_in')">
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <button (click)="mark('check_in')" [disabled]="loading" class="kiosk-action kiosk-in">
+        <i class="bi bi-box-arrow-in-right text-xl"></i> Entrada
+      </button>
+      <button (click)="mark('check_out')" [disabled]="loading" class="kiosk-action kiosk-out">
+        <i class="bi bi-box-arrow-right text-xl"></i> Salida
+      </button>
+      <button (click)="mark('lunch_start')" [disabled]="loading" class="kiosk-action kiosk-lunch">
+        <i class="bi bi-cup-hot text-xl"></i> Inicio descanso
+      </button>
+      <button (click)="mark('lunch_end')" [disabled]="loading" class="kiosk-action kiosk-lunch">
+        <i class="bi bi-cup-hot-fill text-xl"></i> Fin descanso
+      </button>
+    </div>
+
+    <div *ngIf="error" class="mt-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600 flex items-center gap-2">
+      <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+
+    <div *ngIf="lastResult" class="mt-4 px-4 py-4 rounded-lg bg-success-green/10 border border-success-green/30 text-center">
+      <i class="bi bi-check-circle text-2xl text-success-green"></i>
+      <p class="text-sm font-bold text-text-title mt-1">{{ lastResult.employee }}</p>
+      <p class="text-xs text-text-body">{{ actionLabel(lastResult.type) }} registrada</p>
+    </div>
+
+    <p class="text-center text-[10px] text-text-body mt-6">
+      Ubicación: {{ geo.lat ? 'detectada' : 'no disponible' }} · Radio de oficina aplicado
+    </p>
+  </div>
+</div>

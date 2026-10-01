@@ -1,0 +1,79 @@
+<div class="fixed top-4 right-4"><app-theme-toggle /></div>
+
+<div class="card w-full max-w-md !p-8">
+  <a routerLink="/" class="mb-6 flex items-center gap-2 text-lg font-bold text-ink no-underline">
+    <span class="grid size-9 place-items-center rounded-xl bg-ink text-white shadow-md shadow-black/25 dark:bg-primary">
+      <i class="bi bi-fingerprint" aria-hidden="true"></i>
+    </span>
+    AsistControl
+  </a>
+
+  @switch (state()) {
+    @case ('form') {
+      <h1 class="text-2xl">¿Cómo fue tu experiencia?</h1>
+      <p class="mb-6 text-sm text-muted-text">
+        Ya eliminamos los datos de <strong>{{ companyName() }}</strong>. Tu opinión nos ayuda a
+        mejorar AsistControl.
+      </p>
+
+      <div class="mb-1 flex justify-center gap-1" role="radiogroup" aria-label="Calificación">
+        @for (star of stars; track star) {
+          <button
+            type="button"
+            class="star"
+            role="radio"
+            [attr.aria-checked]="rating() === star"
+            [attr.aria-label]="star + ' de 5: ' + labels[star]"
+            (click)="rating.set(star)"
+            (mouseenter)="hovered.set(star)"
+            (mouseleave)="hovered.set(0)"
+          >
+            <i
+              class="bi"
+              [class.bi-star-fill]="(hovered() || rating()) >= star"
+              [class.bi-star]="(hovered() || rating()) < star"
+              aria-hidden="true"
+            ></i>
+          </button>
+        }
+      </div>
+      <p class="mb-5 h-5 text-center text-sm text-ink-soft">{{ labels[hovered() || rating()] }}</p>
+
+      <div class="field">
+        <label for="comment">¿Algo que quieras contarnos? (opcional)</label>
+        <textarea id="comment" rows="4" maxlength="2000" [(ngModel)]="comment"></textarea>
+      </div>
+
+      <button
+        class="btn btn-primary btn-lg w-full"
+        type="button"
+        (click)="send()"
+        [disabled]="!rating() || sending()"
+      >
+        {{ sending() ? 'Enviando…' : 'Enviar valoración' }}
+      </button>
+    }
+    @case ('done') {
+      <div class="text-center">
+        <div class="mx-auto mb-3 grid size-16 place-items-center rounded-2xl bg-success-soft text-3xl text-success-text">
+          <i class="bi bi-heart" aria-hidden="true"></i>
+        </div>
+        <h1 class="text-2xl">¡Gracias!</h1>
+        <p class="mb-6 text-sm text-muted-text">
+          Recibimos tu valoración. Si algún día quieres regresar, solo registra tu empresa de nuevo.
+        </p>
+        <a routerLink="/" class="btn w-full">Ir al inicio</a>
+      </div>
+    }
+    @case ('invalid') {
+      <div class="text-center">
+        <h1 class="text-2xl">Enlace no válido</h1>
+        <p class="mb-6 text-sm text-muted-text">Revisa que copiaste el enlace completo del correo.</p>
+        <a routerLink="/" class="btn w-full">Ir al inicio</a>
+      </div>
+    }
+    @default {
+      <p class="text-center text-sm text-muted-text">Cargando…</p>
+    }
+  }
+</div>

@@ -1,0 +1,108 @@
+<app-page-header
+  heading="Bitácora"
+  description="Cada acción del sistema: qué se hizo, quién lo hizo y cuándo. Las acciones sobre un empleado también aparecen en su detalle."
+>
+  <button type="button" class="btn" (click)="exportCsv()">
+    <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Exportar
+  </button>
+</app-page-header>
+
+<div class="glass mb-4 flex flex-wrap items-center gap-2 p-3">
+  <div class="glass glass-soft flex gap-1 rounded-xl p-1">
+    @for (scope of scopes; track scope.value) {
+      <button
+        type="button"
+        class="btn btn-sm"
+        [class.btn-ghost]="filters.scope !== scope.value"
+        [class.btn-primary]="filters.scope === scope.value"
+        (click)="setScope(scope.value)"
+      >
+        <i class="bi" [class]="'bi-' + scope.icon" aria-hidden="true"></i> {{ scope.label }}
+      </button>
+    }
+  </div>
+
+  <input
+    type="date"
+    class="!w-auto !py-1 text-sm"
+    [(ngModel)]="filters.from"
+    (change)="load()"
+    aria-label="Desde"
+  />
+  <span class="text-muted">–</span>
+  <input
+    type="date"
+    class="!w-auto !py-1 text-sm"
+    [(ngModel)]="filters.to"
+    (change)="load()"
+    aria-label="Hasta"
+  />
+
+  <select
+    class="!w-auto !py-1 text-sm"
+    [(ngModel)]="filters.user_id"
+    (change)="load()"
+    aria-label="Usuario"
+  >
+    <option [ngValue]="null">Todos los usuarios</option>
+    @for (user of users(); track user.id) {
+      <option [ngValue]="user.id">{{ user.name }}</option>
+    }
+  </select>
+
+  <select
+    class="!w-auto !py-1 text-sm"
+    [(ngModel)]="filters.action"
+    (change)="load()"
+    aria-label="Acción"
+  >
+    <option value="">Todas las acciones</option>
+    @for (action of actionOptions(); track action.value) {
+      <option [value]="action.value">{{ action.label }}</option>
+    }
+  </select>
+
+  <div class="relative min-w-48 flex-1">
+    <i
+      class="bi bi-search pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted"
+      aria-hidden="true"
+    ></i>
+    <input
+      class="!py-1 !pl-8 text-sm"
+      placeholder="Buscar en descripción, usuario o empleado"
+      [(ngModel)]="filters.search"
+      (keyup.enter)="load()"
+    />
+  </div>
+</div>
+
+@if (loading()) {
+  <app-skeleton type="list" [rows]="8" />
+} @else {
+  <section class="card">
+    <p class="mb-2 text-sm text-muted-text">{{ total() }} registro(s)</p>
+    <app-activity-timeline [entries]="entries()" [actions]="actions()" [linkEmployees]="true" />
+
+    @if (lastPage() > 1) {
+      <div class="mt-4 flex items-center justify-center gap-2">
+        <button
+          type="button"
+          class="btn btn-sm"
+          [disabled]="page() === 1"
+          (click)="load(page() - 1)"
+        >
+          <i class="bi bi-chevron-left" aria-hidden="true"></i> Anterior
+        </button>
+        <span class="text-sm text-muted-text">Página {{ page() }} de {{ lastPage() }}</span>
+        <button
+          type="button"
+          class="btn btn-sm"
+          [disabled]="page() === lastPage()"
+          (click)="load(page() + 1)"
+        >
+          Siguiente <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    }
+  </section>
+}

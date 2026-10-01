@@ -1,0 +1,130 @@
+<app-page-header
+  heading="Oficinas y geocerca"
+  description="{{ offices().length }} de {{
+    auth.user()?.company?.limits?.offices
+  }} oficinas de tu plan."
+>
+  <button class="btn btn-primary" type="button" (click)="open()">+ Nueva oficina</button>
+</app-page-header>
+
+@if (loading()) {
+  <app-skeleton type="list" [rows]="3" />
+} @else {
+  <div class="grid gap-4 sm:grid-cols-2">
+    @for (office of offices(); track office.id) {
+      <article class="card">
+        <div class="flex flex-wrap items-center gap-3">
+          <h3 style="margin: 0">{{ office.name }}</h3>
+          @if (office.is_default) {
+            <span class="badge badge-brand">Principal</span>
+          }
+          <span class="flex-1"></span>
+          <button class="btn btn-sm" type="button" (click)="open(office)">Editar</button>
+        </div>
+        <p class="text-sm text-muted-text">
+          {{ office.address || 'Sin dirección' }} · {{ office.employees_count }} empleados
+        </p>
+        @if (office.latitude !== null) {
+          <div style="height: 220px">
+            <app-geofence-map
+              [latitude]="office.latitude"
+              [longitude]="office.longitude"
+              [radius]="office.geofence_radius"
+            />
+          </div>
+          <p class="text-sm">
+            Radio para checar desde la app: <strong>{{ office.geofence_radius }} m</strong>
+            · <i class="bi bi-globe-americas" aria-hidden="true"></i> {{ office.timezone }}
+          </p>
+        } @else {
+          <div class="alert alert-info">
+            Ubica la oficina en el mapa para que los empleados puedan checar desde la app.
+          </div>
+        }
+      </article>
+    }
+  </div>
+}
+
+@if (draft(); as office) {
+  <app-modal
+    heading="{{ office.id ? 'Editar oficina' : 'Nueva oficina' }}"
+    size="lg"
+    (closed)="draft.set(null)"
+  >
+    @if (error()) {
+      <div class="alert alert-error">{{ error() }}</div>
+    }
+
+    <div class="grid gap-4 sm:grid-cols-2" style="gap: 0 1rem">
+      <div class="field"><label>Nombre</label><input [(ngModel)]="office.name" /></div>
+      <div class="field"><label>Dirección</label><input [(ngModel)]="office.address" /></div>
+      <div class="field">
+        <label>Zona horaria</label>
+        <select [(ngModel)]="office.timezone">
+          @for (zone of timezones; track zone.value) {
+            <option [value]="zone.value">{{ zone.label }}</option>
+          }
+          @if (!isKnownZone(office.timezone)) {
+            <option [value]="office.timezone">{{ office.timezone }}</option>
+          }
+        </select>
+        <span class="hint">
+          Las horas se guardan en UTC y se muestran con esta zona: la entrada de las 9:00 es a las
+          9:00 de esta oficina.
+        </span>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3" style="margin-bottom: 0.5rem">
+      <span class="text-sm text-muted-text"
+        >Haz clic en el mapa o arrastra el marcador para ubicar la oficina.</span
+      >
+      <span class="flex-1"></span>
+      <button class="btn btn-sm" type="button" (click)="useMyLocation(office)">
+        <i class="bi bi-crosshair" aria-hidden="true"></i> Usar mi ubicación
+      </button>
+    </div>
+    <div style="height: 340px">
+      <app-geofence-map
+        [latitude]="office.latitude"
+        [longitude]="office.longitude"
+        [radius]="office.geofence_radius"
+        [editable]="true"
+        (locationChange)="
+          office.latitude = $event.latitude;
+          office.longitude = $event.longitude;
+          draft.set({ ...office })
+        "
+      />
+    </div>
+
+    <div class="field" style="margin-top: 1rem">
+      <label>Radio de la geocerca: {{ office.geofence_radius }} m</label>
+      <input
+        type="range"
+        min="10"
+        max="100"
+        step="5"
+        [(ngModel)]="office.geofence_radius"
+        (ngModelChange)="draft.set({ ...office })"
+      />
+      <span class="hint"
+        >Mínimo 10 m, máximo 100 m. Un radio mayor da margen si el GPS del celular falla bajo
+        techo.</span
+      >
+    </div>
+
+    <div modal-footer>
+      <button class="btn" type="button" (click)="draft.set(null)">Cancelar</button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="save(office)"
+        [disabled]="!office.name"
+      >
+        Guardar
+      </button>
+    </div>
+  </app-modal>
+}

@@ -1,0 +1,13 @@
+:host {
+  display: contents;
+}
+
+/* Sin botones proyectados, el pie no ocupa espacio */
+.footer:empty {
+  display: none;
+}
+
+.footer ::ng-deep [modal-footer] {
+  display: flex;
+  gap: 0.5rem;
+}

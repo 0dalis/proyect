@@ -1,0 +1,291 @@
+<app-page-header
+  heading="Empleados"
+  description="{{ total() }} registrados. Límite del plan: {{
+    auth.user()?.company?.limits?.employees
+  }} activos. Toca a un empleado para ver su detalle."
+>
+  @if (canManage) {
+    <select
+      class="!w-auto !py-1.5 text-sm"
+      aria-label="Orientación de la credencial"
+      (change)="setPrintOrientation($event)"
+    >
+      <option value="horizontal" [selected]="printOrientation() === 'horizontal'">Horizontal</option>
+      <option value="vertical" [selected]="printOrientation() === 'vertical'">Vertical</option>
+    </select>
+    <button class="btn" type="button" (click)="printBadges()" [disabled]="!employees().length">
+      <i class="bi bi-person-badge" aria-hidden="true"></i> Imprimir credenciales
+    </button>
+    <button class="btn" type="button" (click)="importOpen.set(true)">
+      <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i> Carga masiva
+    </button>
+    <button class="btn btn-primary" type="button" (click)="openForm()">
+      <i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo empleado
+    </button>
+  }
+</app-page-header>
+
+@if (canManage && pendingSetup() > organizeThreshold) {
+  <div class="alert alert-warning items-center">
+    <i class="bi bi-diagram-3" aria-hidden="true"></i>
+    <span class="flex-1">
+      <strong>{{ pendingSetup() }} empleados sin organizar.</strong> Asígnales oficina, turno, área y
+      tipo para que puedan checar.
+    </span>
+    <a routerLink="/panel/empleados/organizar" class="btn btn-primary btn-sm">
+      <i class="bi bi-ui-checks" aria-hidden="true"></i> Organizar empleados
+    </a>
+  </div>
+}
+
+@if (importOpen()) {
+  <app-import-modal (closed)="importOpen.set(false)" (imported)="onImported($event)" />
+}
+
+@if (credential(); as detail) {
+  <app-credential-viewer
+    [employee]="detail"
+    [company]="auth.user()!.company"
+    (closed)="credential.set(null)"
+  />
+}
+
+<div class="glass mb-4 flex flex-wrap items-center gap-2 p-3">
+  <div class="relative min-w-56 flex-1 sm:max-w-80">
+    <i
+      class="bi bi-search pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted"
+      aria-hidden="true"
+    ></i>
+    <input
+      class="!py-1.5 !pl-8 text-sm"
+      placeholder="Buscar por nombre o código"
+      (input)="search($event)"
+    />
+  </div>
+  <select class="!w-auto !py-1.5 text-sm" (change)="filterStatus($event)" aria-label="Estado">
+    <option value="">Todos los estados</option>
+    <option value="active">Activos</option>
+    <option value="inactive">Inactivos</option>
+    <option value="terminated">Bajas</option>
+  </select>
+</div>
+
+@if (loading()) {
+  <app-skeleton type="table" [rows]="8" [columns]="5" />
+} @else {
+  <div class="card overflow-x-auto !p-0">
+    <table>
+      <thead>
+        <tr>
+          <th class="pl-5">Empleado</th>
+          <th>Área</th>
+          <th>Oficina · turno</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th class="pr-5"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (employee of employees(); track employee.id) {
+          <tr
+            class="row-link cursor-pointer"
+            [class.locked]="employee.locked_by_plan"
+            tabindex="0"
+            role="link"
+            [attr.aria-label]="'Ver detalle de ' + employee.first_name + ' ' + employee.last_name"
+            (click)="open(employee)"
+            (keydown.enter)="open(employee)"
+          >
+            <td class="pl-5">
+              <div class="flex items-center gap-3">
+                <span
+                  class="grid size-9 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary-active"
+                >
+                  {{ employee.first_name.charAt(0) }}{{ employee.last_name.charAt(0) }}
+                </span>
+                <div>
+                  <div class="font-semibold text-ink">
+                    {{ employee.first_name }} {{ employee.last_name }}
+                    @if (employee.needs_setup) {
+                      <span class="badge pending ml-1" title="Falta oficina, turno, área o tipo; aún no puede checar">
+                        <i class="bi bi-hourglass" aria-hidden="true"></i> Sin organizar
+                      </span>
+                    }
+                    @if (employee.locked_by_plan) {
+                      <span class="badge ml-1" title="Fuera del límite de tu plan: no puede checar ni modificarse">
+                        <i class="bi bi-lock-fill" aria-hidden="true"></i> Bloqueado por plan
+                      </span>
+                    }
+                  </div>
+                  <div class="text-xs text-muted-text">
+                    {{ employee.employee_code }} · {{ employee.position || 'Sin puesto' }}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="text-sm">
+              <span
+                class="dot"
+                [style.background]="employee.area?.color || 'var(--color-muted)'"
+              ></span>
+              {{ employee.area?.name }}
+            </td>
+            <td class="text-sm">{{ employee.office?.name }} · {{ employee.shift?.name }}</td>
+            <td class="text-sm">
+              {{ employee.employment_type === 'temporary' ? 'Temporal' : 'Planta' }}
+              @if (employee.work_mode === 'remote') {
+                <span class="badge badge-brand ml-1">Home office</span>
+              }
+              <div class="text-xs text-muted-text">
+                <i
+                  class="bi"
+                  [class]="employee.user_id ? 'bi-phone' : 'bi-display'"
+                  aria-hidden="true"
+                ></i>
+                {{ employee.user_id ? 'Con app' : 'Solo kiosko' }}
+              </div>
+            </td>
+            <td>
+              <span class="badge" [class]="employee.status">{{ labels[employee.status] }}</span>
+            </td>
+            <td class="pr-5 text-right text-muted">
+              <button
+                type="button"
+                class="btn btn-sm btn-ghost"
+                title="Ver credencial"
+                [attr.aria-label]="'Ver credencial de ' + employee.first_name + ' ' + employee.last_name"
+                (click)="$event.stopPropagation(); openCredential(employee)"
+              >
+                <i class="bi bi-person-badge" aria-hidden="true"></i>
+              </button>
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">No hay empleados con esos filtros.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (formOpen()) {
+  <app-modal heading="Nuevo empleado" size="lg" (closed)="formOpen.set(false)">
+    @if (error()) {
+      <div class="alert alert-error">{{ error() }}</div>
+    }
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="grid gap-x-4 sm:grid-cols-2">
+        <div class="field"><label>Nombre(s)</label><input formControlName="first_name" /></div>
+        <div class="field"><label>Apellidos</label><input formControlName="last_name" /></div>
+        <div class="field"><label>Puesto</label><input formControlName="position" /></div>
+        <div class="field">
+          <label>Oficina</label>
+          <select formControlName="office_id" (change)="onOfficeChange()">
+            @for (office of offices(); track office.id) {
+              <option [value]="office.id">{{ office.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Turno</label>
+          <select formControlName="shift_id">
+            @for (shift of officeShifts(); track shift.id) {
+              <option [value]="shift.id">
+                {{ shift.name }} ({{ shift.starts_at.slice(0, 5) }}–{{ shift.ends_at.slice(0, 5) }})
+              </option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Área</label>
+          <select formControlName="area_id">
+            @for (area of areas(); track area.id) {
+              <option [value]="area.id">{{ area.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Modalidad</label>
+          <select formControlName="work_mode">
+            <option value="onsite">Presencial (con geocerca)</option>
+            <option value="remote">Home office permanente</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tipo de contrato</label>
+          <select formControlName="employment_type">
+            <option value="permanent">Planta</option>
+            <option value="temporary">Temporal</option>
+          </select>
+        </div>
+        @if (form.controls.employment_type.value === 'temporary') {
+          <div class="field">
+            <label>Fin de contrato</label>
+            <input type="date" formControlName="contract_ends_on" />
+            <span class="hint">La credencial vence ese día.</span>
+          </div>
+        }
+        <div class="field sm:col-span-2">
+          <div class="flex items-center gap-3 rounded-xl border border-line p-3">
+            <label class="switch">
+              <input
+                type="checkbox"
+                role="switch"
+                formControlName="app_access"
+                aria-label="Acceso a la app"
+                (change)="onAppAccessChange()"
+              />
+              <span aria-hidden="true"></span>
+            </label>
+            <div class="flex-1 text-sm">
+              <strong class="text-ink">Acceso a la app</strong>
+              <p class="!mb-0 text-muted-text">
+                Recibirá por correo el código de empresa y una contraseña temporal. Sin app, checa
+                en el kiosko con su PIN o credencial.
+              </p>
+            </div>
+          </div>
+        </div>
+        @if (form.controls.app_access.value) {
+          <div class="field">
+            <label>Correo del empleado (será su usuario)</label>
+            <input type="email" formControlName="email" autocomplete="off" />
+          </div>
+        }
+        <div class="field">
+          <label>
+            PIN del kiosko (6 dígitos)
+            @if (form.controls.app_access.value) {
+              <span class="font-normal text-muted-text">· opcional, lo crea al entrar a la app</span>
+            }
+          </label>
+          <input formControlName="pin" inputmode="numeric" maxlength="6" type="password" autocomplete="new-password" />
+        </div>
+        @if (canManagePayroll) {
+          <div class="field">
+            <label>Sueldo</label>
+            <input type="number" min="0" step="0.01" formControlName="salary" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>Periodicidad del sueldo</label>
+            <select formControlName="salary_period">
+              <option value="daily">Diario</option>
+              <option value="weekly">Semanal</option>
+              <option value="biweekly">Quincenal</option>
+              <option value="monthly">Mensual</option>
+            </select>
+          </div>
+        }
+      </div>
+      <div class="modal-actions">
+        <button class="btn" type="button" (click)="formOpen.set(false)">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Guardando…' : 'Crear empleado' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

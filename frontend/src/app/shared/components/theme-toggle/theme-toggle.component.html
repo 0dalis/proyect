@@ -1,0 +1,9 @@
+<button
+  type="button"
+  class="grid size-9 cursor-pointer place-items-center rounded-xl text-lg text-ink-soft transition hover:bg-surface/70"
+  (click)="theme.toggle()"
+  [attr.aria-label]="theme.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+  [title]="theme.isDark() ? 'Modo claro' : 'Modo oscuro'"
+>
+  <i class="bi" [class]="theme.isDark() ? 'bi-sun' : 'bi-moon-stars'" aria-hidden="true"></i>
+</button>

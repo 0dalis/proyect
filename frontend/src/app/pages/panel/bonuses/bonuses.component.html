@@ -1,0 +1,162 @@
+<app-page-header
+  heading="Bonos"
+  description="Reglas que se evalúan en la pre-nómina con la asistencia del periodo."
+>
+  <button type="button" class="btn btn-primary" (click)="open()">+ Nueva regla</button>
+</app-page-header>
+
+@if (loading()) {
+  <app-skeleton type="list" [rows]="4" />
+} @else {
+  <div class="grid gap-4 md:grid-cols-2">
+    @for (rule of rules(); track rule.id) {
+      <article class="card" [class.opacity-60]="!rule.is_active">
+        <div class="flex items-start gap-2">
+          <div class="flex-1">
+            <h3 class="text-base">{{ rule.name }}</h3>
+            <div class="mt-1 text-2xl font-bold text-ink">
+              @if (rule.amount_type === 'fixed') {
+                {{ +rule.amount | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+              } @else {
+                {{ +rule.amount }}% del sueldo
+              }
+              <span class="text-sm font-medium text-muted-text">{{ periods[rule.period] }}</span>
+            </div>
+          </div>
+          <span class="badge" [class.active]="rule.is_active">{{
+            rule.is_active ? 'Activa' : 'Pausada'
+          }}</span>
+        </div>
+        <div class="mt-3 rounded-xl bg-surface/60 p-3 text-sm text-ink-soft">
+          <span class="font-semibold">Se gana si </span>
+          @for (condition of rule.conditions; track $index; let last = $last) {
+            {{ describe(condition) }}
+            @if (!last) {
+              <span class="font-semibold"> y </span>
+            }
+          }
+        </div>
+        <div class="mt-3 flex items-center gap-2 text-xs text-muted-text">
+          {{
+            rule.employee_ids?.length
+              ? rule.employee_ids!.length + ' empleado(s) específicos'
+              : 'Todos los empleados'
+          }}
+          <span class="flex-1"></span>
+          <button type="button" class="btn btn-sm" (click)="open(rule)">Editar</button>
+          <button type="button" class="btn btn-sm btn-danger" (click)="remove(rule)">
+            Eliminar
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <div class="card empty md:col-span-2">
+        Aún no hay reglas. Ejemplo: "Bono de puntualidad: $500 si tiene menos de 3 retardos sin
+        justificar".
+      </div>
+    }
+  </div>
+}
+
+@if (draft(); as rule) {
+  <app-modal
+    heading="{{ rule.id ? 'Editar regla' : 'Nueva regla de bono' }}"
+    size="lg"
+    (closed)="draft.set(null)"
+  >
+    @if (modalError()) {
+      <div class="alert alert-error">{{ modalError() }}</div>
+    }
+
+    <div class="field">
+      <label>Nombre</label><input [(ngModel)]="rule.name" placeholder="Bono de puntualidad" />
+    </div>
+    <div class="grid gap-3 sm:grid-cols-3">
+      <div class="field">
+        <label>Tipo de monto</label>
+        <select [(ngModel)]="rule.amount_type">
+          <option value="fixed">Monto fijo ($)</option>
+          <option value="percent">% del sueldo del periodo</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>{{ rule.amount_type === 'fixed' ? 'Monto' : 'Porcentaje' }}</label
+        ><input type="number" min="0" [(ngModel)]="rule.amount" />
+      </div>
+      <div class="field">
+        <label>Periodo</label>
+        <select [(ngModel)]="rule.period">
+          <option value="weekly">Semanal</option>
+          <option value="biweekly">Quincenal</option>
+          <option value="monthly">Mensual</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Condiciones (se deben cumplir todas)</label>
+      @for (condition of rule.conditions; track $index; let i = $index) {
+        <div class="mb-2 grid grid-cols-[1fr_9rem_5rem_auto] items-center gap-2">
+          <select [(ngModel)]="condition.metric">
+            @for (metric of metricOptions(); track metric.key) {
+              <option [value]="metric.key">{{ metric.label }}</option>
+            }
+          </select>
+          <select [(ngModel)]="condition.operator">
+            @for (op of operators; track op) {
+              <option [value]="op">{{ operatorLabels[op] }}</option>
+            }
+          </select>
+          <input type="number" min="0" [(ngModel)]="condition.value" />
+          <button
+            type="button"
+            class="btn btn-sm btn-ghost"
+            (click)="rule.conditions.splice(i, 1)"
+            [disabled]="rule.conditions.length === 1"
+          >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+      }
+      <button
+        type="button"
+        class="btn btn-sm w-fit"
+        (click)="rule.conditions.push({ metric: 'unjustified_absences', operator: '=', value: 0 })"
+      >
+        + Agregar condición
+      </button>
+    </div>
+
+    <div class="field">
+      <label>¿A quién aplica?</label>
+      <div class="flex gap-4">
+        <label class="check"
+          ><input type="radio" name="scope" value="all" [(ngModel)]="rule.scope" /> Todos los
+          empleados</label
+        >
+        <label class="check"
+          ><input type="radio" name="scope" value="some" [(ngModel)]="rule.scope" /> Solo
+          algunos</label
+        >
+      </div>
+      @if (rule.scope === 'some') {
+        <select multiple size="6" [(ngModel)]="rule.employee_ids">
+          @for (employee of employees(); track employee.id) {
+            <option [ngValue]="employee.id">
+              {{ employee.first_name }} {{ employee.last_name }}
+            </option>
+          }
+        </select>
+        <span class="hint">Ctrl + clic para elegir varios.</span>
+      }
+    </div>
+    <label class="check"><input type="checkbox" [(ngModel)]="rule.is_active" /> Regla activa</label>
+
+    <div modal-footer>
+      <button type="button" class="btn" (click)="draft.set(null)">Cancelar</button>
+      <button type="button" class="btn btn-primary" (click)="save(rule)" [disabled]="!rule.name">
+        Guardar
+      </button>
+    </div>
+  </app-modal>
+}

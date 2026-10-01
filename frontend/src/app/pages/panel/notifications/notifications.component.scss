@@ -1,0 +1,50 @@
+:host {
+  display: block;
+}
+
+.history-item {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  }
+
+  &.unread {
+    background: var(--color-primary-soft);
+  }
+}
+
+.icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 0.75rem;
+
+  &[data-tone='primary'] {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+  }
+
+  &[data-tone='success'] {
+    background: var(--color-success-soft);
+    color: var(--color-success-text);
+  }
+
+  &[data-tone='danger'] {
+    background: var(--color-danger-soft);
+    color: var(--color-danger-text);
+  }
+
+  &[data-tone='info'] {
+    background: var(--color-info-soft);
+    color: var(--color-info-text);
+  }
+}

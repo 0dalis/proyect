@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+// El lápiz es discreto: visible tenue siempre (táctil) y más claro al pasar el cursor
+.pencil {
+  opacity: 0.55;
+}
+
+.group:hover .pencil,
+.pencil:focus-visible {
+  opacity: 1;
+}

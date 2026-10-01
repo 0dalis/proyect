@@ -1,0 +1,103 @@
+<app-page-header
+  heading="Avisos"
+  description="Llegan como notificación push a la app y quedan en su bandeja. Opcionalmente, también en el kiosko."
+/>
+
+<div class="grid gap-4 sm:grid-cols-2">
+  <section class="card">
+    <h3>Nuevo aviso</h3>
+    <div class="field">
+      <label>Título</label
+      ><input [(ngModel)]="draft.title" placeholder="Ej. Horas extra el día 15" />
+    </div>
+    <div class="field">
+      <label>Mensaje</label><textarea rows="4" [(ngModel)]="draft.body"></textarea>
+    </div>
+    <div class="field">
+      <label>Enlace (opcional)</label
+      ><input [(ngModel)]="draft.link_url" placeholder="https://forms.gle/..." />
+    </div>
+    <div class="field">
+      <label>¿Para quién?</label>
+      <select [(ngModel)]="draft.audience_type" (ngModelChange)="draft.audience_ids = []">
+        <option value="all">Toda la empresa</option>
+        <option value="areas">Áreas</option>
+        <option value="offices">Oficinas</option>
+        <option value="roles">Roles</option>
+        <option value="employees">Personas específicas</option>
+      </select>
+    </div>
+    @if (draft.audience_type !== 'all') {
+      <div class="field">
+        <label>Elige</label>
+        <select multiple size="6" [(ngModel)]="draft.audience_ids">
+          @switch (draft.audience_type) {
+            @case ('areas') {
+              @for (a of areas(); track a.id) {
+                <option [ngValue]="a.id">{{ a.name }}</option>
+              }
+            }
+            @case ('offices') {
+              @for (o of offices(); track o.id) {
+                <option [ngValue]="o.id">{{ o.name }}</option>
+              }
+            }
+            @case ('roles') {
+              <option ngValue="admin">Administradores</option>
+              <option ngValue="manager">Gerentes</option>
+              <option ngValue="employee">Empleados</option>
+            }
+            @case ('employees') {
+              @for (e of employees(); track e.id) {
+                <option [ngValue]="e.id">{{ e.first_name }} {{ e.last_name }}</option>
+              }
+            }
+          }
+        </select>
+        <span class="hint">Ctrl + clic para elegir varios.</span>
+      </div>
+    }
+    <label class="check"
+      ><input type="checkbox" [(ngModel)]="draft.show_on_kiosk" /> Publicar también en "Noticias
+      empresa" (kiosko y app)</label
+    >
+    <div class="field" style="margin-top: 0.9rem">
+      <label>Programar envío (opcional)</label>
+      <input type="datetime-local" [(ngModel)]="draft.publish_at" />
+    </div>
+    <button
+      class="btn btn-primary"
+      type="button"
+      (click)="send()"
+      [disabled]="!draft.title || !draft.body"
+    >
+      Enviar aviso
+    </button>
+  </section>
+
+  @if (loading()) {
+    <section class="card"><app-skeleton type="lines" [rows]="8" /></section>
+  } @else {
+    <section class="card">
+      <h3>Enviados</h3>
+      @for (item of announcements(); track item.id) {
+        <div class="item">
+          <div class="flex flex-wrap items-center gap-3">
+            <strong>{{ item.title }}</strong>
+            @if (item.show_on_kiosk) {
+              <span class="badge badge-brand">Kiosko</span>
+            }
+            <span class="flex-1"></span>
+            <span class="text-sm text-muted-text">{{ item.created_at | date: 'short' }}</span>
+          </div>
+          <p class="text-sm">{{ item.body }}</p>
+          <span class="text-sm text-muted-text"
+            >Leído por {{ item.read_count }} de {{ item.recipients_count }}</span
+          >
+        </div>
+      } @empty {
+        <p class="empty">Aún no has enviado avisos.</p>
+      }
+    </section>
+  }
+</div>

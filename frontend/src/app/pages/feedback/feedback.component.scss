@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.star {
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0.25rem;
+  color: #f59e0b;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: scale(1.12);
+  }
+}

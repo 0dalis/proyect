@@ -1,0 +1,64 @@
+<app-page-header
+  heading="Configuración de la empresa"
+  description="Solo el dueño puede cambiar esta configuración."
+/>
+
+<div class="card mb-5 flex flex-wrap items-center gap-4" style="max-width: 640px">
+  <span class="icon-tile"><i class="bi bi-building-lock" aria-hidden="true"></i></span>
+  <div class="flex-1">
+    <div class="stat-label">Código de empresa</div>
+    <div class="font-mono text-2xl font-bold tracking-widest text-ink">{{ code }}</div>
+    <p class="!mb-0 text-xs text-muted-text">
+      Tus empleados entran a la app con su correo, este código y su contraseña. Se incluye en el
+      correo que reciben al activarles la app.
+    </p>
+  </div>
+  <button class="btn btn-sm" type="button" (click)="copyCode()">
+    <i class="bi bi-clipboard" aria-hidden="true"></i> Copiar
+  </button>
+</div>
+
+@if (!auth.isOwner()) {
+  <div class="alert alert-info">Pide al dueño de la empresa que haga estos cambios.</div>
+} @else {
+  <div class="card mb-5" style="max-width: 640px">
+    <app-image-upload
+      [photoUrl]="auth.user()?.company?.logo_url ?? null"
+      [initials]="companyInitial()"
+      [busy]="uploadingLogo()"
+      label="Logotipo de la empresa"
+      hint="Ocupa el lugar de la letra en la marca del menú lateral. JPG, PNG o WebP · máximo 2 MB"
+      (upload)="uploadLogo($event)"
+      (removed)="removeLogo()"
+    />
+  </div>
+
+  <div class="card" style="max-width: 640px">
+    <div class="field">
+      <label>Nombre de la empresa</label><input [(ngModel)]="settings.name" />
+    </div>
+
+    <h3>Acceso de los empleados</h3>
+    <label class="check">
+      <input type="checkbox" [(ngModel)]="settings.employees_can_use_web" />
+      Los empleados pueden entrar a la versión web (con los límites de su rol)
+    </label>
+    <p class="text-sm text-muted-text">
+      Si lo desactivas, los empleados solo usan la app móvil. Gerentes y administradores siempre
+      pueden entrar.
+    </p>
+
+    <h3>Módulos</h3>
+    <label class="check"
+      ><input type="checkbox" [(ngModel)]="settings.payroll_enabled" /> Sueldos (pre-nómina)</label
+    >
+    <label class="check" style="margin-top: 0.5rem"
+      ><input type="checkbox" [(ngModel)]="settings.bonuses_enabled" /> Bonos y reglas de
+      bonos</label
+    >
+
+    <div class="flex flex-wrap items-center gap-3" style="margin-top: 1.25rem">
+      <button class="btn btn-primary" type="button" (click)="save()">Guardar</button>
+    </div>
+  </div>
+}

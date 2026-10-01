@@ -1,0 +1,222 @@
+<app-page-header
+  heading="Mi perfil"
+  description="{{ auth.user()?.email }} · {{ auth.user()?.role_label }}"
+/>
+
+@if (loading()) {
+  <div class="grid gap-5">
+    <app-skeleton type="cards" [cards]="4" /><app-skeleton type="lines" [rows]="6" />
+  </div>
+} @else {
+  <div class="grid gap-5 lg:grid-cols-2">
+    <section class="card lg:col-span-2">
+      <app-image-upload
+        [photoUrl]="auth.user()?.avatar_url ?? null"
+        [initials]="initials()"
+        [busy]="uploading()"
+        label="Tu foto de perfil"
+        hint="Se ve en la barra superior junto a tu nombre. JPG, PNG o WebP · máximo 2 MB"
+        (upload)="uploadAvatar($event)"
+        (removed)="removeAvatar()"
+      />
+    </section>
+
+    @if (summary(); as s) {
+      <section class="card lg:col-span-2">
+        <h3 class="mb-3 text-base">Mi jornada</h3>
+        <div class="grid gap-3 text-sm sm:grid-cols-3">
+          <div class="rounded-xl bg-surface/60 p-3">
+            <div class="stat-label">Oficina · área</div>
+            <div class="font-semibold">{{ s.office }} · {{ s.area }}</div>
+          </div>
+          <div class="rounded-xl bg-surface/60 p-3">
+            <div class="stat-label">Turno</div>
+            <div class="font-semibold">
+              {{ s.shift.name }} · {{ s.shift.starts_at.slice(0, 5) }}–{{
+                s.shift.ends_at.slice(0, 5)
+              }}
+            </div>
+            <div class="text-xs text-muted-text">{{ days(s.shift.weekdays) }}</div>
+          </div>
+          <div class="rounded-xl bg-surface/60 p-3">
+            <div class="stat-label">Tolerancia</div>
+            <div class="font-semibold">{{ s.shift.tolerance_minutes }} minutos</div>
+          </div>
+        </div>
+        @if (s.metrics; as m) {
+          <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+            @for (
+              item of [
+                ['Días trabajados', m.worked_days],
+                ['A tiempo', m.on_time],
+                ['Retardos', m.lates],
+                ['Faltas', m.absences],
+                ['Vacaciones / permisos', m.excused_days],
+              ];
+              track item[0]
+            ) {
+              <div class="rounded-xl border border-glass bg-surface/40 p-3 text-center">
+                <div class="text-2xl font-bold text-ink">{{ item[1] }}</div>
+                <div class="text-xs text-muted-text">{{ item[0] }}</div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <section class="card">
+      <h3 class="mb-3 text-base">Cambiar contraseña</h3>
+      <div class="field">
+        <label>Contraseña actual</label
+        ><input
+          type="password"
+          [(ngModel)]="password.current_password"
+          autocomplete="current-password"
+        />
+      </div>
+      <div class="field">
+        <label>Nueva contraseña</label
+        ><input type="password" [(ngModel)]="password.password" autocomplete="new-password" />
+      </div>
+      <div class="field">
+        <label>Confírmala</label
+        ><input
+          type="password"
+          [(ngModel)]="password.password_confirmation"
+          autocomplete="new-password"
+        />
+      </div>
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="savePassword()"
+        [disabled]="!password.current_password || !password.password"
+      >
+        Actualizar contraseña
+      </button>
+    </section>
+
+    @if (auth.user()?.employee) {
+      <section class="card">
+        <h3 class="mb-1 text-base">PIN para checar</h3>
+        <p class="mb-3 text-sm text-muted-text">
+          Lo usas en el teclado de la app y en el kiosko, junto con tu código
+          <strong>{{ auth.user()?.employee?.employee_code }}</strong>
+          (en el kiosko escribe solo las cifras).
+        </p>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label>Nuevo PIN</label
+            ><input type="password" inputmode="numeric" maxlength="6" placeholder="6 dígitos" [(ngModel)]="pin.pin" />
+          </div>
+          <div class="field">
+            <label>Confírmalo</label
+            ><input
+              type="password"
+              inputmode="numeric"
+              maxlength="6"
+              [(ngModel)]="pin.pin_confirmation"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label>Tu contraseña</label><input type="password" [(ngModel)]="pin.current_password" />
+        </div>
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="savePin()"
+          [disabled]="!pin.pin || !pin.current_password"
+        >
+          Cambiar PIN
+        </button>
+      </section>
+    }
+  </div>
+
+  <section class="card mt-8">
+    <h3 class="text-base"><i class="bi bi-palette" aria-hidden="true"></i> Apariencia</h3>
+    <p class="text-sm text-muted-text">Se guarda en este navegador y se aplica al momento.</p>
+    <app-appearance-settings />
+  </section>
+
+  @if (auth.isOwner()) {
+    <section class="card danger-zone mt-8">
+      <div class="flex flex-wrap items-start gap-4">
+        <div class="flex-1">
+          <h3 class="text-base text-danger-text">
+            <i class="bi bi-exclamation-octagon" aria-hidden="true"></i> Eliminar perfil de empresa de
+            AsistControl
+          </h3>
+          <p class="mt-1 text-sm text-ink-soft">
+            Cierra de inmediato el acceso de todos (dueño, administradores, empleados y kioskos) y
+            cancela tu suscripción. Recibirás un enlace para descargar tus datos, válido por 48
+            horas. A los 30 días eliminaremos de forma definitiva toda la información de tu empresa
+            y de tus empleados.
+          </p>
+        </div>
+        <button class="btn btn-danger" type="button" (click)="openDeletion()">
+          <i class="bi bi-trash3" aria-hidden="true"></i> Eliminar empresa
+        </button>
+      </div>
+    </section>
+  }
+}
+
+@if (deleteOpen()) {
+  <app-modal heading="Eliminar perfil de empresa de AsistControl" (closed)="deleteOpen.set(false)">
+    <div class="alert alert-error">
+      <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+      <span>
+        Esta acción cierra el acceso de inmediato y, pasados 30 días, borra todos los datos de
+        <strong>{{ auth.user()?.company?.name }}</strong>. Después no se podrán recuperar.
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="deletion-reason">¿Por qué quieres eliminar tu empresa?</label>
+      <textarea
+        id="deletion-reason"
+        rows="3"
+        maxlength="2000"
+        [(ngModel)]="deletion.reason"
+        placeholder="Cuéntanos el motivo (mínimo 20 caracteres)"
+      ></textarea>
+    </div>
+
+    <div class="field">
+      <label for="deletion-confirmation">
+        Para confirmar, escribe <strong class="select-all text-ink">{{ phrase() }}</strong>
+      </label>
+      <input
+        id="deletion-confirmation"
+        autocomplete="off"
+        spellcheck="false"
+        [(ngModel)]="deletion.confirmation"
+      />
+    </div>
+
+    <div class="field">
+      <label for="deletion-password">Tu contraseña</label>
+      <input
+        id="deletion-password"
+        type="password"
+        autocomplete="current-password"
+        [(ngModel)]="deletion.password"
+      />
+    </div>
+
+    <div modal-footer>
+      <button class="btn" type="button" (click)="deleteOpen.set(false)">Cancelar</button>
+      <button
+        class="btn btn-danger"
+        type="button"
+        (click)="deleteCompany()"
+        [disabled]="deleting() || deletion.reason.trim().length < 20 || !deletion.password || !phraseMatches()"
+      >
+        {{ deleting() ? 'Enviando…' : 'Entiendo, eliminar mi empresa' }}
+      </button>
+    </div>
+  </app-modal>
+}

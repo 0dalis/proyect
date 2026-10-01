@@ -1,0 +1,194 @@
+<app-page-header
+  heading="Pre-nómina"
+  description="Sueldo del periodo, menos faltas sin justificar, más tiempo extra, festivos trabajados y bonos. No incluye impuestos (ISR, IMSS)."
+>
+  <button type="button" class="btn" (click)="exportCsv()">
+    <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Exportar a Excel (CSV)
+  </button>
+  @if (!viewing()) {
+    <button type="button" class="btn btn-primary" (click)="close()" [disabled]="!canClose() || closing()">
+      <i class="bi bi-lock" aria-hidden="true"></i> Cerrar periodo
+    </button>
+  }
+</app-page-header>
+
+@if (viewing(); as v) {
+  <div class="alert alert-info flex-wrap items-center">
+    <i class="bi bi-lock-fill" aria-hidden="true"></i>
+    <span class="flex-1">
+      Estás viendo <strong>{{ v.name }}</strong>, cerrada el {{ dateLabel(v.closed_at) }} por
+      {{ v.closed_by_name }}. Son las cifras guardadas al cerrar.
+    </span>
+    <button class="btn btn-sm" type="button" (click)="viewing.set(null)">Volver al cálculo</button>
+  </div>
+} @else {
+  <app-period-picker [(period)]="period" />
+
+  @if (data()?.closed_periods?.length) {
+    <div class="alert alert-warning mt-4">
+      <i class="bi bi-lock" aria-hidden="true"></i>
+      <span>
+        Estas fechas incluyen una pre-nómina cerrada:
+        @for (closed of data()!.closed_periods; track closed.id) {
+          <button type="button" class="link-button" (click)="view(closed)">{{ closed.name }}</button>
+        }
+        . Lo que ves aquí es un recálculo; lo pagado es lo guardado al cerrar.
+      </span>
+    </div>
+  }
+}
+
+@if (loading()) {
+  <div class="mt-4 grid gap-4">
+    <app-skeleton type="cards" /><app-skeleton type="table" [rows]="8" [columns]="7" />
+  </div>
+} @else if (totals(); as t) {
+  <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+    <div class="card">
+      <div class="stat-label">Sueldos del periodo</div>
+      <div class="stat-value">{{ t.base | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Descuentos por faltas</div>
+      <div class="stat-value">−{{ t.deductions | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Tiempo extra</div>
+      <div class="stat-value">+{{ t.overtime | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Festivos trabajados</div>
+      <div class="stat-value">+{{ t.holidays | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Bonos</div>
+      <div class="stat-value">+{{ t.bonuses | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</div>
+    </div>
+    <div class="card bg-primary-soft">
+      <div class="stat-label">Total a pagar</div>
+      <div class="stat-value text-primary-active">{{ t.total | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</div>
+    </div>
+  </div>
+
+  @if (!viewing() && data() && !data()!.bonuses_enabled) {
+    <div class="alert alert-info mt-4">
+      El módulo de bonos está apagado. El dueño puede activarlo en
+      <a routerLink="/panel/configuracion">Configuración</a>.
+    </div>
+  }
+
+  <div class="card mt-4 overflow-x-auto p-0">
+    <table>
+      <thead>
+        <tr>
+          <th class="pl-5">Empleado</th>
+          <th class="text-right">Sueldo</th>
+          <th class="text-right">Días trab.</th>
+          <th class="text-right">Faltas s/j</th>
+          <th class="text-right">Base</th>
+          <th class="text-right">Descuentos</th>
+          <th class="text-right" title="9 h por semana al doble, el resto al triple">Tiempo extra</th>
+          <th class="text-right" title="Día doble adicional">Festivos</th>
+          <th>Bonos</th>
+          <th class="pr-5 text-right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.employee.id) {
+          <tr>
+            <td class="pl-5">
+              <div class="font-semibold">{{ row.employee.name }}</div>
+              <div class="text-xs text-muted-text">{{ row.employee.area }}</div>
+            </td>
+            <td class="text-right text-xs text-muted-text tabular-nums">
+              @if (row.employee.salary) {
+                {{ row.employee.salary | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                {{ periods[row.employee.salary_period ?? ''] }}
+              } @else {
+                <span class="badge late">Sin sueldo</span>
+              }
+            </td>
+            <td class="text-right tabular-nums">{{ row.metrics.worked_days }}</td>
+            <td class="text-right tabular-nums">{{ row.metrics.unjustified_absences }}</td>
+            <td class="text-right tabular-nums">{{ row.base | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}</td>
+            <td class="text-right tabular-nums">
+              @if (row.deductions) {
+                −{{ row.deductions | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
+              } @else {
+                —
+              }
+            </td>
+            <td class="text-right tabular-nums">
+              @if (row.overtime.amount) {
+                {{ row.overtime.amount | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
+                <div class="text-xs text-muted-text">
+                  {{ row.overtime.double_hours }} h ×2
+                  @if (row.overtime.triple_hours) {
+                    · {{ row.overtime.triple_hours }} h ×3
+                  }
+                </div>
+              } @else {
+                —
+              }
+            </td>
+            <td class="text-right tabular-nums">
+              @if (row.holiday_pay) {
+                {{ row.holiday_pay | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
+                <div class="text-xs text-muted-text">{{ row.metrics.holidays_worked }} día(s)</div>
+              } @else {
+                —
+              }
+            </td>
+            <td>
+              <div class="flex flex-wrap gap-1">
+                @for (bonus of row.bonuses; track bonus.rule_id) {
+                  <span class="badge on_time"
+                    ><i class="bi bi-check-lg" aria-hidden="true"></i> {{ bonus.name }}
+                    {{ bonus.amount | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</span
+                  >
+                } @empty {
+                  <span class="text-xs text-muted">—</span>
+                }
+              </div>
+            </td>
+            <td class="pr-5 text-right font-semibold tabular-nums">
+              {{ row.total | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<section class="card mt-8">
+  <h3 class="text-base">
+    <i class="bi bi-archive" aria-hidden="true"></i> Periodos cerrados
+  </h3>
+  <p class="text-sm text-muted-text">
+    Cada cierre guarda las cifras de ese momento. Sus fechas quedan bloqueadas para no cambiar lo que
+    ya se pagó.
+  </p>
+  <ul class="divide-y divide-line">
+    @for (closed of closedPeriods(); track closed.id) {
+      <li class="flex flex-wrap items-center gap-3 py-3">
+        <div class="min-w-0 flex-1">
+          <div class="font-semibold text-ink">{{ closed.name }}</div>
+          <div class="text-xs text-muted-text">
+            {{ dateLabel(closed.starts_on) }} al {{ dateLabel(closed.ends_on) }} ·
+            {{ closed.items_count }} empleados · cerró {{ closed.closed_by_name }}
+          </div>
+        </div>
+        <strong class="tabular-nums">{{ closed.totals.total | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</strong>
+        <button class="btn btn-sm" type="button" (click)="view(closed)">Ver</button>
+        @if (auth.isOwner()) {
+          <button class="btn btn-ghost btn-sm" type="button" (click)="reopen(closed)">
+            <i class="bi bi-unlock" aria-hidden="true"></i> Reabrir
+          </button>
+        }
+      </li>
+    } @empty {
+      <li class="py-4 text-sm text-muted-text">Aún no has cerrado ninguna pre-nómina.</li>
+    }
+  </ul>
+</section>

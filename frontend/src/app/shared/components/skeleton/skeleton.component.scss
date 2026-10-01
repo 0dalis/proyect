@@ -1,0 +1,42 @@
+:host {
+  display: block;
+}
+
+// Forma base: casi transparente, con un brillo que la recorre despacio
+.bone {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--color-skeleton);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      var(--color-skeleton-shine) 50%,
+      transparent 80%
+    );
+    animation: wave 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: translateX(-100%);
+  }
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone::after {
+    animation: none;
+  }
+}

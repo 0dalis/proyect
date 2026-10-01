@@ -1,0 +1,147 @@
+:host {
+  display: contents;
+}
+
+/* Marca del sidebar: el logotipo que subió la empresa o su inicial */
+.brand-letter {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  background: var(--color-ink);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.35);
+
+  :host-context(.dark) & {
+    background: var(--color-primary);
+  }
+}
+
+.brand-logo {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  object-fit: cover;
+  background: var(--color-surface);
+  box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.35);
+}
+
+/* Alto de cada carta del menú y separación entre ellas */
+$card: 40px;
+$gap: 3px;
+$step: $card + $gap;
+/* Curva con rebote: se pasa un poco de su lugar y regresa (del menú anterior) */
+$bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+.group-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 1rem 0 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+
+  &:hover {
+    color: var(--color-ink-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary-focus);
+    outline-offset: 1px;
+  }
+}
+
+.chevron {
+  font-size: 10px;
+  transition: transform 0.35s $bounce;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+/* Contenedor: crece al alto de todas sus cartas */
+.stack {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+
+  &.open {
+    height: calc(var(--total) * #{$step});
+    // Al cerrar, espera a que las cartas suban antes de encogerse
+    transition-delay: 0s;
+  }
+
+  &:not(.open) {
+    transition-delay: calc((var(--total) - 1) * 0.06s);
+  }
+}
+
+/* Cada enlace es una carta apilada arriba; al abrir baja a su lugar */
+.card-link {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: $card;
+  opacity: 0;
+  z-index: calc(10 - var(--i));
+  transform: translateY(0) scale(0.96);
+  pointer-events: none;
+  background-color: transparent;
+  transition:
+    transform 0.4s $bounce,
+    opacity 0.3s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  // Cerrando: suben en orden inverso (la última primero)
+  transition-delay: calc((var(--total) - 1 - var(--i)) * 0.06s);
+}
+
+.stack.open .card-link {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(calc(var(--i) * #{$step})) scale(1);
+  // Abriendo: bajan una tras otra
+  transition-delay: calc(var(--i) * 0.07s);
+}
+
+/* Al pasar el mouse la carta se "levanta" un poco */
+.stack.open .card-link:hover {
+  background-color: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 6px 14px -6px rgb(0 0 0 / 0.22),
+    0 2px 4px -2px rgb(0 0 0 / 0.12);
+  z-index: 20;
+  transition-delay: 0s;
+}
+
+.nav-link.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-active);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+/* Sin animaciones para quien las desactivó en su sistema */
+@media (prefers-reduced-motion: reduce) {
+  .stack,
+  .card-link,
+  .chevron {
+    transition: none !important;
+  }
+}

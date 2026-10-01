@@ -1,0 +1,320 @@
+// Notificaciones: caja con 20 % para el icono y 80 % para el texto.
+// En pantallas chicas (modo auto) o en modo icono solo queda el cuadro de color.
+// Los colores salen de los roles del tema, así funcionan en claro y oscuro.
+
+$gap: 1rem;
+$spacing: 0.625rem;
+$icon-size: 3.5rem;
+$compact-breakpoint: 640px;
+
+$types: (
+  success: var(--color-success),
+  error: var(--color-danger),
+  warning: var(--color-warning),
+  info: var(--color-info),
+);
+
+:host {
+  display: contents;
+}
+
+// ---------- Pilas por posición ----------
+.stack {
+  // Hacia dónde entra y sale cada pila (el borde más cercano)
+  --edge-x: 0;
+  --edge-y: -120%;
+
+  position: fixed;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  width: min(24rem, calc(100vw - 2 * #{$gap}));
+  pointer-events: none;
+}
+
+.stack--top-start {
+  top: $gap;
+  left: $gap;
+  align-items: flex-start;
+  --edge-x: calc(-100% - #{$gap} * 2);
+  --edge-y: 0;
+}
+
+.stack--top-center {
+  top: $gap;
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  --edge-y: calc(-100% - #{$gap} * 2);
+}
+
+.stack--top-end {
+  top: $gap;
+  right: $gap;
+  align-items: flex-end;
+  --edge-x: calc(100% + #{$gap} * 2);
+  --edge-y: 0;
+}
+
+.stack--middle-start {
+  top: 50%;
+  left: $gap;
+  transform: translateY(-50%);
+  align-items: flex-start;
+  --edge-x: calc(-100% - #{$gap} * 2);
+  --edge-y: 0;
+}
+
+.stack--middle-end {
+  top: 50%;
+  right: $gap;
+  transform: translateY(-50%);
+  align-items: flex-end;
+  --edge-x: calc(100% + #{$gap} * 2);
+  --edge-y: 0;
+}
+
+.stack--bottom-start {
+  bottom: $gap;
+  left: $gap;
+  align-items: flex-start;
+  --edge-x: calc(-100% - #{$gap} * 2);
+  --edge-y: 0;
+}
+
+.stack--bottom-center {
+  bottom: $gap;
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  --edge-y: calc(100% + #{$gap} * 2);
+}
+
+.stack--bottom-end {
+  bottom: $gap;
+  right: $gap;
+  align-items: flex-end;
+  --edge-x: calc(100% + #{$gap} * 2);
+  --edge-y: 0;
+}
+
+// ---------- Slot: anima el espacio que ocupa cada toast ----------
+.slot {
+  display: grid;
+  grid-template-rows: 1fr;
+  width: 100%;
+  padding-bottom: $spacing;
+}
+
+.slot__inner {
+  display: flex;
+  min-height: 0;
+  justify-content: inherit;
+}
+
+.stack--top-end .slot__inner,
+.stack--middle-end .slot__inner,
+.stack--bottom-end .slot__inner {
+  justify-content: flex-end;
+}
+
+.stack--top-center .slot__inner,
+.stack--bottom-center .slot__inner {
+  justify-content: center;
+}
+
+// Entrada: desde el borde, con un pequeño rebote
+.slot--enter {
+  animation: slot-in 420ms cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+
+// Salida: regresa al borde desvaneciéndose y luego cierra su espacio
+.slot--leave {
+  animation: slot-out 480ms cubic-bezier(0.55, 0, 0.75, 0.2) both;
+  pointer-events: none;
+}
+
+@keyframes slot-in {
+  0% {
+    opacity: 0;
+    transform: translate(var(--edge-x), var(--edge-y)) scale(0.96);
+    grid-template-rows: 0fr;
+    padding-bottom: 0;
+  }
+  35% {
+    grid-template-rows: 1fr;
+    padding-bottom: $spacing;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    grid-template-rows: 1fr;
+    padding-bottom: $spacing;
+  }
+}
+
+@keyframes slot-out {
+  0% {
+    opacity: 1;
+    transform: none;
+    grid-template-rows: 1fr;
+    padding-bottom: $spacing;
+  }
+  60% {
+    opacity: 0;
+    transform: translate(var(--edge-x), var(--edge-y)) scale(0.96);
+    grid-template-rows: 1fr;
+    padding-bottom: $spacing;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--edge-x), var(--edge-y)) scale(0.96);
+    grid-template-rows: 0fr;
+    padding-bottom: 0;
+  }
+}
+
+// ---------- Caja ----------
+.toast {
+  --accent: var(--color-primary);
+
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: $icon-size;
+  overflow: hidden;
+  border: 1px solid var(--color-glass);
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--color-surface) 94%, transparent);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.3);
+  backdrop-filter: blur(16px);
+  pointer-events: auto;
+  cursor: default;
+  transition: width 220ms ease;
+
+  @each $name, $color in $types {
+    &--#{$name} {
+      --accent: #{$color};
+    }
+  }
+}
+
+.toast__icon {
+  display: grid;
+  flex: 0 0 20%;
+  min-width: $icon-size;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.toast__body {
+  flex: 1 1 80%;
+  min-width: 0;
+  padding: 0.75rem 2.25rem 0.9rem 0.9rem;
+}
+
+.toast__title {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.toast__message {
+  margin: 0.15rem 0 0;
+  color: var(--color-muted-text);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.toast__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+  }
+}
+
+.toast__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--accent);
+  opacity: 0.7;
+  transform-origin: left;
+  animation-name: toast-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+
+  &--paused {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+// ---------- Modo solo icono ----------
+@mixin icon-only {
+  width: $icon-size;
+  cursor: pointer;
+
+  .toast__icon {
+    flex-basis: 100%;
+  }
+
+  .toast__body,
+  .toast__close {
+    display: none;
+  }
+}
+
+.toast--icon:not(.toast--expanded) {
+  @include icon-only;
+}
+
+@media (max-width: $compact-breakpoint) {
+  .toast--auto:not(.toast--expanded) {
+    @include icon-only;
+  }
+
+  .toast--auto,
+  .toast--icon {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot--enter,
+  .slot--leave {
+    animation-duration: 1ms;
+  }
+
+  .toast__progress {
+    display: none;
+  }
+}

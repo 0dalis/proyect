@@ -1,0 +1,125 @@
+<div class="backdrop" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+  <div class="dialog card">
+    <!-- Pasos -->
+    <ol class="mb-6 flex items-center gap-2 text-xs font-semibold" aria-label="Pasos">
+      @for (item of steps; track item.key; let i = $index) {
+        <li class="flex items-center gap-2" [attr.aria-current]="step() === item.key ? 'step' : null">
+          <span class="step-dot" [class.done]="i < stepIndex()" [class.active]="i === stepIndex()">
+            @if (i < stepIndex()) {
+              <i class="bi bi-check-lg" aria-hidden="true"></i>
+            } @else {
+              {{ i + 1 }}
+            }
+          </span>
+          <span [class.text-ink]="i === stepIndex()" [class.text-muted-text]="i !== stepIndex()">{{ item.label }}</span>
+          @if (i < steps.length - 1) {
+            <span class="h-px w-6 bg-line sm:w-10" aria-hidden="true"></span>
+          }
+        </li>
+      }
+    </ol>
+
+    @if (!options()) {
+      <app-skeleton type="lines" [rows]="6" />
+    } @else {
+      @switch (step()) {
+        @case ('terms') {
+          <h2 id="onboarding-title" class="text-2xl">Bienvenido a AsistControl, {{ ownerName() }}</h2>
+          <p class="mb-5 text-sm text-muted-text">
+            Antes de empezar con <strong>{{ options()!.company_name }}</strong>, confirma lo siguiente.
+          </p>
+
+          <div class="flex flex-col gap-3">
+            <label class="check !items-start !font-normal">
+              <input type="checkbox" class="mt-1" [(ngModel)]="authorizeUse" />
+              <span>
+                Autorizo a AsistControl a tratar los datos de mi empresa y de sus empleados
+                (asistencia, ubicación al checar, fotos del kiosko) para prestar el servicio, y
+                confirmo que cuento con el consentimiento de mis empleados cuando la ley lo requiere.
+              </span>
+            </label>
+            <label class="check !items-start !font-normal">
+              <input type="checkbox" class="mt-1" [(ngModel)]="acceptPrivacy" />
+              <span>
+                Leí el <a routerLink="/legal/privacidad" target="_blank">Aviso de privacidad</a>.
+              </span>
+            </label>
+            <label class="check !items-start !font-normal">
+              <input type="checkbox" class="mt-1" [(ngModel)]="acceptTerms" />
+              <span>
+                Leí y acepto los <a routerLink="/legal/terminos" target="_blank">Términos y condiciones del servicio</a>.
+              </span>
+            </label>
+          </div>
+
+          <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <button class="btn btn-ghost btn-sm" type="button" (click)="logout()">
+              <i class="bi bi-box-arrow-left" aria-hidden="true"></i> Salir
+            </button>
+            <button
+              class="btn btn-primary btn-lg"
+              type="button"
+              (click)="accept()"
+              [disabled]="!authorizeUse || !acceptPrivacy || !acceptTerms || accepting()"
+            >
+              {{ accepting() ? 'Guardando…' : 'Continuar' }}
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        }
+
+        @case ('plan') {
+          <h2 id="onboarding-title" class="text-2xl">Elige tu plan</h2>
+          <p class="mb-5 text-sm text-muted-text">
+            Los planes de pago empiezan con un periodo de prueba. Puedes cambiar de plan o cancelar
+            cuando quieras.
+          </p>
+          <app-plan-checkout context="onboarding" [options]="options()!" (completed)="finished($event)" />
+        }
+
+        @case ('done') {
+          @if (result(); as done) {
+            <div class="text-center">
+              <div class="mx-auto mb-3 grid size-16 place-items-center rounded-2xl bg-success-soft text-3xl text-success-text">
+                <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
+              </div>
+              @if (done.status === 'trial') {
+                <h2 id="onboarding-title" class="text-2xl">¡Comenzó tu periodo de prueba!</h2>
+                <ul class="mx-auto my-5 max-w-md space-y-2 text-left text-sm text-ink-soft">
+                  <li>
+                    <i class="bi bi-box-seam text-primary" aria-hidden="true"></i>
+                    Plan <strong>{{ done.plan.name }}</strong> ({{ done.interval === 'year' ? 'anual' : 'mensual' }}).
+                  </li>
+                  <li>
+                    <i class="bi bi-calendar-check text-primary" aria-hidden="true"></i>
+                    Tu prueba termina el <strong>{{ done.trial_ends_at | date: "d 'de' MMMM 'de' y" }}</strong>.
+                  </li>
+                  <li>
+                    <i class="bi bi-credit-card text-primary" aria-hidden="true"></i>
+                    Un día antes, el <strong>{{ done.charge_on | date: "d 'de' MMMM" }}</strong>, se cobrará
+                    tu suscripción: <strong>{{ price(done) | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</strong>.
+                  </li>
+                  <li>
+                    <i class="bi bi-x-circle text-primary" aria-hidden="true"></i>
+                    Puedes cancelar cuando quieras desde Suscripción.
+                  </li>
+                </ul>
+              } @else {
+                <h2 id="onboarding-title" class="text-2xl">Tu plan Free está activo</h2>
+                <p class="mx-auto my-5 max-w-md text-sm text-ink-soft">
+                  Sin costo y sin periodo de prueba. Incluye hasta {{ done.plan.included_employees }}
+                  empleados y no incluye pre-nómina ni bonos. Puedes mejorar tu plan cuando quieras
+                  desde Suscripción.
+                </p>
+              }
+              <p class="mb-5 text-xs text-muted-text">Te enviamos este resumen por correo.</p>
+              <button class="btn btn-primary btn-lg" type="button" (click)="start()">
+                Comenzar a usar AsistControl <i class="bi bi-arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          }
+        }
+      }
+    }
+  </div>
+</div>

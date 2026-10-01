@@ -1,0 +1,425 @@
+<header class="sticky top-0 z-30 px-4 pt-3">
+  <div class="glass mx-auto flex h-16 max-w-6xl items-center gap-8 px-5">
+    <a routerLink="/" class="flex items-center gap-2 text-lg font-bold text-ink no-underline">
+      <span
+        class="grid size-9 place-items-center rounded-xl bg-ink text-white shadow-md shadow-black/25 dark:bg-primary"
+        >A</span
+      >
+      AsistControl
+    </a>
+    <nav class="hidden flex-1 gap-6 text-sm font-medium md:flex">
+      <a href="#funciones" class="text-ink-soft no-underline hover:text-ink">Funciones</a>
+      <a href="#kiosko" class="text-ink-soft no-underline hover:text-ink">Kiosko</a>
+      <a href="#precios" class="text-ink-soft no-underline hover:text-ink">Precios</a>
+      <a href="#preguntas" class="text-ink-soft no-underline hover:text-ink">Preguntas</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-2">
+      <app-theme-toggle />
+      <a routerLink="/login" class="btn btn-ghost">Entrar</a>
+      <a routerLink="/registro" class="btn btn-primary">Prueba gratis</a>
+    </div>
+  </div>
+</header>
+
+<section class="px-4 pt-16 pb-20">
+  <div class="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.2fr_1fr]">
+    <div>
+      <span class="badge badge-brand">Asistencia · Vacaciones · Pre-nómina</span>
+      <h1 class="my-5 text-4xl leading-tight font-extrabold md:text-6xl">
+        La asistencia de tu empresa,
+        <span class="text-primary">sin checadores caros</span>.
+      </h1>
+      <p class="mb-7 max-w-xl text-lg text-ink-soft">
+        Tus empleados checan con la huella o Face ID de su propio celular. Quien no usa celular,
+        checa en un kiosko con su credencial QR. Tú ves todo en un solo panel.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a routerLink="/registro" class="btn btn-primary btn-lg">Empieza tu prueba gratis</a>
+        <a href="#precios" class="btn btn-lg">Ver precios</a>
+      </div>
+      <p class="mt-4 text-sm text-muted-text">Sin tarjeta de crédito · Configúralo en minutos</p>
+    </div>
+
+    <div class="relative hidden h-[440px] lg:block" aria-hidden="true">
+      <div
+        class="absolute top-0 right-12 h-[430px] w-56 rounded-[2.5rem] border border-glass bg-surface/50 p-2.5 shadow-2xl shadow-black/10 backdrop-blur-xl"
+      >
+        <div
+          class="flex h-full flex-col items-center rounded-[2rem] bg-gradient-to-b from-canvas to-primary-soft pt-12 text-center"
+        >
+          <div class="text-5xl font-extrabold text-ink">08:57</div>
+          <div class="text-xs text-muted-text">
+            Oficina principal · dentro del área
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+          </div>
+          <div
+            class="mt-12 grid size-24 place-items-center rounded-full bg-surface/80 text-5xl shadow-lg ring-8 ring-surface/50"
+          >
+            <i class="bi bi-fingerprint text-primary" aria-hidden="true"></i>
+          </div>
+          <div class="mt-6 text-sm font-semibold text-ink-soft">Toca para checar entrada</div>
+        </div>
+      </div>
+      <div class="glass absolute bottom-10 left-0 flex items-center gap-4 p-4">
+        <div class="grid grid-cols-4 gap-[3px]">
+          @for (cell of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]; track cell) {
+            <span
+              class="size-3 rounded-[2px]"
+              [class]="cell % 3 !== 0 ? 'bg-ink' : 'bg-line'"
+            ></span>
+          }
+        </div>
+        <div>
+          <strong class="text-ink">Pedro Operador</strong>
+          <div class="text-sm text-success-text">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Entrada 07:58 · a tiempo
+          </div>
+        </div>
+      </div>
+      <div class="glass absolute top-16 left-8 px-4 py-3 text-sm">
+        <div class="text-muted-text">Retardos esta quincena</div>
+        <div class="text-2xl font-bold text-ink">
+          2
+          <span class="text-sm font-medium text-success-text"
+            ><i class="bi bi-check-circle-fill" aria-hidden="true"></i> bono vigente</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="funciones" class="px-4 py-20">
+  <div class="mx-auto max-w-6xl">
+    <h2 class="text-center text-3xl md:text-4xl">Todo para controlar la asistencia</h2>
+    <p class="mt-2 mb-10 text-center text-muted-text">
+      Diseñado para oficinas, almacenes, tiendas y equipos en home office.
+    </p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      @for (feature of features; track feature.title) {
+        <article class="card transition hover:-translate-y-0.5 hover:bg-surface/70">
+          <div
+            class="mb-3 grid size-11 place-items-center rounded-xl bg-surface/80 text-2xl shadow-sm"
+          >
+            <i class="bi" [class]="'bi-' + feature.icon" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-base">{{ feature.title }}</h3>
+          <p class="text-sm text-ink-soft">{{ feature.text }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="kiosko" class="px-4 py-20">
+  <div class="mx-auto grid max-w-6xl gap-5 md:grid-cols-2">
+    <div class="card !p-8">
+      <span class="badge badge-brand">Personal de oficina</span>
+      <h2 class="mt-4 text-2xl">App móvil</h2>
+      <ul class="mt-3 space-y-2 text-ink-soft">
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>Checa con huella, Face ID o el PIN del celular.</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>O con un teclado numérico y su PIN del sistema.</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>Valida que esté dentro de la geocerca de su oficina.</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>Pide vacaciones y permisos, y recibe avisos push.</span>
+        </li>
+      </ul>
+    </div>
+    <div class="card !p-8">
+      <span class="badge">Operadores, cargadores y temporales</span>
+      <h2 class="mt-4 text-2xl">Modo kiosko</h2>
+      <ul class="mt-3 space-y-2 text-ink-soft">
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>Una tableta o PC en la entrada, sin instalar nada.</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>Credencial impresa con foto, datos y QR generados por el sistema.</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>También pueden checar con número de empleado y PIN.</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span>Muestra las noticias de la empresa a quien no tiene usuario.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="px-4 py-20">
+  <div class="mx-auto max-w-6xl">
+    <h2 class="text-center text-3xl md:text-4xl">Cada quien ve lo que le corresponde</h2>
+    <p class="mt-2 mb-10 text-center text-muted-text">
+      Roles y permisos por empresa. El dueño decide qué puede hacer cada rol.
+    </p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      @for (role of roles; track role.name) {
+        <div class="card border-t-4 !border-t-blue-400">
+          <h3 class="text-base">{{ role.name }}</h3>
+          <p class="text-sm text-ink-soft">{{ role.text }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="precios" class="px-4 py-20">
+  <div class="mx-auto max-w-6xl">
+    <h2 class="text-center text-3xl md:text-4xl">Precios que crecen contigo</h2>
+    <p class="mt-2 mb-10 text-center text-muted-text">
+      Pagas por tus empleados; el dueño no cuenta. Agrega oficinas o usuarios cuando los necesites.
+    </p>
+
+    <div class="card mb-8 grid items-end gap-6 md:grid-cols-[2fr_1fr]">
+      <div class="field !mb-0">
+        <label for="employees"
+          >Empleados: <strong class="text-lg text-ink">{{ employees() }}</strong></label
+        >
+        <input
+          id="employees"
+          type="range"
+          min="1"
+          max="400"
+          [value]="employees()"
+          (input)="setNumber('employees', $event)"
+        />
+      </div>
+      <div class="field !mb-0">
+        <label for="offices">Oficinas o sucursales</label>
+        <input
+          id="offices"
+          type="number"
+          min="1"
+          [value]="offices()"
+          (input)="setNumber('offices', $event)"
+        />
+      </div>
+    </div>
+
+    @if (plansError()) {
+      <div class="alert alert-error">
+        No pudimos cargar los planes. Verifica que el servidor esté encendido.
+      </div>
+    }
+
+    <div class="mb-5 flex flex-wrap items-center justify-center gap-3">
+      <div class="inline-flex rounded-full border border-line bg-surface p-1" role="radiogroup" aria-label="Forma de pago">
+        <button
+          type="button"
+          role="radio"
+          class="rounded-full px-4 py-1.5 text-sm font-semibold"
+          [class.bg-primary]="!yearly()"
+          [class.text-white]="!yearly()"
+          [attr.aria-checked]="!yearly()"
+          (click)="yearly.set(false)"
+        >
+          Mensual
+        </button>
+        <button
+          type="button"
+          role="radio"
+          class="rounded-full px-4 py-1.5 text-sm font-semibold"
+          [class.bg-primary]="yearly()"
+          [class.text-white]="yearly()"
+          [attr.aria-checked]="yearly()"
+          (click)="yearly.set(true)"
+        >
+          Anual
+        </button>
+      </div>
+      <span class="badge active"><i class="bi bi-gift" aria-hidden="true"></i> Paga 11 meses y el año es tuyo</span>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      @for (item of quotes(); track item.plan.slug) {
+        <article
+          class="card relative flex flex-col"
+          [class.!bg-surface/75]="item.plan.slug === recommended()"
+          [class.ring-2]="item.plan.slug === recommended()"
+          [class.ring-primary]="item.plan.slug === recommended()"
+          [class.opacity-50]="!item.quote.fits"
+        >
+          @if (item.plan.slug === recommended()) {
+            <span
+              class="absolute -top-3 left-5 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-white shadow"
+              >Recomendado para ti</span
+            >
+          }
+          <h3 class="text-lg">{{ item.plan.name }}</h3>
+          <p class="text-sm text-muted-text">{{ item.plan.description }}</p>
+          <div class="my-3 text-4xl font-extrabold text-ink">
+            @if (yearly()) {
+              {{ yearlyTotal(item.quote.total) | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+              }}<span class="text-sm font-medium text-muted-text">/año</span>
+            } @else {
+              {{ item.quote.total | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+              }}<span class="text-sm font-medium text-muted-text">/mes</span>
+            }
+          </div>
+          @if (yearly() && item.quote.total > 0) {
+            <p class="-mt-2 mb-2 text-xs text-success-text">
+              Equivale a {{ yearlyTotal(item.quote.total) / 12 | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} al mes
+            </p>
+          }
+          @if (!item.quote.fits) {
+            <p class="text-sm text-warning-text">Excede los límites del plan gratuito.</p>
+          } @else if (item.quote.employeeBlocks || item.quote.extraOffices) {
+            <p class="text-xs text-muted-text">
+              Incluye
+              @if (item.quote.employeeBlocks) {
+                {{ item.quote.employeeBlocks }} bloque(s) de empleados
+              }
+              @if (item.quote.extraOffices) {
+                · {{ item.quote.extraOffices }} oficina(s) extra
+              }
+            </p>
+          }
+          <ul class="my-4 flex-1 space-y-1.5 text-sm text-ink-soft">
+            <li>
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+              <strong>{{ item.plan.included_employees }}</strong> empleados incluidos
+            </li>
+            <li>
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+              <strong>{{ item.plan.included_offices }}</strong> oficina(s)
+            </li>
+            <li>
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+              Cada empleado puede tener usuario en la app
+            </li>
+            <li class="flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span>Base de datos: {{ item.plan.database_label }}</span>
+            </li>
+            @for (feature of item.plan.features ?? []; track feature) {
+              <li class="flex gap-2">
+                <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+                ><span>{{ feature }}</span>
+              </li>
+            }
+          </ul>
+          <div class="mb-4 text-xs text-muted-text">
+            @if (+item.plan.employee_block_price > 0) {
+              +{{ item.plan.employee_block_size }} empleados:
+              {{ item.plan.employee_block_price | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} ·
+              oficina extra:
+              {{ item.plan.extra_office_price | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+            } @else {
+              Sin extras disponibles
+            }
+          </div>
+          <a
+            class="btn w-full"
+            [class.btn-primary]="item.plan.slug === recommended()"
+            routerLink="/registro"
+          >
+            @if (item.plan.is_free) {
+              Empezar gratis
+            } @else {
+              Probar {{ item.plan.trial_days }} días gratis
+            }
+          </a>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+@if (testimonials(); as reviews) {
+  <section id="opiniones" class="px-4 py-20">
+    <div class="mx-auto max-w-6xl">
+      <h2 class="text-center text-3xl md:text-4xl">Lo que dicen nuestros clientes</h2>
+      <div class="mt-3 mb-10 flex flex-wrap items-center justify-center gap-2 text-muted-text">
+        <app-star-rating [value]="reviews.average" readonly size="sm" />
+        <span>
+          <strong class="text-ink">{{ reviews.average }}</strong> de 5 ·
+          {{ reviews.count }} {{ reviews.count === 1 ? 'opinión' : 'opiniones' }} de dueños y administradores
+        </span>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        @for (review of reviews.items; track review.id) {
+          <figure class="card testimonial">
+            <app-star-rating [value]="review.score" readonly size="sm" />
+            <blockquote class="mt-3 flex-1 text-ink-soft">
+              <i class="bi bi-quote text-2xl text-primary/40" aria-hidden="true"></i>
+              {{ review.comment }}
+            </blockquote>
+            <figcaption class="mt-4 flex items-center gap-3">
+              <span class="grid size-10 place-items-center rounded-full bg-primary text-sm font-bold text-white" aria-hidden="true">
+                {{ review.name.charAt(0) }}
+              </span>
+              <span>
+                <span class="block text-sm font-semibold text-ink">{{ review.name }}</span>
+                <span class="block text-xs text-muted-text">{{ review.role }} · {{ review.company }}</span>
+              </span>
+            </figcaption>
+          </figure>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<section id="preguntas" class="px-4 py-20">
+  <div class="mx-auto max-w-3xl">
+    <h2 class="mb-8 text-center text-3xl md:text-4xl">Preguntas frecuentes</h2>
+    <div class="glass divide-y divide-glass px-6">
+      @for (faq of faqs; track faq.q; let i = $index) {
+        <div>
+          <button
+            type="button"
+            class="flex w-full cursor-pointer items-center justify-between py-5 text-left font-semibold text-ink"
+            (click)="toggleFaq(i)"
+            [attr.aria-expanded]="openFaq() === i"
+          >
+            {{ faq.q }}
+            <span class="ml-4 text-xl text-muted"
+              ><i
+                class="bi"
+                [class]="openFaq() === i ? 'bi-dash-lg' : 'bi-plus-lg'"
+                aria-hidden="true"
+              ></i
+            ></span>
+          </button>
+          @if (openFaq() === i) {
+            <p class="-mt-2 pb-5 text-ink-soft">{{ faq.a }}</p>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="px-4 pb-20">
+  <div class="glass mx-auto max-w-6xl bg-surface/80 px-6 py-14 text-center">
+    <h2 class="mb-6 text-2xl md:text-3xl">
+      Empieza hoy. Tu primer kiosko está listo en 10 minutos.
+    </h2>
+    <a routerLink="/registro" class="btn btn-primary btn-lg">Crear mi cuenta</a>
+  </div>
+</section>
+
+<footer class="px-4 pb-8">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-4 text-sm text-muted-text">
+    <span>© 2026 AsistControl · Desarrollado por JALY SYSTEMS, S.A. de C.V.</span>
+    <span class="flex-1"></span>
+    <a routerLink="/legal/terminos" class="text-ink-soft">Términos</a>
+    <a routerLink="/legal/privacidad" class="text-ink-soft">Privacidad</a>
+    <a routerLink="/legal/cookies" class="text-ink-soft">Cookies</a>
+    <a routerLink="/kiosko" class="text-ink-soft">Modo kiosko</a>
+  </div>
+</footer>

@@ -1,0 +1,89 @@
+<app-modal heading="Carga masiva de empleados" size="lg" (closed)="closed.emit()">
+  <p class="text-sm text-ink-soft">
+    Copia las columnas desde Excel y pégalas aquí, o sube un archivo CSV. Van en este orden:
+    <strong>nombre</strong>, <strong>apellidos</strong> y <strong>sueldo</strong> (opcional):
+    <code>M:9500</code> si es mensual o <code>D:450</code> si es diario.
+  </p>
+  <p class="text-sm text-muted-text">
+    Después podrás asignarles oficina, turno, área, tipo y acceso a la app desde
+    <strong>Organizar empleados</strong>. Mientras tanto no pueden checar.
+  </p>
+
+  <div class="mb-3 flex flex-wrap gap-2">
+    <label class="btn btn-sm cursor-pointer">
+      <i class="bi bi-upload" aria-hidden="true"></i> Subir CSV
+      <input type="file" accept=".csv,.txt" class="hidden" (change)="loadFile($event)" />
+    </label>
+    <button class="btn btn-ghost btn-sm" type="button" (click)="downloadTemplate()">
+      <i class="bi bi-download" aria-hidden="true"></i> Descargar plantilla
+    </button>
+  </div>
+
+  <div class="field">
+    <label for="import-text">Pega aquí las filas</label>
+    <textarea
+      id="import-text"
+      rows="6"
+      class="font-mono text-sm"
+      placeholder="Ana	López Pérez	M:9500&#10;Beto	Ruiz	D:450&#10;Caro	Díaz"
+      [(ngModel)]="text"
+      (ngModelChange)="parse()"
+    ></textarea>
+  </div>
+
+  @if (lines().length) {
+    <div class="mb-2 flex flex-wrap items-center gap-2 text-sm">
+      <span class="badge badge-brand">{{ lines().length }} filas</span>
+      @if (errors().length) {
+        <span class="badge rejected">{{ errors().length }} con errores</span>
+        <span class="text-muted-text">Corrígelas en el texto para continuar.</span>
+      } @else {
+        <span class="badge active"><i class="bi bi-check-lg" aria-hidden="true"></i> Todo correcto</span>
+      }
+    </div>
+    <div class="max-h-72 overflow-auto rounded-xl border border-line">
+      <table>
+        <thead class="sticky top-0 bg-surface">
+          <tr>
+            <th class="w-12">Fila</th>
+            <th>Nombre</th>
+            <th>Apellidos</th>
+            <th>Sueldo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of lines(); track line.line) {
+            <tr [class.has-error]="line.errors.length">
+              <td class="text-xs text-muted-text tabular-nums">{{ line.line }}</td>
+              <td>{{ line.row.first_name || '—' }}</td>
+              <td>{{ line.row.last_name || '—' }}</td>
+              <td class="tabular-nums">
+                {{ salaryLabel(line) }}
+                @for (error of line.errors; track error) {
+                  <div class="text-xs text-danger-text">
+                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (serverError()) {
+    <div class="alert alert-error mt-3">{{ serverError() }}</div>
+  }
+
+  <div modal-footer>
+    <button class="btn" type="button" (click)="closed.emit()">Cancelar</button>
+    <button class="btn btn-primary" type="button" (click)="save()" [disabled]="!canImport()">
+      @if (saving()) {
+        <i class="bi bi-arrow-repeat animate-spin" aria-hidden="true"></i> Importando…
+      } @else {
+        Importar {{ lines().length || '' }} empleados
+      }
+    </button>
+  </div>
+</app-modal>

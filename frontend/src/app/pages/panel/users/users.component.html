@@ -1,0 +1,205 @@
+<app-page-header
+  heading="Usuarios y roles"
+  description="Quién entra al panel o a la app, y qué puede hacer cada rol."
+/>
+
+@if (loading()) {
+  <app-skeleton type="table" [rows]="6" [columns]="5" />
+} @else {
+  <section class="card">
+    <h3>Usuarios</h3>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>App</th>
+            <th>Web</th>
+            <th>Último acceso</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr [class.blocked]="user.blocked_at">
+              <td>
+                <strong>{{ user.name }}</strong>
+                <div class="text-sm text-muted-text">{{ user.email }}</div>
+              </td>
+              <td>
+                @if (canChange(user)) {
+                  <select [value]="user.role" (change)="changeRole(user, $event)">
+                    @for (role of assignable(); track role.value) {
+                      <option [value]="role.value">{{ role.label }}</option>
+                    }
+                    @if (!isAssignable(user.role)) {
+                      <option [value]="user.role" disabled>{{ roleLabel(user.role) }}</option>
+                    }
+                  </select>
+                } @else {
+                  <span class="badge" [class.brand]="user.role === 'owner'">{{
+                    roleLabel(user.role)
+                  }}</span>
+                }
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="user.app_access"
+                  [disabled]="!canChange(user)"
+                  (change)="toggle(user, 'app_access', $event)"
+                />
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="user.web_access"
+                  [disabled]="!canChange(user)"
+                  (change)="toggle(user, 'web_access', $event)"
+                />
+              </td>
+              <td class="text-sm text-muted-text">
+                {{ user.last_login_at ? (user.last_login_at | date: 'short') : 'Nunca' }}
+              </td>
+              <td>
+                @if (canChange(user)) {
+                  <button
+                    class="btn btn-sm"
+                    [class.btn-danger]="!user.blocked_at"
+                    [class.btn-ok]="!!user.blocked_at"
+                    type="button"
+                    (click)="toggleBlock(user)"
+                  >
+                    {{ user.blocked_at ? 'Desbloquear' : 'Bloquear' }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="text-sm text-muted-text">
+      Para dar acceso a un empleado, ábrelo en Empleados › Editar › Acceso a la app. Bloquear no
+      borra su historial.
+    </p>
+  </section>
+
+  <section class="card mt-5">
+    <h3 class="text-base">Celulares registrados</h3>
+    <p class="mb-3 text-sm text-muted-text">
+      Cada empleado checa desde un solo celular. Si cambia de teléfono, autoriza el nuevo aquí; el
+      anterior se revoca solo.
+    </p>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Celular</th>
+            <th>Estado</th>
+            <th>Último uso</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (device of devices(); track device.id) {
+            <tr>
+              <td class="font-semibold">
+                {{ device.employee?.first_name }} {{ device.employee?.last_name }}
+              </td>
+              <td class="text-sm">
+                {{ device.name || device.device_identifier }}
+                <span class="text-muted-text"
+                  >· {{ device.platform === 'ios' ? 'iPhone' : 'Android' }}</span
+                >
+              </td>
+              <td>
+                @if (device.revoked_at) {
+                  <span class="badge rejected">Revocado</span>
+                } @else if (device.approved_at) {
+                  <span class="badge active">Autorizado</span>
+                } @else {
+                  <span class="badge pending">Por autorizar</span>
+                }
+              </td>
+              <td class="text-sm text-muted-text">
+                {{ device.last_used_at ? (device.last_used_at | date: 'short') : 'Nunca' }}
+              </td>
+              <td class="text-right">
+                @if (!device.approved_at || device.revoked_at) {
+                  <button
+                    class="btn btn-sm btn-ok"
+                    type="button"
+                    (click)="deviceAction(device, 'approve')"
+                  >
+                    Autorizar
+                  </button>
+                }
+                @if (device.approved_at && !device.revoked_at) {
+                  <button
+                    class="btn btn-sm btn-danger"
+                    type="button"
+                    (click)="deviceAction(device, 'revoke')"
+                  >
+                    Revocar
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty">Ningún empleado ha registrado su celular todavía.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
+
+@if (roles().length) {
+  <section class="card" style="margin-top: 1rem">
+    <div class="flex flex-wrap items-center gap-3">
+      <h3 style="margin: 0">Permisos por rol</h3>
+      <span class="flex-1"></span>
+      @if (!auth.isOwner()) {
+        <span class="badge">Solo el dueño puede modificarlos</span>
+      }
+    </div>
+    <div class="overflow-x-auto">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Permiso</th>
+            @for (role of roles(); track role.id) {
+              <th>{{ role.label }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (permission of catalog(); track permission.name) {
+            <tr>
+              <td>{{ permission.label }}</td>
+              @for (role of roles(); track role.id) {
+                <td class="text-center">
+                  @if (role.locked.includes(permission.name)) {
+                    <span class="text-muted-text" title="No disponible para este rol">—</span>
+                  } @else {
+                    <input
+                      type="checkbox"
+                      [checked]="role.permissions.includes(permission.name)"
+                      [disabled]="!role.editable || !auth.isOwner()"
+                      (change)="togglePermission(role, permission.name)"
+                    />
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

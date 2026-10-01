@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>AsistControl · Control de asistencia para tu empresa</title>
+    <meta
+      name="description"
+      content="Asistencia con app, huella, Face ID y kiosko con credenciales QR. Vacaciones, permisos, geocerca, pre-nómina y bonos configurables."
+    />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      // Aplica el tema antes de pintar para evitar el destello blanco en modo oscuro
+      (function () {
+        try {
+          var mode = localStorage.getItem('asist.theme');
+          var dark =
+            mode === 'dark' ||
+            (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+          // Acento y tipografía elegidos en Mi perfil → Apariencia
+          var accent = localStorage.getItem('asist.accent');
+          if (accent && accent !== 'blue') document.documentElement.setAttribute('data-accent', accent);
+          var font = localStorage.getItem('asist.font');
+          if (font && font !== 'inter') {
+            document.documentElement.setAttribute('data-font', font);
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.id = 'asist-font';
+            link.href = 'https://fonts.googleapis.com/css2?family=' + {
+              poppins: 'Poppins', montserrat: 'Montserrat', nunito: 'Nunito', lora: 'Lora'
+            }[font] + ':wght@400;500;600;700;800&display=swap';
+            document.head.appendChild(link);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

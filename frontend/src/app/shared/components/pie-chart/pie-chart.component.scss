@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  // Se acomoda al ancho de su tarjeta, no al de la pantalla
+  container-type: inline-size;
+}
+
+.pie-layout {
+  display: grid;
+  gap: 1.25rem;
+  align-items: center;
+
+  @container (min-width: 30rem) {
+    grid-template-columns: minmax(12rem, 15rem) 1fr;
+  }
+}
+
+.legend {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.875rem;
+  }
+}
+
+.swatch {
+  display: grid;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 0.3rem;
+  color: #fff;
+  font-size: 0.65rem;
+}

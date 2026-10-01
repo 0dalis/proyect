@@ -1,0 +1,70 @@
+<button
+  type="button"
+  class="bell-button"
+  [class.active]="open()"
+  (click)="toggle()"
+  [attr.aria-expanded]="open()"
+  aria-haspopup="true"
+  [attr.aria-label]="
+    notifications.unread()
+      ? 'Notificaciones, ' + notifications.unread() + ' sin leer'
+      : 'Notificaciones'
+  "
+>
+  <i class="bi text-lg" [class.bi-bell]="!notifications.unread()" [class.bi-bell-fill]="notifications.unread()" aria-hidden="true"></i>
+  @if (notifications.unread() > 0) {
+    <span class="count">{{ notifications.unread() > 99 ? '99+' : notifications.unread() }}</span>
+  }
+</button>
+
+@if (open()) {
+  <div class="glass panel" role="dialog" aria-label="Notificaciones">
+    <div class="flex items-center gap-2 border-b border-glass px-4 py-3">
+      <h2 class="!mb-0 flex-1 text-sm font-semibold">Notificaciones</h2>
+      @if (notifications.unread() > 0) {
+        <button type="button" class="text-xs font-semibold text-primary hover:underline" (click)="markAll()">
+          Marcar todas como leídas
+        </button>
+      }
+    </div>
+
+    <div class="max-h-[26rem] overflow-y-auto">
+      @for (item of notifications.latest(); track item.id) {
+        <button type="button" class="item" [class.unread]="!item.read_at" (click)="select(item)">
+          <span class="icon" [attr.data-tone]="style[item.type].tone">
+            <i class="bi" [class]="'bi-' + style[item.type].icon" aria-hidden="true"></i>
+          </span>
+          <span class="min-w-0 flex-1 text-left">
+            <span class="block text-sm font-semibold text-ink">{{ item.title }}</span>
+            @if (item.body) {
+              <span class="line-clamp-2 block text-xs text-muted-text">{{ item.body }}</span>
+            }
+            <span class="mt-0.5 block text-[11px] text-muted">
+              {{ style[item.type].label }} · {{ timeAgo(item.created_at) }}
+            </span>
+          </span>
+          @if (!item.read_at) {
+            <span class="dot" aria-label="Sin leer"></span>
+          }
+        </button>
+      } @empty {
+        <div class="px-4 py-10 text-center text-sm text-muted-text">
+          @if (loading()) {
+            Cargando…
+          } @else {
+            <i class="bi bi-bell-slash mb-2 block text-2xl text-muted" aria-hidden="true"></i>
+            No tienes notificaciones.
+          }
+        </div>
+      }
+    </div>
+
+    <a
+      routerLink="/panel/notificaciones"
+      (click)="open.set(false)"
+      class="block border-t border-glass px-4 py-2.5 text-center text-sm font-semibold no-underline hover:bg-surface/70"
+    >
+      Ver historial
+    </a>
+  </div>
+}

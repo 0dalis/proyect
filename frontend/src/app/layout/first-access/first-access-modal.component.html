@@ -1,0 +1,74 @@
+<div class="backdrop" role="dialog" aria-modal="true" aria-labelledby="first-access-title">
+  <form class="dialog card" (ngSubmit)="save()">
+    <div class="mx-auto mb-3 grid size-14 place-items-center rounded-2xl bg-primary-soft text-2xl text-primary-active">
+      <i class="bi bi-shield-lock" aria-hidden="true"></i>
+    </div>
+    <h2 id="first-access-title" class="text-center text-2xl">Bienvenido, {{ firstName() }}</h2>
+    <p class="mb-5 text-center text-sm text-muted-text">
+      Entraste con una contraseña temporal. Elige tu contraseña
+      @if (needsPin()) {
+        y tu PIN de 6 dígitos para checar
+      }
+      antes de continuar.
+    </p>
+
+    <div class="grid gap-x-4 sm:grid-cols-2">
+      <div class="field">
+        <label for="fa-password">Nueva contraseña</label>
+        <input id="fa-password" name="password" type="password" autocomplete="new-password" [(ngModel)]="form.password" />
+      </div>
+      <div class="field">
+        <label for="fa-password-confirmation">Confírmala</label>
+        <input
+          id="fa-password-confirmation"
+          name="password_confirmation"
+          type="password"
+          autocomplete="new-password"
+          [(ngModel)]="form.password_confirmation"
+        />
+      </div>
+    </div>
+    <p class="-mt-2 mb-4 text-xs text-muted-text">Mínimo 8 caracteres, con letras y números.</p>
+
+    @if (needsPin()) {
+      <div class="grid gap-x-4 sm:grid-cols-2">
+        <div class="field">
+          <label for="fa-pin">PIN (6 dígitos)</label>
+          <input
+            id="fa-pin"
+            name="pin"
+            type="password"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="off"
+            [(ngModel)]="form.pin"
+          />
+        </div>
+        <div class="field">
+          <label for="fa-pin-confirmation">Confírmalo</label>
+          <input
+            id="fa-pin-confirmation"
+            name="pin_confirmation"
+            type="password"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="off"
+            [(ngModel)]="form.pin_confirmation"
+          />
+        </div>
+      </div>
+      <p class="-mt-2 mb-4 text-xs text-muted-text">
+        Lo usarás en la app y en el kiosko de tu empresa (por ejemplo, si tu celular se queda sin batería).
+      </p>
+    }
+
+    <div class="mt-2 flex flex-wrap items-center justify-between gap-3">
+      <button class="btn btn-ghost btn-sm" type="button" (click)="logout()">
+        <i class="bi bi-box-arrow-left" aria-hidden="true"></i> Salir
+      </button>
+      <button class="btn btn-primary" type="submit" [disabled]="!valid() || saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar y continuar' }}
+      </button>
+    </div>
+  </form>
+</div>

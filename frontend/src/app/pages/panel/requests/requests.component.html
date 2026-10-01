@@ -1,0 +1,126 @@
+<app-page-header
+  heading="Solicitudes"
+  description="Justificaciones, avisos de llegada tarde o salida anticipada, permisos y vacaciones."
+>
+  @if (auth.user()?.employee) {
+    <button class="btn btn-primary" type="button" (click)="openForm()">+ Nueva solicitud</button>
+  }
+</app-page-header>
+
+@if (loading()) {
+  <app-skeleton type="table" [rows]="6" [columns]="5" />
+} @else {
+  <div class="card">
+    <div class="flex flex-wrap items-center gap-3" style="margin-bottom: 1rem">
+      @for (tab of tabs; track tab.value) {
+        <button
+          class="btn btn-sm"
+          [class.btn-primary]="status === tab.value"
+          type="button"
+          (click)="status = tab.value; load()"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Empleado</th>
+          <th>Tipo</th>
+          <th>Fechas</th>
+          <th>Motivo</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (request of requests(); track request.id) {
+          <tr>
+            <td>
+              <strong>{{ request.employee?.first_name }} {{ request.employee?.last_name }}</strong>
+            </td>
+            <td>{{ types[request.type] }}</td>
+            <td class="text-sm">
+              {{ request.starts_on | date: 'mediumDate' }}
+              @if (request.ends_on && request.ends_on !== request.starts_on) {
+                – {{ request.ends_on | date: 'mediumDate' }}
+              }
+              @if (request.expected_time) {
+                · {{ request.expected_time.slice(0, 5) }}
+              }
+            </td>
+            <td class="text-sm">{{ request.reason }}</td>
+            <td>
+              <span class="badge" [class]="request.status">{{ labels[request.status] }}</span>
+            </td>
+            <td class="flex flex-wrap items-center gap-3" style="justify-content: flex-end">
+              @if (request.status === 'pending' && request.can_review) {
+                <button
+                  class="btn btn-sm btn-ok"
+                  type="button"
+                  (click)="review(request, 'approved')"
+                >
+                  Aprobar
+                </button>
+                <button
+                  class="btn btn-sm btn-danger"
+                  type="button"
+                  (click)="review(request, 'rejected')"
+                >
+                  Rechazar
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">No hay solicitudes.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (formOpen()) {
+  <app-modal heading="Nueva solicitud" (closed)="formOpen.set(false)">
+    @if (formError()) {
+      <div class="alert alert-error">{{ formError() }}</div>
+    }
+    <div class="field">
+      <label>Tipo</label>
+      <select [(ngModel)]="draft.type">
+        @for (type of typeOptions; track type) {
+          <option [value]="type">{{ types[type] }}</option>
+        }
+      </select>
+    </div>
+    @if (draft.type === 'vacation' && vacation(); as balance) {
+      <div class="mb-4 rounded-xl border border-line p-3">
+        <app-vacation-balance [balance]="balance" [compact]="true" />
+        <p class="!mb-0 mt-2 text-xs text-muted-text">
+          Solo cuentan tus días laborables; descansos y días festivos no se descuentan.
+        </p>
+      </div>
+    }
+    <div class="grid gap-4 sm:grid-cols-2" style="gap: 0 1rem">
+      <div class="field">
+        <label>Desde</label><input type="date" [(ngModel)]="draft.starts_on" />
+      </div>
+      <div class="field"><label>Hasta</label><input type="date" [(ngModel)]="draft.ends_on" /></div>
+    </div>
+    @if (draft.type === 'late_arrival' || draft.type === 'early_departure') {
+      <div class="field">
+        <label>Hora estimada</label><input type="time" [(ngModel)]="draft.expected_time" />
+      </div>
+    }
+    <div class="field">
+      <label>Motivo</label><textarea rows="3" [(ngModel)]="draft.reason"></textarea>
+    </div>
+    <div modal-footer>
+      <button class="btn" type="button" (click)="formOpen.set(false)">Cancelar</button>
+      <button class="btn btn-primary" type="button" (click)="create()">Enviar</button>
+    </div>
+  </app-modal>
+}

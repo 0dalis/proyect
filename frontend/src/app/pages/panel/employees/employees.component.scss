@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+// Toda la fila lleva al detalle del empleado
+.row-link {
+  transition: background-color 150ms ease;
+
+  &:hover td,
+  &:focus-visible td {
+    background: color-mix(in oklab, var(--color-primary-soft) 70%, transparent);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+tr.locked td {
+  opacity: 0.6;
+}

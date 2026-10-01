@@ -1,0 +1,7 @@
+:host {
+  display: block;
+}
+
+.danger-zone {
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+}
