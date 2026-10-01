@@ -1,0 +1,1907 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: lib/**/*
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+lib/core/errors/exceptions.dart
+lib/core/services/secure_storage_service.dart
+lib/main.dart
+lib/models/app_config_model.dart
+lib/models/auth_model.dart
+lib/providers/session_provider.dart
+lib/providers/theme_provider.dart
+lib/routes/app_routes.dart
+lib/services/api_constants.dart
+lib/services/api_service.dart
+lib/views/completeprofile/complete_profile.dart
+lib/views/home/home_view.dart
+lib/views/login/login_view.dart
+lib/views/recuperarpassword/forgot_password_view.dart
+lib/views/resources/theme/app_colors.dart
+lib/views/resources/widgets/dynamic_app_background.dart
+lib/views/welcome/splash_view.dart
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="lib/core/errors/exceptions.dart">
+import 'package:flutter/material.dart';
+
+class AppException implements Exception {
+  final String message;
+  final String? code;
+
+  AppException(this.message, [this.code]);
+
+  @override
+  String toString() => 'AppException: $message (Code: $code)';
+}
+
+class NetworkException extends AppException {
+  NetworkException(String message) : super(message, 'NETWORK_ERROR');
+}
+
+class AuthException extends AppException {
+  AuthException(String message) : super(message, 'AUTH_ERROR');
+}
+
+class StorageException extends AppException {
+  StorageException(String message) : super(message, 'STORAGE_ERROR');
+}
+</file>
+
+<file path="lib/core/services/secure_storage_service.dart">
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../errors/exceptions.dart';
+
+class SecureStorageService {
+  // Eliminamos 'const' para evitar errores de resolución de métodos en Web/Desktop
+  final _storage = FlutterSecureStorage();
+
+  static const String keyToken = 'jwt_token';
+  static const String keyUserId = 'user_id';
+
+  Future<void> saveSession(String token, String userId) async {
+    try {
+      await _storage.write(key: keyToken, value: token);
+      await _storage.write(key: keyUserId, value: userId);
+    } catch (e) {
+      throw StorageException('Error saving session to secure storage');
+    }
+  }
+
+  Future<String?> getToken() async {
+    return await _storage.read(key: keyToken);
+  }
+
+  Future<String?> getUserId() async {
+    return await _storage.read(key: keyUserId);
+  }
+
+  Future<void> clearSession() async {
+    try {
+      await _storage.delete(key: keyToken);
+      await _storage.delete(key: keyUserId);
+    } catch (e) {
+      throw StorageException('Error clearing session');
+    }
+  }
+
+  Future<bool> hasToken() async {
+    return await _storage.containsKey(key: keyToken);
+  }
+}
+</file>
+
+<file path="lib/main.dart">
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'routes/app_routes.dart';
+import 'providers/session_provider.dart';
+import 'providers/theme_provider.dart';
+
+void main() {
+  // 1. OBLIGATORIO: Inicializa los canales nativos de comunicación (corrige la pantalla blanca)
+  WidgetsFlutterBinding.ensureInitialized();
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SessionProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'AsistControl',
+      initialRoute: AppRoutes.splash,
+      onGenerateRoute: AppRoutes.generateRoute,
+      theme: ThemeData(
+        primaryColor: themeProvider.primaryDark,
+        scaffoldBackgroundColor: themeProvider.background,
+      ),
+    );
+  }
+}
+</file>
+
+<file path="lib/models/app_config_model.dart">
+import 'package:flutter/material.dart';
+
+class AppConfigModel {
+  final String splashUrl;
+  final String splashExtension;
+  final String colorsUrl;
+  final String themeBackgroundUrl;
+  final String themeBackgroundExtension;
+
+  AppConfigModel({
+    required this.splashUrl,
+    required this.splashExtension,
+    required this.colorsUrl,
+    required this.themeBackgroundUrl,
+    required this.themeBackgroundExtension,
+  });
+
+  factory AppConfigModel.fromJson(Map<String, dynamic> json) {
+    return AppConfigModel(
+      splashUrl: json['splash_url'] ?? '',
+      splashExtension: json['splash_ext'] ?? 'png',
+      colorsUrl: json['colors_url'] ?? '',
+      themeBackgroundUrl: json['theme_bg_url'] ?? '',
+      themeBackgroundExtension: json['theme_bg_ext'] ?? 'png',
+    );
+  }
+
+  static Color hexToColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    try {
+      return Color(int.parse(buffer.toString(), radix: 16));
+    } catch (_) {
+      return Colors.white;
+    }
+  }
+}
+</file>
+
+<file path="lib/models/auth_model.dart">
+class AuthModel {
+  final String token;
+  final String userId;
+  final bool isActive; // Flag para validar si el usuario puede entrar
+  final bool isFirstTime;
+  final String? message;
+
+  AuthModel({
+    required this.token,
+    required this.userId,
+    required this.isActive,
+    required this.isFirstTime,
+    this.message
+  });
+
+  factory AuthModel.fromJson(Map<String, dynamic> json) {
+    return AuthModel(
+      token: json['token'] ?? '',
+      userId: json['user_id']?.toString() ?? '',
+      isActive: json['is_active'] ?? false, // Laravel suele devolver booleanos o 1/0
+      isFirstTime: json['is_first_time'] ?? false,
+      message: json['message'],
+    );
+  }
+}
+</file>
+
+<file path="lib/providers/session_provider.dart">
+import 'package:flutter/material.dart';
+import '../core/services/secure_storage_service.dart';
+
+enum SessionStatus { initial, authenticated, unauthenticated }
+
+class SessionProvider with ChangeNotifier {
+  final SecureStorageService _storage = SecureStorageService();
+  SessionStatus _status = SessionStatus.initial;
+  String? _token;
+  String? _userId;
+
+  SessionStatus get status => _status;
+  String? get token => _token;
+  String? get userId => _userId;
+
+  Future<void> checkSession() async {
+    final token = await _storage.getToken();
+    final userId = await _storage.getUserId();
+
+    if (token != null && userId != null) {
+      _token = token;
+      _userId = userId;
+      _status = SessionStatus.authenticated;
+    } else {
+      _status = SessionStatus.unauthenticated;
+    }
+    notifyListeners();
+  }
+
+  Future<void> setSession(String token, String userId) async {
+    await _storage.saveSession(token, userId);
+    _token = token;
+    _userId = userId;
+    _status = SessionStatus.authenticated;
+    notifyListeners();
+  }
+
+  // MÉTODO DE EMERGENCIA: Borra sesión y notifica a la app
+  Future<void> forceLogout() async {
+    await _storage.clearSession();
+    _token = null;
+    _userId = null;
+    _status = SessionStatus.unauthenticated;
+    notifyListeners();
+  }
+
+  Future<void> logout() async {
+    await forceLogout();
+  }
+}
+</file>
+
+<file path="lib/providers/theme_provider.dart">
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import '../models/app_config_model.dart';
+import '../views/resources/theme/app_colors.dart';
+
+class ThemeProvider with ChangeNotifier {
+  // Default colors (Fallback)
+  Color _primaryDark = AppColors.primaryDark;
+  Color _primaryMedium = AppColors.primaryMedium;
+  Color _primaryLight = AppColors.primaryLight;
+  Color _accentBlue = AppColors.accentBlue;
+  Color _accentTeal = AppColors.accentTeal;
+  Color _successGreen = AppColors.successGreen;
+  Color _background = Colors.white; // Requerimiento: Fondo BLANCO por defecto
+
+  Color get primaryDark => _primaryDark;
+  Color get primaryMedium => _primaryMedium;
+  Color get primaryLight => _primaryLight;
+  Color get accentBlue => _accentBlue;
+  Color get accentTeal => _accentTeal;
+  Color get successGreen => _successGreen;
+  Color get background => _background;
+
+  Future<void> loadColorsFromJson() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/app_color.json');
+
+      if (await file.exists()) {
+        final contents = await file.readAsString();
+        final Map<String, dynamic> colorsData = json.decode(contents);
+
+        _updateFromMap(colorsData);
+      }
+    } catch (e) {
+      debugPrint('Error loading colors from JSON: $e');
+    }
+    notifyListeners();
+  }
+
+  void _updateFromMap(Map<String, dynamic> data) {
+    if (data.containsKey('primaryDark')) _primaryDark = AppConfigModel.hexToColor(data['primaryDark']);
+    if (data.containsKey('primaryMedium')) _primaryMedium = AppConfigModel.hexToColor(data['primaryMedium']);
+    if (data.containsKey('primaryLight')) _primaryLight = AppConfigModel.hexToColor(data['primaryLight']);
+    if (data.containsKey('accentBlue')) _accentBlue = AppConfigModel.hexToColor(data['accentBlue']);
+    if (data.containsKey('accentTeal')) _accentTeal = AppConfigModel.hexToColor(data['accentTeal']);
+    if (data.containsKey('successGreen')) _successGreen = AppConfigModel.hexToColor(data['successGreen']);
+    if (data.containsKey('background')) _background = AppConfigModel.hexToColor(data['background']);
+  }
+}
+</file>
+
+<file path="lib/routes/app_routes.dart">
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/session_provider.dart';
+import '../views/welcome/splash_view.dart';
+import '../views/login/login_view.dart';
+import '../views/recuperarpassword/forgot_password_view.dart';
+import '../views/home/home_view.dart';
+import '../views/completeprofile/complete_profile.dart'; 
+
+class AppRoutes {
+  static const String splash = '/';
+  static const String login = '/login';
+  static const String forgotPassword = '/forgot-password';
+  
+  // Agrupamos conceptualmente las rutas protegidas bajo un prefijo o las listamos
+  static const String home = '/home';
+  static const String completeProfile = '/complete-profile';
+
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    // 1. LISTA DE RUTAS PROTEGIDAS (Como un AuthGuard colectivo de Angular)
+    final rutasProtegidas = [home, completeProfile];
+
+    // 2. INTERCEPTOR COLECTIVO
+    if (rutasProtegidas.contains(settings.name)) {
+      return MaterialPageRoute(
+        builder: (context) {
+          final session = Provider.of<SessionProvider>(context, listen: false);
+          
+          // Si intenta acceder a Home o CompleteProfile sin estar Autenticado -> Rebote al Login
+          if (session.status != SessionStatus.authenticated) {
+            return const LoginView();
+          }
+
+          // Si pasó la validación del token, evaluamos qué vista entregar de forma segura
+          return _buildProtectedView(settings.name);
+        },
+      );
+    }
+
+    // 3. RUTAS PÚBLICAS (No requieren token)
+    switch (settings.name) {
+      case splash:
+        return MaterialPageRoute(builder: (_) => const SplashView());
+      case login:
+        return MaterialPageRoute(builder: (_) => const LoginView());
+      case forgotPassword:
+        return MaterialPageRoute(builder: (_) => const ForgotPasswordView());
+      default:
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(child: Text('No se definió la ruta para ${settings.name}')),
+          ),
+        );
+    }
+  }
+
+  // MÉTODO AUXILIAR: Devuelve la vista real una vez que el Guard colectivo autorizó el acceso
+  static Widget _buildProtectedView(String? routeName) {
+    switch (routeName) {
+      case home:
+        return const HomeView();
+      case completeProfile:
+        return const CompleteProfileView(); // Cambiar por const CompleteProfileView()
+      default:
+        return const Scaffold(body: Center(child: Text('Error de enrutamiento protegido')));
+    }
+  }
+}
+</file>
+
+<file path="lib/services/api_constants.dart">
+class ApiConstants {
+  // 1. Cambiamos el puerto al 5000 que es donde corre tu php artisan serve
+  // Si usas el emulador de Android, 10.0.2.2 es correcto para apuntar a tu PC.
+  static const String baseUrl = "http://10.0.2.2:5000/api"; 
+  
+  // 2. Apuntamos al endpoint correcto para Flutter (/mobile) que definiste en tu api.php
+  static const String login = "$baseUrl/mobile"; 
+  
+  // Estos endpoints dependerán de cómo los nombres dentro de routes/mobile/route.php
+  static const String register = "$baseUrl/mobile/register";
+  static const String recoverPassword = "$baseUrl/mobile/password/recover";
+  static const String checkStatus = "$baseUrl/mobile/user/status";
+}
+</file>
+
+<file path="lib/services/api_service.dart">
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart'; // Import esencial para debugPrint
+
+import 'api_constants.dart';
+import '../core/errors/exceptions.dart';
+import '../models/auth_model.dart';
+import '../models/app_config_model.dart';
+
+class ApiService {
+  // LOGIN
+  Future<AuthModel> login(String idEmpresa, String correo, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.login),
+        body: {
+          'id_empresa': idEmpresa,
+          'correo': correo,
+          'password': password,
+        },
+      );
+      return _handleResponse(response, (data) => AuthModel.fromJson(data));
+    } catch (e) {
+      // Lanzamos la excepción directamente para que el compilador sepa que no hay camino sin retorno
+      throw _processError(e);
+    }
+  }
+
+  // REGISTRAR ASISTENCIA
+  Future<Map<String, dynamic>> registrarAsistencia(String token, String userId, Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiConstants.baseUrl}/asistencia/registrar"),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+        body: {
+          'user_id': userId,
+          ...data,
+        },
+      );
+
+      if (response.statusCode == 401) {
+        throw AuthException('Sesión expirada o usuario inactivo');
+      }
+
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      if (responseData['is_active'] == false) {
+        throw AuthException('Usuario inactivo. Contacte a su administrador');
+      }
+
+      return responseData;
+    } catch (e) {
+      throw _processError(e);
+    }
+  }
+
+  // ACTUALIZACIÓN PEREZOSA (Lazy Update)
+  Future<void> updateDynamicTheme(String token, String userId) async {
+    try {
+      final config = await getAppConfig(token, userId);
+      await downloadDynamicResources(config);
+    } catch (e) {
+      debugPrint('Error actualizando tema estacional: $e');
+    }
+  }
+
+  // --- MÉTODOS AUXILIARES ---
+
+  Future<AppConfigModel> getAppConfig(String token, String userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse("http://10.0.2.2:8000/api/mobile/empresa/fonts"),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+        body: {'user_id': userId},
+      );
+      return _handleResponse(response, (data) => AppConfigModel.fromJson(data));
+    } catch (e) {
+      throw _processError(e);
+    }
+  }
+
+  Future<void> downloadDynamicResources(AppConfigModel config) async {
+    final directory = await getApplicationDocumentsDirectory();
+    await _downloadFile(config.colorsUrl, '${directory.path}/app_color.json');
+    await _downloadFile(config.splashUrl, '${directory.path}/loading_font.${config.splashExtension}');
+    await _downloadFile(config.themeBackgroundUrl, '${directory.path}/theme_font_sistem.${config.themeBackgroundExtension}');
+  }
+
+  Future<void> _downloadFile(String url, String path) async {
+    if (url.isEmpty) return;
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final file = File(path);
+        await file.writeAsBytes(response.bodyBytes);
+      }
+    } catch (e) {
+      debugPrint('Download error: $e');
+    }
+  }
+
+  T _handleResponse<T>(http.Response response, T Function(Map<String, dynamic>) mapper) {
+    final Map<String, dynamic> data = json.decode(response.body);
+    if (response.statusCode == 200 || response.statusCode == 201) return mapper(data);
+    throw AuthException(data['message'] ?? 'Error desconocido');
+  }
+
+  // Cambiamos de void a AppException para que el 'throw' sea explícito en el flujo
+  AppException _processError(dynamic e) {
+    if (e is AppException) return e;
+    if (e is http.ClientException) return NetworkException('Sin conexión');
+    return AppException('Error inesperado: ${e.toString()}');
+  }
+}
+</file>
+
+<file path="lib/views/completeprofile/complete_profile.dart">
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
+import '../resources/theme/app_colors.dart';
+
+class CompleteProfileView extends StatefulWidget {
+  const CompleteProfileView({super.key});
+
+  @override
+  State<CompleteProfileView> createState() => _CompleteProfileViewState();
+}
+
+class _CompleteProfileViewState extends State<CompleteProfileView> {
+  // Controladores y nodos de foco para los 6 dígitos del PIN
+  final List<TextEditingController> _pinControllers =
+      List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _pinFocusNodes = List.generate(6, (_) => FocusNode());
+
+  // Controladores y nodos de foco para la confirmación
+  final List<TextEditingController> _confirmControllers =
+      List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _confirmFocusNodes =
+      List.generate(6, (_) => FocusNode());
+
+  // Gestión de la imagen de perfil
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
+
+  // Estados de control
+  bool _hasError = false;
+
+  // Obtener el PIN completo como String
+  String get _pin => _pinControllers.map((c) => c.text).join();
+  String get _confirmPin => _confirmControllers.map((c) => c.text).join();
+
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < 6; i++) {
+      _pinControllers[i].addListener(_onPinChanged);
+      _confirmControllers[i].addListener(_onConfirmChanged);
+    }
+  }
+
+  void _onPinChanged() {
+    setState(() {
+      _validatePins();
+    });
+  }
+
+  void _onConfirmChanged() {
+    setState(() {
+      _validatePins();
+    });
+  }
+
+  void _validatePins() {
+    final confirmLength = _confirmControllers
+        .where((c) => c.text.isNotEmpty)
+        .length;
+    if (confirmLength == 6) {
+      _hasError = (_pin != _confirmPin);
+    } else {
+      _hasError = false;
+    }
+  }
+
+  bool get _isButtonEnabled {
+    final pinComplete = _pinControllers.every((c) => c.text.isNotEmpty);
+    final confirmComplete =
+        _confirmControllers.every((c) => c.text.isNotEmpty);
+    return pinComplete && confirmComplete && !_hasError;
+  }
+
+  void _onDigitChanged(String value, int index, bool isConfirm) {
+    if (value.length == 1 && index < 5) {
+      if (isConfirm) {
+        _confirmFocusNodes[index + 1].requestFocus();
+      } else {
+        _pinFocusNodes[index + 1].requestFocus();
+      }
+    }
+    else if (value.isEmpty && index > 0) {
+      if (isConfirm) {
+        _confirmFocusNodes[index - 1].requestFocus();
+      } else {
+        _pinFocusNodes[index - 1].requestFocus();
+      }
+    }
+    setState(() {});
+  }
+
+  void _showImageSourceActionSheet(BuildContext context, ThemeProvider theme) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo_camera, color: theme.primaryDark),
+              title: Text('Tomar foto',
+                  style: TextStyle(color: theme.primaryDark)),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_library, color: theme.primaryDark),
+              title: Text('Seleccionar del dispositivo',
+                  style: TextStyle(color: theme.primaryDark)),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 500,
+        maxHeight: 500,
+        imageQuality: 80,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      debugPrint("Error seleccionando imagen: $e");
+    }
+  }
+
+  void _handleSaveProfile() {
+    final finalPin = _pin;
+    debugPrint("PIN Listo para guardar: $finalPin");
+    if (_imageFile != null) {
+      debugPrint("Foto cargada en ruta temporal: ${_imageFile!.path}");
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var c in _pinControllers) { c.dispose(); }
+    for (var f in _pinFocusNodes) { f.dispose(); }
+    for (var c in _confirmControllers) { c.dispose(); }
+    for (var f in _confirmFocusNodes) { f.dispose(); }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
+
+    return Scaffold(
+      backgroundColor: theme.background,
+      body: SafeArea(
+        child: SizedBox.expand(
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40),
+                    Text(
+                      "Completa tu Perfil",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: theme.primaryDark,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // AVATAR SELECTOR (Estirado 4px: de 110 a 114)
+                    GestureDetector(
+                      onTap: () => _showImageSourceActionSheet(context, theme),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 114,
+                            height: 114,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: theme.primaryDark.withOpacity(0.08),
+                              border: Border.all(
+                                color: theme.primaryDark.withOpacity(0.4),
+                                width: 2,
+                              ),
+                              image: _imageFile != null
+                                  ? DecorationImage(
+                                      image: FileImage(_imageFile!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                          ),
+                          if (_imageFile == null)
+                            Icon(
+                              Icons.camera_alt_outlined,
+                              size: 34, // Escalado proporcionalmente
+                              color: theme.primaryDark.withOpacity(0.6),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Agrega una foto (opcional)",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+
+                    // ELIMINADO EL DIVIDER DE AQUÍ
+                    const SizedBox(height: 40),
+
+                    // SECCIÓN ESTABLECE TU PIN
+                    Text(
+                      "Establece tu PIN",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: theme.primaryDark,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "Usa un PIN de 6 dígitos para ingresar a tu cuenta",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        6,
+                        (index) => _buildDigitInput(
+                          index,
+                          controller: _pinControllers[index],
+                          focusNode: _pinFocusNodes[index],
+                          isConfirm: false,
+                          theme: theme,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    // SECCIÓN CONFIRMA TU PIN
+                    Text(
+                      "Confirma tu PIN",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: theme.primaryDark,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        6,
+                        (index) => _buildDigitInput(
+                          index,
+                          controller: _confirmControllers[index],
+                          focusNode: _confirmFocusNodes[index],
+                          isConfirm: true,
+                          theme: theme,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    // TARJETA INFORMATIVA
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: theme.primaryDark.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.primaryDark.withOpacity(0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: theme.primaryDark,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Este PIN será tu método de acceso.",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.primaryDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  "Puedes cambiarlo directamente en tu perfil.",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // BOTÓN DE GUARDAR
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: _isButtonEnabled ? _handleSaveProfile : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isButtonEnabled
+                              ? theme.primaryDark
+                              : Colors.grey.shade300,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.grey.shade300,
+                          disabledForegroundColor: Colors.grey.shade500,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          "GUARDAR PERFIL",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 60),
+                  ],
+                ),
+              ),
+
+              // MARCA DE AGUA FIJA
+              Positioned(
+                bottom: 12,
+                right: 16,
+                child: Opacity(
+                  opacity: 0.35,
+                  child: Text(
+                    "powered by Jaly-Sistems",
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: theme.primaryDark,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDigitInput(
+    int index, {
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required bool isConfirm,
+    required ThemeProvider theme,
+  }) {
+    final hasDigit = controller.text.isNotEmpty;
+    
+    // Paleta de colores para el efecto neón
+    const Color neonGreen = Color(0xff76ff03);
+    const Color neonRed = Colors.red;
+    
+    final Color borderColor;
+    List<BoxShadow> shadows = [];
+
+    if (isConfirm && _hasError) {
+      borderColor = neonRed;
+      if (hasDigit) {
+        shadows = [
+          BoxShadow(color: neonRed.withOpacity(0.6), blurRadius: 10, spreadRadius: 1),
+          BoxShadow(color: neonRed.withOpacity(0.3), blurRadius: 4, spreadRadius: -1),
+        ];
+      }
+    } else if (hasDigit) {
+      borderColor = neonGreen;
+      shadows = [
+        BoxShadow(color: neonGreen.withOpacity(0.6), blurRadius: 10, spreadRadius: 1),
+        BoxShadow(color: neonGreen.withOpacity(0.3), blurRadius: 4, spreadRadius: -1),
+      ];
+    } else {
+      borderColor = Colors.grey.shade400;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        width: 48,
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.white, // Background siempre blanco como solicitaste
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor, width: 2),
+          boxShadow: shadows,
+        ),
+        child: Center(
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            textAlign: TextAlign.center,
+            textAlignVertical: TextAlignVertical.center, // Centrado geométrico vertical
+            maxLength: 1,
+            keyboardType: TextInputType.number,
+            // Ofuscación del PIN para que se comporte como contraseña uno por uno
+            obscureText: true,
+            obscuringCharacter: '●', 
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              height: 1.0,
+              color: isConfirm && _hasError ? neonRed : theme.primaryDark,
+            ),
+            decoration: const InputDecoration(
+              counterText: '',
+              border: InputBorder.none,
+              isCollapsed: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            onChanged: (value) => _onDigitChanged(value, index, isConfirm),
+          ),
+        ),
+      ),
+    );
+  }
+}
+</file>
+
+<file path="lib/views/home/home_view.dart">
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/session_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../services/api_service.dart';
+
+class HomeView extends StatelessWidget {
+  const HomeView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final session = Provider.of<SessionProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+    final apiService = ApiService();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Panel Principal'),
+        backgroundColor: theme.primaryDark,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => session.logout(),
+          )
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Bienvenido Usuario: ${session.userId}', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: theme.successGreen),
+              onPressed: () async {
+                try {
+                  // Simulación de registro de asistencia
+                  final result = await apiService.registrarAsistencia(
+                    session.token!,
+                    session.userId!,
+                    {'lat': '0.0', 'lng': '0.0', 'timestamp': DateTime.now().toString()}
+                  );
+
+                  // LÓGICA de actualización perezosa (Lazy Update)
+                  if (result['update_theme'] == true) {
+                    await apiService.updateDynamicTheme(session.token!, session.userId!);
+                    // Actualizar colores reactivamente en la UI
+                    final themeProv = Provider.of<ThemeProvider>(context, listen: false);
+                    await themeProv.loadColorsFromJson();
+                  }
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Asistencia registrada con éxito')),
+                  );
+                } catch (e) {
+                  // Si es un error de autenticación/inactivo, forzamos el logout
+                  if (e.toString().contains('Sesión expirada') || e.toString().contains('Usuario inactivo')) {
+                    session.forceLogout();
+                    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Sesión expirada o usuario inactivo')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: ${e.toString()}')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Registrar Asistencia'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+</file>
+
+<file path="lib/views/login/login_view.dart">
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../routes/app_routes.dart';
+import '../../providers/session_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../services/api_service.dart';
+
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  final _idEmpresaController = TextEditingController();
+  final _correoController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
+  void _handleLogin() async {
+    final idEmpresa = _idEmpresaController.text.trim();
+    final correo = _correoController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (idEmpresa.isEmpty || correo.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, complete todos los campos')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final apiService = ApiService();
+      final sessionProv = Provider.of<SessionProvider>(context, listen: false);
+
+      final authResult = await apiService.login(idEmpresa, correo, password);
+
+      if (authResult.isActive) {
+        // Almacena de forma segura el token y el userId en el dispositivo mediante SecureStorage
+        await sessionProv.setSession(authResult.token, authResult.userId);
+        if (!mounted) return;
+
+        // Validamos si es su primera vez usando el flag enviado por Laravel
+        if (authResult.isFirstTime) {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.completeProfile);
+        } else {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+        }
+      } else {
+        if (!mounted) return;
+        _showErrorDialog('Acceso Denegado', 'Usuario inactivo. Contacte a su administrador');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorDialog('Error de Autenticación', e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
+
+    return Scaffold(
+      backgroundColor: theme.background,
+      // Usamos Stack para asegurar que la marca de agua flote fijamente al fondo de la pantalla
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // CAPA 1: Todo el contenido con Scroll
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center, // Centrado de componentes
+                children: [
+                  const SizedBox(height: 50),
+                  
+                  // LOGO/ICONO DEL SPLASH
+                  // Nota: Reemplaza 'assets/logo_splash.png' por la ruta real de tu imagen de splash
+                  Image.asset(
+                    'assets/logo_splash.png', 
+                    height: 90,
+                    width: 90,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Icono de respaldo por si la ruta del asset no está configurada aún
+                      return Icon(Icons.blur_on_rounded, size: 80, color: theme.primaryDark);
+                    },
+                  ),
+                  const SizedBox(height: 15),
+                  
+                  // TEXTO DE BIENVENIDA CENTRADO Y PEQUEÑO
+                  Text(
+                    "¡Bienvenido!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 26, // Reducido de 32 a 26
+                      fontWeight: FontWeight.bold,
+                      color: theme.primaryDark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Inicia sesión para continuar",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 45),
+                  
+                  // 1. CORREO (Animado)
+                  _buildInput(
+                    label: "Correo",
+                    icon: Icons.email_outlined,
+                    controller: _correoController,
+                    theme: theme,
+                    tooltipMessage: "Contraseña proporcionada por tu administrador",
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // 2. CONTRASEÑA (Animado)
+                  _buildInput(
+                    label: "Contraseña",
+                    icon: Icons.lock_outline_rounded,
+                    controller: _passwordController,
+                    isPassword: true,
+                    obscureText: _obscurePassword,
+                    theme: theme,
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
+                      child: Text(
+                        "¿Olvidaste tu contraseña?",
+                        style: TextStyle(color: theme.accentBlue, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  // 3. EMPRESA (Animado)
+                  _buildInput(
+                    label: "Empresa",
+                    icon: Icons.business_rounded,
+                    controller: _idEmpresaController,
+                    theme: theme,
+                    tooltipMessage: "Código de tu empresa de trabajo",
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // BOTÓN DE INGRESO
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.primaryDark,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        elevation: 0,
+                      ),
+                      child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "INGRESAR",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // 4. TEXTO INFORMATIVO FINAL
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          "¿No tienes código de empresa?",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: theme.primaryDark.withOpacity(0.8),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "contacta a tu administrador para solicitarlo",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 60), // Espacio extra inferior para evitar que el teclado o la marca de agua tapen el texto informativo al scrollear
+                ],
+              ),
+            ),
+            
+            // CAPA 2: MARCA DE AGUA (Fijada abajo a la derecha de la pantalla de forma permanente)
+            Positioned(
+              bottom: 12,
+              right: 16,
+              child: Opacity(
+                opacity: 0.35, // Hace el texto casi transparente
+                child: Text(
+                  "powered by Jaly-Sistems",
+                  style: TextStyle(
+                    fontSize: 10.5, // Letra muy pequeña
+                    fontWeight: FontWeight.w500,
+                    color: theme.primaryDark,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInput({
+    required String label,
+    required IconData icon,
+    required TextEditingController controller,
+    required ThemeProvider theme,
+    bool isPassword = false,
+    bool obscureText = false,
+    String? tooltipMessage,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword ? obscureText : false,
+        textAlignVertical: TextAlignVertical.center,
+        style: TextStyle(color: theme.primaryDark, fontSize: 16),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.grey, fontSize: 15),
+          floatingLabelStyle: TextStyle(
+            color: theme.primaryDark, 
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          
+          prefixIcon: Icon(icon, color: theme.primaryMedium),
+          
+          suffixIcon: isPassword
+              ? GestureDetector(
+                  onLongPressDown: (_) => setState(() => _obscurePassword = false),
+                  onLongPressEnd: (_) => setState(() => _obscurePassword = true),
+                  onTapUp: (_) => setState(() => _obscurePassword = true),
+                  child: Icon(
+                    obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    color: theme.primaryMedium,
+                  ),
+                )
+              : (tooltipMessage != null
+                  ? Tooltip(
+                      message: tooltipMessage,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.symmetric(horizontal: 30),
+                      showDuration: const Duration(seconds: 3),
+                      preferBelow: false,
+                      decoration: BoxDecoration(
+                        color: theme.primaryDark.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: const TextStyle(color: Colors.white, fontSize: 12),
+                      triggerMode: TooltipTriggerMode.longPress,
+                      child: Icon(
+                        Icons.help_outline_rounded,
+                        size: 18,
+                        color: theme.primaryMedium.withOpacity(0.6),
+                      ),
+                    )
+                  : null),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+        ),
+      ),
+    );
+  }
+}
+</file>
+
+<file path="lib/views/recuperarpassword/forgot_password_view.dart">
+import 'package:flutter/material.dart';
+import '../resources/theme/app_colors.dart';
+
+class ForgotPasswordView extends StatelessWidget {
+  const ForgotPasswordView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.primaryDark),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SafeArea(
+        // 1. Forzamos a que el Stack ocupe TODO el espacio vertical y horizontal disponible
+        child: SizedBox.expand(
+          child: Stack(
+            children: [
+              // CAPA 1: Contenido con Scroll
+              SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Recuperar\nContraseña",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    
+                    // Cuadro informativo (Info Box)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentBlue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: AppColors.accentBlue.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.info_outline, color: AppColors.accentBlue),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              "Se le notificará al administrador para el restablecimiento de tu contraseña. Una vez autorizado, recibirás un correo con tu nueva contraseña.",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.primaryDark,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    // 1. INPUT ID EMPRESA (Animado)
+                    _buildInput(
+                      label: "ID Empresa",
+                      icon: Icons.business_rounded,
+                    ),
+                    const SizedBox(height: 25),
+
+                    // 2. INPUT CORREO ELECTRÓNICO (Animado)
+                    _buildInput(
+                      label: "Correo Electrónico",
+                      icon: Icons.email_outlined,
+                    ),
+
+                    const SizedBox(height: 15),
+                    
+                    const Text(
+                      "* Recuerda usar el correo que proporcionaste originalmente a tu empresa.",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.placeholder,
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Botón de Solicitar
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Lógica para enviar notificación al administrador vía Laravel
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryDark,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          "SOLICITAR",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 60), // Espacio de respeto para que el contenido no tape la marca de agua al scrollear
+                  ],
+                ),
+              ),
+
+              // CAPA 2: MARCA DE AGUA (Ahora sí, fijada abajo del todo)
+              Positioned(
+                bottom: 12,
+                right: 16,
+                child: Opacity(
+                  opacity: 0.35,
+                  child: const Text(
+                    "powered by Jaly-Sistems",
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryDark,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInput({
+    required String label,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: TextField(
+        textAlignVertical: TextAlignVertical.center,
+        style: const TextStyle(color: AppColors.primaryDark, fontSize: 16),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: AppColors.placeholder, fontSize: 15),
+          floatingLabelStyle: const TextStyle(
+            color: AppColors.primaryDark, 
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          prefixIcon: Icon(icon, color: AppColors.primaryMedium),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+        ),
+      ),
+    );
+  }
+}
+</file>
+
+<file path="lib/views/resources/theme/app_colors.dart">
+import 'package:flutter/material.dart';
+
+class AppColors {
+  // ==========================================
+  // PALETA BASE: MODO CLARO (Ligeros y Premium)
+  // ==========================================
+  static const Color bgLight = Color(0xFFF8FAFC);         // Fondo general (Gris ultra claro, no blanco puro para evitar fatiga)
+  static const Color surfaceLight = Color(0xFFFFFFFF);    // Tarjetas, inputs, contenedores
+  static const Color borderLight = Color(0xFFE2E8F0);     // Bordes por defecto (muy sutil)
+  
+  // Textos Modo Claro
+  static const Color textPrimaryLight = Color(0xFF0F172A);  // Títulos y cuerpo (Casi negro, muy elegante)
+  static const Color textSecondaryLight = Color(0xFF64748B);// Subtítulos, placeholders, labels
+
+  // ==========================================
+  // PALETA BASE: MODO OSCURO (Profundos y Oscuros)
+  // ==========================================
+  static const Color bgDark = Color(0xFF090D16);          // Fondo general (Azabache azulado profundo, evita el negro #000000 plano)
+  static const Color surfaceDark = Color(0xFF1E293B);     // Tarjetas e inputs en modo oscuro
+  static const Color borderDark = Color(0xFF334155);      // Bordes por defecto en modo oscuro
+  
+  // Textos Modo Oscuro
+  static const Color textPrimaryDark = Color(0xFFF8FAFC);   // Títulos y cuerpo (Blanco suave)
+  static const Color textSecondaryDark = Color(0xFF94A3B8); // Subtítulos y placeholders
+
+  // ==========================================
+  // COLORES DE ACENTO (Mismo token, cambia según el modo)
+  // ==========================================
+  // Marca / Enfoque (El azul "Brand" de alta fidelidad, estilo Stripe/Apple)
+  static const Color accentLight = Color(0xFF1D4ED8);     // Azul cobalto profesional
+  static const Color accentDark = Color(0xFF3B82F6);      // Azul con más brillo para contraste en fondo oscuro
+
+  // Éxito (Success) - Verdes esmeralda técnicos, no pasteles
+  static const Color successLight = Color(0xFF166534);    // Verde pino profundo
+  static const Color successDark = Color(0xFF10B981);     // Esmeralda vibrante pero maduro
+
+  // Error / Peligro (Danger) - Rojos quemados y limpios
+  static const Color errorLight = Color(0xFF991B1B);      // Rojo vino/óxido elegante
+  static const Color errorDark = Color(0xFFEF4444);       // Rojo coral balanceado
+
+  // Enlaces / Interacciones secundarias ("Olvidé mi contraseña", etc.)
+  static const Color linkLight = Color(0xFF2563EB);
+  static const Color linkDark = Color(0xFF60A5FA);
+}
+</file>
+
+<file path="lib/views/resources/widgets/dynamic_app_background.dart">
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:asistcontrol/providers/theme_provider.dart';
+
+class DynamicAppBackground extends StatelessWidget {
+  final Widget child;
+
+  const DynamicAppBackground({super.key, required this.child});
+
+  Future<Widget> _buildBackground(BuildContext context) async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    // Buscar archivo theme_font_sistem con cualquier extensión
+    final List<FileSystemEntity> files = directory.listSync();
+    final bgFile = files.firstWhereOrNull(
+      (file) => file.path.contains('theme_font_sistem.'),
+    );
+
+    if (bgFile == null) {
+      return Container(color: Provider.of<ThemeProvider>(context, listen: false).background);
+    }
+
+    final String extension = bgFile.path.split('.').last.toLowerCase();
+
+    if (extension == 'json') {
+      return Lottie.file(
+        File(bgFile.path),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    } else if (extension == 'gif' || extension == 'png' || extension == 'jpg' || extension == 'jpeg') {
+      return Image.file(
+        File(bgFile.path),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    }
+
+    return Container(color: Provider.of<ThemeProvider>(context, listen: false).background);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        FutureBuilder<Widget>(
+          future: _buildBackground(context),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return snapshot.data!;
+            }
+            return Container(color: Provider.of<ThemeProvider>(context).background);
+          },
+        ),
+        Positioned.fill(child: child),
+      ],
+    );
+  }
+}
+
+// Helper for firstWhereOrNull to avoid adding extra dependencies
+extension FirstWhereOrNull<T> on Iterable<T> {
+  T? firstWhereOrNull(bool Function(T) test) {
+    final iterator = this.iterator;
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return iterator.current;
+    }
+    return null;
+  }
+}
+</file>
+
+<file path="lib/views/welcome/splash_view.dart">
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:path_provider/path_provider.dart';
+import '../../routes/app_routes.dart';
+import '../../providers/session_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../services/api_service.dart';
+import '../../models/app_config_model.dart';
+
+class SplashView extends StatefulWidget {
+  const SplashView({super.key});
+
+  @override
+  State<SplashView> createState() => _SplashViewState();
+}
+
+class _SplashViewState extends State<SplashView> {
+  String? _localImagePath;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+Future<void> _initializeApp() async {
+  final sessionProv = Provider.of<SessionProvider>(context, listen: false);
+  final themeProv = Provider.of<ThemeProvider>(context, listen: false);
+  final apiService = ApiService();
+
+  try {
+    await sessionProv.checkSession();
+
+    if (sessionProv.status == SessionStatus.authenticated) {
+      // 1. Descargas e inicialización en segundo plano (Rápido)
+      final config = await apiService.getAppConfig(sessionProv.token!, sessionProv.userId!);
+      await apiService.downloadDynamicResources(config);
+      await themeProv.loadColorsFromJson();
+
+      final directory = await getApplicationDocumentsDirectory();
+      final files = directory.listSync();
+      final loadingFile = files.firstWhereOrNull((f) => f.path.contains('loading_font.'));
+
+      // 2. Cambiamos estados e imágenes ANTES del delay para que se rendericen
+      if (loadingFile != null) {
+        setState(() {
+          _localImagePath = loadingFile.path;
+        });
+      }
+      
+      setState(() => _isLoading = false);
+
+      // 3. El usuario ve la marca por 4 segundos
+      await Future.delayed(const Duration(seconds: 4));
+
+      if (!mounted) return;
+
+      // SEGURO GRÁFICO: Navegación limpia al terminar el frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      });
+
+    } else {
+      // USUARIO NO AUTENTICADO:
+      setState(() => _isLoading = false);
+      await Future.delayed(const Duration(seconds: 3));
+      
+      if (!mounted) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+      });
+    }
+  } catch (e) {
+    debugPrint('Error de inicialización: $e');
+    if (!mounted) return;
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+    });
+  }
+}
+  @override
+  Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
+
+    return Scaffold(
+      backgroundColor: theme.background,
+      body: Center(
+        child: _isLoading
+            ? const CircularProgressIndicator()
+            : _buildContent(theme),
+      ),
+    );
+  }
+
+  Widget _buildContent(ThemeProvider theme) {
+    if (_localImagePath != null) {
+      return SizedBox.expand(
+        child: Image.file(
+          File(_localImagePath!),
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.lock_person, size: 100, color: Colors.blue),
+        const SizedBox(height: 20),
+        Text(
+          'AsistControl',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: theme.primaryDark,
+          ),
+        ),
+        const SizedBox(height: 30),
+        const CircularProgressIndicator(),
+      ],
+    );
+  }
+}
+
+extension FirstWhereOrNull<T> on Iterable<T> {
+  T? firstWhereOrNull(bool Function(T) test) {
+    final iterator = this.iterator;
+    while (iterator.moveNext()) {
+      if (test(iterator.current)) return iterator.current;
+    }
+    return null;
+  }
+}
+</file>
+
+</files>

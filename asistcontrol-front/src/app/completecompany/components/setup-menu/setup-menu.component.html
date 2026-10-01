@@ -1,0 +1,33 @@
+<header class="setup-menu glass">
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-primary-medium to-primary-dark">
+      <i class="bi bi-clipboard-check text-white text-sm"></i>
+    </div>
+    <span class="text-lg font-bold text-text-title">
+      Asist<span class="text-primary-medium">Control</span>
+    </span>
+    <span class="text-xs text-text-body ml-2 hidden sm:inline">· Configuración inicial</span>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <div class="relative setup-menu-settings">
+      <button
+        type="button"
+        (click)="toggleSettings()"
+        class="setup-menu-btn"
+        [class.setup-menu-btn-active]="settingsOpen">
+        <i class="bi bi-sliders text-sm"></i>
+        <span class="hidden sm:inline">Configuración</span>
+      </button>
+
+      <div *ngIf="settingsOpen" class="setup-menu-dropdown glass-panel">
+        <app-theme-settings></app-theme-settings>
+      </div>
+    </div>
+
+    <button type="button" (click)="logout.emit()" class="setup-menu-btn setup-menu-btn-danger">
+      <i class="bi bi-box-arrow-right text-sm"></i>
+      <span class="hidden sm:inline">Salir</span>
+    </button>
+  </div>
+</header>

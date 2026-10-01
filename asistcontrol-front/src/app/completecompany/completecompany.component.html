@@ -1,0 +1,75 @@
+<div class="completecompany-wrapper">
+  <div class="setup-page">
+
+    <div class="fixed inset-0 bg-grid-pattern pointer-events-none"></div>
+
+    <div class="relative z-10 flex min-h-screen flex-col w-full">
+      <app-setup-menu (logout)="onLogout()"></app-setup-menu>
+
+      <div class="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
+        <div class="flex items-center justify-center mb-8">
+          <div class="flex items-center gap-2">
+            <ng-container *ngFor="let step of steps; let i = index">
+              <button
+                [disabled]="step.num > currentStep"
+                (click)="goToStep(step.num)"
+                class="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-200"
+                [ngClass]="{
+                  'bg-primary-medium text-white shadow-md shadow-primary-medium/20': step.num === currentStep,
+                  'bg-success-green/15 text-success-green cursor-pointer hover:bg-success-green/25': step.num < currentStep,
+                  'bg-black/5 text-text-body/60 cursor-not-allowed': step.num > currentStep
+                }">
+                <i *ngIf="step.num < currentStep" class="bi bi-check-circle text-sm"></i>
+                <i *ngIf="step.num === currentStep" [class]="step.icon + ' text-sm'"></i>
+                <span *ngIf="step.num > currentStep" class="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center text-[10px] font-bold">{{ step.num }}</span>
+                {{ step.label }}
+              </button>
+              <span *ngIf="i < steps.length - 1" class="w-8 h-px bg-black/10 dark:bg-white/15"></span>
+            </ng-container>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!isLoading">
+          <div class="bg-surface border border-black/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 p-6">
+            <app-step1-profile
+              *ngIf="currentStep === 1"
+              [company]="company"
+              (updated)="onProfileUpdated($event)"
+              (next)="goToStep(2)"
+              (skip)="goToStep(2)">
+            </app-step1-profile>
+
+            <app-step2-offices
+              *ngIf="currentStep === 2"
+              [limits]="limits"
+              (next)="goToStep(3)"
+              (back)="goToStep(1)">
+            </app-step2-offices>
+
+            <app-step3-areas
+              *ngIf="currentStep === 3"
+              [limits]="limits"
+              (next)="goToStep(4)"
+              (back)="goToStep(2)">
+            </app-step3-areas>
+
+            <app-step4-employees
+              *ngIf="currentStep === 4"
+              [limits]="limits"
+              [completing]="isCompleting"
+              (back)="goToStep(3)"
+              (finish)="completeSetup()">
+            </app-step4-employees>
+          </div>
+        </ng-container>
+
+        <div *ngIf="isLoading" class="flex items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-primary-medium" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

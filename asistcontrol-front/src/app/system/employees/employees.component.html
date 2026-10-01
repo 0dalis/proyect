@@ -1,0 +1,338 @@
+<div class="flex flex-col gap-6 animate-fade-in">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-text-title">Empleados</h1>
+      <p class="text-sm text-text-body mt-0.5">Personal, accesos a la app y notificaciones push</p>
+    </div>
+    <div class="flex items-center gap-2" *ngIf="tab === 'employees'">
+      <app-export-button resource="employees"></app-export-button>
+      <button (click)="openCreate()" class="btn-primary">
+        <i class="bi bi-person-plus"></i> Nuevo empleado
+      </button>
+    </div>
+  </div>
+
+  <div class="flex gap-2">
+    <button (click)="setTab('employees')" class="px-4 py-2 rounded-lg text-xs font-semibold"
+      [ngClass]="tab === 'employees' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">
+      <i class="bi bi-people"></i> Empleados
+    </button>
+    <button (click)="setTab('notifications')" class="px-4 py-2 rounded-lg text-xs font-semibold"
+      [ngClass]="tab === 'notifications' ? 'bg-primary-medium text-white' : 'bg-black/5 text-text-body'">
+      <i class="bi bi-bell"></i> Notificaciones
+    </button>
+  </div>
+
+  <ng-container *ngIf="tab === 'employees'">
+
+  <div class="dash-card p-4">
+    <div class="flex flex-col sm:flex-row gap-3">
+      <input type="text" [(ngModel)]="search" (keyup.enter)="load()" placeholder="Buscar por nombre o código..."
+        class="form-input flex-1">
+      <button (click)="load()" class="btn-primary"><i class="bi bi-search"></i> Buscar</button>
+    </div>
+  </div>
+
+  <div class="dash-card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table-theme">
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Código</th>
+            <th>Oficina</th>
+            <th>Área</th>
+            <th>Turno</th>
+            <th>Salario</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of employees">
+            <td>
+              <p class="font-semibold text-text-title">{{ e.first_name }} {{ e.last_name }}</p>
+              <p *ngIf="e.is_area_manager" class="text-[10px] text-primary-medium">Gerente de área</p>
+            </td>
+            <td class="font-mono text-[11px]">{{ e.employee_code }}</td>
+            <td>{{ e.office?.name || '—' }}</td>
+            <td>{{ e.area?.name || '—' }}</td>
+            <td>{{ e.shift?.name || '—' }}</td>
+            <td>{{ e.compensation ? (e.compensation.base_salary | currency: 'MXN':'symbol-narrow':'1.0-2') : '—' }}</td>
+            <td><span class="badge" [ngClass]="e.is_active ? 'badge-success' : 'badge-slate'">{{ e.is_active ? 'Activo' : 'Inactivo' }}</span></td>
+            <td class="text-right whitespace-nowrap">
+              <a [routerLink]="['/asistcontrol/employees', e.id]" class="text-primary-medium hover:text-primary-dark text-xs mr-2" title="Detalle">
+                <i class="bi bi-eye"></i>
+              </a>
+              <button (click)="openEdit(e)" class="text-primary-medium hover:text-primary-dark text-xs mr-2" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button (click)="remove(e)" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && employees.length === 0">
+            <td colspan="8" class="py-10 text-center text-text-body">
+              <i class="bi bi-people text-2xl"></i>
+              <p class="mt-2 text-xs">No hay empleados registrados.</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="8" class="py-10 text-center text-text-body">Cargando...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  </ng-container>
+
+  <!-- ============ NOTIFICACIONES ============ -->
+  <ng-container *ngIf="tab === 'notifications'">
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Total empleados</p><p class="text-lg font-bold text-text-title">{{ recipientsSummary.total }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Sin acceso a la app</p><p class="text-lg font-bold text-text-body">{{ recipientsSummary.no_access }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Con acceso, sin instalar</p><p class="text-lg font-bold text-amber-500">{{ recipientsSummary.access_not_installed }}</p></div>
+      <div class="dash-card p-4"><p class="text-[10px] uppercase text-text-body">Disponibles</p><p class="text-lg font-bold text-success-green">{{ recipientsSummary.available }}</p></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+
+      <!-- Destinatarios -->
+      <div class="dash-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-text-title">Destinatarios</h2>
+          <div class="flex gap-2">
+            <button (click)="selectAllAvailable()" class="btn-secondary">Disponibles</button>
+            <button (click)="clearSelection()" class="btn-secondary">Limpiar</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <select [(ngModel)]="recipientStatus" class="form-input">
+            <option value="">Todos los estados</option>
+            <option value="available">Disponibles</option>
+            <option value="access_not_installed">Con acceso, sin instalar</option>
+            <option value="no_access">Sin acceso a la app</option>
+          </select>
+          <input type="text" [(ngModel)]="recipientSearch" placeholder="Buscar..." class="form-input">
+          <select [(ngModel)]="recipientAreaId" class="form-input">
+            <option value="">Todas las áreas</option>
+            <option *ngFor="let a of areas" [value]="a.name">{{ a.name }}</option>
+          </select>
+          <select [(ngModel)]="recipientOfficeId" class="form-input">
+            <option value="">Todas las oficinas</option>
+            <option *ngFor="let o of offices" [value]="o.name">{{ o.name }}</option>
+          </select>
+        </div>
+
+        <div class="max-h-80 overflow-y-auto">
+          <table class="table-theme">
+            <thead><tr><th></th><th>Empleado</th><th>Oficina / Área</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let r of filteredRecipients" (click)="toggleRecipient(r)"
+                  [class.cursor-pointer]="r.status !== 'no_access'"
+                  [class.opacity-50]="r.status === 'no_access'">
+                <td class="w-8">
+                  <input type="checkbox" [checked]="isSelected(r.user_id)" [disabled]="r.status === 'no_access'" class="w-4 h-4 rounded">
+                </td>
+                <td>
+                  <p class="font-semibold text-text-title text-xs">{{ r.full_name }}</p>
+                  <p class="text-[10px] text-text-body font-mono">{{ r.employee_code }}</p>
+                </td>
+                <td class="text-[11px] text-text-body">{{ r.office || '—' }} · {{ r.area || '—' }}</td>
+                <td><span class="badge" [ngClass]="recipientStatusBadge(r.status)">{{ recipientStatusLabel(r.status) }}</span></td>
+              </tr>
+              <tr *ngIf="!recipientsLoading && filteredRecipients.length === 0">
+                <td colspan="4" class="py-8 text-center text-text-body text-xs">Sin destinatarios.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[10px] text-text-body mt-2">{{ selectedUserIds.length }} seleccionado(s) para envío por grupo.</p>
+      </div>
+
+      <!-- Composer -->
+      <div class="dash-card p-5">
+        <h2 class="text-sm font-semibold text-text-title mb-3">Nueva notificación</h2>
+        <div class="grid grid-cols-1 gap-3">
+          <div>
+            <label class="form-label">Título *</label>
+            <input type="text" [(ngModel)]="notifForm.title" name="notif_title" class="form-input" [ngClass]="{ 'border-red-400': notifErrors.title }">
+            <p *ngIf="notifErrors.title" class="form-error">{{ notifErrors.title[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Mensaje *</label>
+            <textarea [(ngModel)]="notifForm.message" name="notif_message" rows="3" class="form-input" [ngClass]="{ 'border-red-400': notifErrors.message }"></textarea>
+            <p *ngIf="notifErrors.message" class="form-error">{{ notifErrors.message[0] }}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="form-label">Destino</label>
+              <select [(ngModel)]="notifForm.target_type" (ngModelChange)="onTargetChange()" name="notif_target" class="form-input">
+                <option value="all">Toda la empresa</option>
+                <option value="area">Por área</option>
+                <option value="office">Por oficina</option>
+                <option value="user">Un usuario</option>
+                <option value="users">Grupo (selección)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Prioridad</label>
+              <select [(ngModel)]="notifForm.priority" name="notif_priority" class="form-input">
+                <option value="normal">Normal</option>
+                <option value="high">Alta</option>
+                <option value="urgent">Urgente</option>
+              </select>
+            </div>
+          </div>
+
+          <div *ngIf="notifForm.target_type === 'area'">
+            <label class="form-label">Área</label>
+            <select [(ngModel)]="notifForm.area_id" name="notif_area" class="form-input">
+              <option value="">Seleccionar...</option>
+              <option *ngFor="let a of areas" [ngValue]="a.id">{{ a.name }}</option>
+            </select>
+          </div>
+          <div *ngIf="notifForm.target_type === 'office'">
+            <label class="form-label">Oficina</label>
+            <select [(ngModel)]="notifForm.office_id" name="notif_office" class="form-input">
+              <option value="">Seleccionar...</option>
+              <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+            </select>
+          </div>
+          <div *ngIf="notifForm.target_type === 'user'">
+            <label class="form-label">Usuario</label>
+            <select [(ngModel)]="notifForm.target_user_id" name="notif_user" class="form-input">
+              <option value="">Seleccionar...</option>
+              <option *ngFor="let r of recipients" [ngValue]="r.user_id" [disabled]="!r.user_id">{{ r.full_name }} ({{ r.email || 'sin correo' }})</option>
+            </select>
+          </div>
+          <p *ngIf="notifForm.target_type === 'users'" class="text-[11px] text-text-body">
+            Se usarán los {{ selectedUserIds.length }} usuario(s) seleccionados en la lista de destinatarios.
+          </p>
+
+          <div *ngIf="previewResult" class="text-[11px] text-text-body bg-black/5 rounded-lg p-3">
+            <p><b class="text-success-green">{{ previewResult.counts.reachable }}</b> recibirán la notificación.</p>
+            <p><b class="text-amber-500">{{ previewResult.counts.skipped }}</b> omitidos (sin app instalada).</p>
+          </div>
+
+          <div class="flex gap-2">
+            <button (click)="preview()" class="btn-secondary flex-1"><i class="bi bi-eye"></i> Previsualizar</button>
+            <button (click)="sendNotification()" [disabled]="notifSubmitting" class="btn-primary flex-1">
+              <i class="bi bi-send"></i> {{ notifSubmitting ? 'Enviando...' : 'Enviar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial -->
+    <div class="dash-card overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-black/10 dark:border-white/10">
+        <h2 class="text-sm font-semibold text-text-title">Historial de notificaciones</h2>
+        <app-export-button resource="notifications"></app-export-button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table-theme">
+          <thead><tr><th>Título</th><th>Destino</th><th>Prioridad</th><th>Estado</th><th>Enviados</th><th>Lecturas</th><th class="text-right">Acciones</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let n of notifications">
+              <td class="font-semibold text-text-title">{{ n.title }}</td>
+              <td>{{ targetLabel(n.target_type) }}</td>
+              <td><span class="badge" [ngClass]="n.priority === 'urgent' ? 'badge-danger' : (n.priority === 'high' ? 'badge-warning' : 'badge-slate')">{{ n.priority }}</span></td>
+              <td><span class="badge" [ngClass]="n.sent_at ? 'badge-success' : 'badge-slate'">{{ n.sent_at ? 'Enviada' : 'Borrador' }}</span></td>
+              <td>{{ n.sent_count ?? 0 }}</td>
+              <td>{{ n.reads_count ?? 0 }}</td>
+              <td class="text-right"><button (click)="deleteNotification(n)" class="text-red-500 hover:text-red-700 text-xs"><i class="bi bi-trash"></i></button></td>
+            </tr>
+            <tr *ngIf="notifications.length === 0"><td colspan="7" class="py-8 text-center text-text-body text-xs">No hay notificaciones.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+<!-- Modal empleado -->
+<div *ngIf="showForm" class="fixed inset-0 z-[60] overflow-y-auto" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-neutral-900/60 modal-backdrop" (click)="cancelForm()"></div>
+  <div class="flex min-h-full items-center justify-center p-4" (click)="cancelForm()">
+    <div class="relative w-full max-w-2xl bg-surface rounded-2xl shadow-2xl modal-card border border-black/10 dark:border-white/10" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-black/10 dark:border-white/10">
+        <h2 class="text-base font-bold text-text-title">{{ editingId ? 'Editar empleado' : 'Nuevo empleado' }}</h2>
+        <button (click)="cancelForm()" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg text-text-body hover:bg-black/5 dark:hover:bg-white/10">
+          <i class="bi bi-x-lg text-sm"></i>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitForm()" class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Nombre *</label>
+            <input type="text" [(ngModel)]="form.first_name" name="first_name" required class="form-input" [ngClass]="{ 'border-red-400': errors.first_name }">
+            <p *ngIf="errors.first_name" class="form-error">{{ errors.first_name[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Apellido *</label>
+            <input type="text" [(ngModel)]="form.last_name" name="last_name" required class="form-input" [ngClass]="{ 'border-red-400': errors.last_name }">
+            <p *ngIf="errors.last_name" class="form-error">{{ errors.last_name[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Código *</label>
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="form.employee_code" name="employee_code" required class="form-input" [ngClass]="{ 'border-red-400': errors.employee_code }">
+              <button type="button" (click)="generateCode()" class="btn-secondary whitespace-nowrap"><i class="bi bi-arrow-repeat"></i></button>
+            </div>
+            <p *ngIf="errors.employee_code" class="form-error">{{ errors.employee_code[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">PIN kiosco</label>
+            <input type="text" [(ngModel)]="form.pin" name="pin" placeholder="Opcional" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Oficina *</label>
+            <select [(ngModel)]="form.office_id" name="office_id" required class="form-input" [ngClass]="{ 'border-red-400': errors.office_id }">
+              <option value="" disabled>Seleccionar...</option>
+              <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+            </select>
+            <p *ngIf="errors.office_id" class="form-error">{{ errors.office_id[0] }}</p>
+          </div>
+          <div>
+            <label class="form-label">Área</label>
+            <select [(ngModel)]="form.area_id" name="area_id" class="form-input">
+              <option value="">Sin área</option>
+              <option *ngFor="let a of areas" [ngValue]="a.id">{{ a.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Turno</label>
+            <select [(ngModel)]="form.shift_id" name="shift_id" class="form-input">
+              <option value="">Sin turno</option>
+              <option *ngFor="let s of shiftsForOffice" [ngValue]="s.id">{{ s.name }} ({{ s.start_time }}–{{ s.end_time }})</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-4 pt-6">
+            <label class="flex items-center gap-2 text-xs text-text-body">
+              <input type="checkbox" [(ngModel)]="form.is_area_manager" name="is_area_manager" class="w-4 h-4 rounded">
+              Gerente de área
+            </label>
+            <label class="flex items-center gap-2 text-xs text-text-body">
+              <input type="checkbox" [(ngModel)]="form.is_active" name="is_active" class="w-4 h-4 rounded">
+              Activo
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-black/10 dark:border-white/10">
+          <button type="button" (click)="cancelForm()" class="btn-secondary">Cancelar</button>
+          <button type="submit" [disabled]="isSubmitting" class="btn-primary">{{ isSubmitting ? 'Guardando...' : 'Guardar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
