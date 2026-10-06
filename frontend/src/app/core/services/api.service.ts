@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -21,8 +21,13 @@ export class ApiService {
     );
   }
 
-  post<T>(path: string, body: unknown = {}, headers?: HttpHeaders): Promise<T> {
-    return firstValueFrom(this.http.post<T>(this.url(path), body, { headers }));
+  post<T>(
+    path: string,
+    body: unknown = {},
+    headers?: HttpHeaders,
+    context?: HttpContext,
+  ): Promise<T> {
+    return firstValueFrom(this.http.post<T>(this.url(path), body, { headers, context }));
   }
 
   put<T>(path: string, body: unknown = {}): Promise<T> {
@@ -48,7 +53,9 @@ export class ApiService {
   ): Promise<void> {
     const request = body
       ? this.blob(path, body)
-      : firstValueFrom(this.http.get(this.url(path), { responseType: 'blob', params: this.params(params) }));
+      : firstValueFrom(
+          this.http.get(this.url(path), { responseType: 'blob', params: this.params(params) }),
+        );
     const blob = await request;
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

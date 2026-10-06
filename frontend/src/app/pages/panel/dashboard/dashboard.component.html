@@ -1,4 +1,4 @@
-<app-page-header
+<app-weather-hero
   heading="Hola, {{ firstName() }}"
   description="{{ today | date: 'EEEE d \'de\' MMMM' }} · {{ auth.user()?.role_label }} en {{
     auth.user()?.company?.name
@@ -7,7 +7,7 @@
   @if (auth.user()?.employee) {
     <a routerLink="/panel/solicitudes" class="btn btn-primary">+ Pedir permiso o justificar</a>
   }
-</app-page-header>
+</app-weather-hero>
 
 @if (loading()) {
   <div class="grid gap-5">

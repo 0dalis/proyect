@@ -1,0 +1,85 @@
+<section class="hero" [attr.data-kind]="kind()" role="region" aria-label="Encabezado con clima actual">
+  <!-- Fondo según el clima (imagen local generada, liviana). -->
+  @if (weather(); as w) {
+    <img class="hero-bg" [src]="w.background" alt="" aria-hidden="true" loading="lazy" />
+  }
+  <!-- Animación ambiental por condición (se pausa con prefers-reduced-motion). -->
+  <div class="fx" aria-hidden="true">
+    @switch (kind()) {
+      @case ('rain') {
+        @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track i) {
+          <span class="drop" [style.left.%]="i * 8 - 4" [style.animation-delay.s]="-(i * 0.13)"></span>
+        }
+      }
+      @case ('storm') {
+        @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+          <span class="drop" [style.left.%]="i * 12 - 6" [style.animation-delay.s]="-(i * 0.17)"></span>
+        }
+        <span class="flash"></span>
+      }
+      @case ('snow') {
+        @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; track i) {
+          <span
+            class="flake"
+            [style.left.%]="i * 6.6 - 3"
+            [style.animation-delay.s]="-(i * 0.4)"
+            [style.animation-duration.s]="5 + (i % 4)"
+          ></span>
+        }
+      }
+      @case ('cloudy') {
+        <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
+      }
+      @case ('fog') {
+        <span class="fog f1"></span><span class="fog f2"></span><span class="fog f3"></span>
+      }
+      @case ('clear-night') {
+        @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track i) {
+          <span
+            class="star"
+            [style.left.%]="i * 9.5"
+            [style.top.%]="(i * 23) % 55 + 5"
+            [style.animation-delay.s]="-(i * 0.35)"
+          ></span>
+        }
+      }
+      @case ('clear-day') {
+        <span class="sun"></span>
+      }
+    }
+  </div>
+  <!-- Velo para que el texto siempre sea legible sobre la imagen. -->
+  <div class="scrim" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1>{{ heading() }}</h1>
+      @if (description()) {
+        <p class="hero-desc">{{ description() }}</p>
+      }
+      <p class="hero-weather">
+        @if (loading()) {
+          <span class="w-skeleton" aria-label="Cargando clima"></span>
+        } @else if (weather(); as w) {
+          <i class="bi {{ icon() }}" aria-hidden="true"></i>
+          @if (hasTemp(w)) {
+            <strong>{{ w.temperature }}°</strong>
+          }
+          <span>{{ w.label }} en {{ w.place }}</span>
+          @if (notice()) {
+            <button type="button" class="w-retry" (click)="retry()" title="Usar mi ubicación">
+              · usar mi ubicación
+            </button>
+          }
+        } @else {
+          <button type="button" class="w-retry" (click)="retry()">
+            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Reintentar clima
+          </button>
+        }
+      </p>
+    </div>
+    <div class="hero-actions">
+      <ng-content />
+    </div>
+  </div>
+</section>

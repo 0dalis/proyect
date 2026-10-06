@@ -6,6 +6,7 @@ import { BillingService } from '../../../core/services/billing.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { errorMessage } from '../../../core/utils/error-message';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { ProcessingService } from '../../../core/services/processing.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PlanCheckoutComponent } from '../../../shared/components/plan-checkout/plan-checkout.component';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
@@ -20,6 +21,7 @@ export class SubscriptionComponent implements OnInit {
   /** Primera carga en curso: se muestra el skeleton. */
   protected readonly loading = signal(true);
   private readonly toast = inject(ToastService);
+  private readonly processing = inject(ProcessingService);
   private readonly companyService = inject(CompanyService);
   private readonly billing = inject(BillingService);
   protected readonly auth = inject(AuthService);
@@ -48,7 +50,7 @@ export class SubscriptionComponent implements OnInit {
   protected async openPlanChange(): Promise<void> {
     this.changingPlan.set(true);
     try {
-      this.planOptions.set(await this.billing.options('billing'));
+      this.planOptions.set(await this.processing.run(() => this.billing.options('billing')));
     } catch (error) {
       this.changingPlan.set(false);
       this.toast.error(errorMessage(error));
@@ -59,7 +61,9 @@ export class SubscriptionComponent implements OnInit {
     this.auth.user.set(result.user);
     this.changingPlan.set(false);
     this.planOptions.set(null);
-    this.toast.success(`Tu empresa ya usa el plan ${result.plan.name}.`, { title: 'Plan actualizado' });
+    this.toast.success(`Tu empresa ya usa el plan ${result.plan.name}.`, {
+      title: 'Plan actualizado',
+    });
     await this.init();
   }
 

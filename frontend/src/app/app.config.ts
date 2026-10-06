@@ -7,6 +7,7 @@ import { provideRouter, TitleStrategy, withComponentInputBinding } from '@angula
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { sessionInterceptor } from './core/interceptors/session.interceptor';
+import { processingInterceptor } from './core/interceptors/processing.interceptor';
 import { PageTitleStrategy } from './layout/page-title.strategy';
 
 registerLocaleData(localeEsMx);
@@ -17,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     // CSRF de Laravel: HttpClient copia la cookie XSRF-TOKEN en la cabecera X-XSRF-TOKEN
     provideHttpClient(
-      withInterceptors([authInterceptor, sessionInterceptor]),
+      withInterceptors([processingInterceptor, authInterceptor, sessionInterceptor]),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
     ),
     { provide: TitleStrategy, useClass: PageTitleStrategy },

@@ -60,7 +60,7 @@ describe('SidebarComponent', () => {
     expect(links(el).some((l) => l.includes('Configuración'))).toBe(false);
   });
 
-  it('opens and closes each group and remembers it', () => {
+  it('keeps only one group open at a time and remembers it', () => {
     localStorage.removeItem('asist.sidebar.open');
     const el = render(fakeUser());
     const toggle = (label: string) =>
@@ -78,7 +78,9 @@ describe('SidebarComponent', () => {
     TestBed.tick();
     expect(stack('Equipo').classList.contains('open')).toBe(true);
     expect(stack('Equipo').hasAttribute('inert')).toBe(false);
-    expect(JSON.parse(localStorage.getItem('asist.sidebar.open')!)).toContain('Equipo');
+    // Solo un grupo abierto a la vez: "Mi espacio" se cerró
+    expect(toggle('Mi espacio').getAttribute('aria-expanded')).toBe('false');
+    expect(JSON.parse(localStorage.getItem('asist.sidebar.open')!)).toEqual(['Equipo']);
     localStorage.removeItem('asist.sidebar.open');
   });
 

@@ -49,4 +49,6 @@ export interface CurrentUser {
     bonuses_enabled: boolean;
     limits: { employees: number; offices: number };
   };
+  /** Oficina para el clima: la del empleado o la primera de la empresa con coordenadas. */
+  weather_location?: { latitude: number; longitude: number; place: string } | null;
 }

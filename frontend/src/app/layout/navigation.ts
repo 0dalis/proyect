@@ -10,6 +10,8 @@ export interface NavItem {
 
 export interface NavGroup {
   label: string;
+  /** Icono de la sección: solo se ve con el menú contraído (Bootstrap Icons sin bi-) */
+  icon: string;
   items: NavItem[];
 }
 
@@ -20,6 +22,7 @@ export interface NavGroup {
 export const PANEL_NAVIGATION: NavGroup[] = [
   {
     label: 'Mi espacio',
+    icon: 'person-badge',
     items: [
       { path: '/panel', label: 'Inicio', icon: 'house-door' },
       { path: '/panel/perfil', label: 'Mi perfil', icon: 'person-circle' },
@@ -29,6 +32,7 @@ export const PANEL_NAVIGATION: NavGroup[] = [
   },
   {
     label: 'Equipo',
+    icon: 'people-fill',
     items: [
       {
         path: '/panel/empleados',
@@ -53,6 +57,7 @@ export const PANEL_NAVIGATION: NavGroup[] = [
   },
   {
     label: 'Nómina',
+    icon: 'cash-stack',
     items: [
       {
         path: '/panel/prenomina',
@@ -70,6 +75,7 @@ export const PANEL_NAVIGATION: NavGroup[] = [
   },
   {
     label: 'Empresa',
+    icon: 'building',
     items: [
       {
         path: '/panel/oficinas',

@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Announcement, InboxItem, Paginated } from '../models';
 import { ApiService } from './api.service';
+import { silent } from '../interceptors/processing.interceptor';
 
 export interface NewAnnouncement {
   title: string;
@@ -34,7 +35,8 @@ export class AnnouncementService {
   }
 
   async markRead(id: number): Promise<void> {
-    await this.api.post(`notifications/${id}/read`);
+    // Se marca sola al abrirla: sin "Procesando…"
+    await this.api.post(`notifications/${id}/read`, {}, undefined, silent());
     this.unread.update((count) => Math.max(0, count - 1));
   }
 

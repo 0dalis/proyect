@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Paginated, PanelNotification } from '../models';
 import { ApiService } from './api.service';
+import { silent } from '../interceptors/processing.interceptor';
 
 /** Cada cuánto se revisa si llegó algo nuevo a la campana. */
 const POLL_MS = 60_000;
@@ -21,9 +22,9 @@ export class NotificationService {
 
   private timer: ReturnType<typeof setInterval> | undefined;
 
-  async list(params: { unread?: boolean; page?: number; per_page?: number } = {}): Promise<
-    Paginated<PanelNotification> & { unread: number }
-  > {
+  async list(
+    params: { unread?: boolean; page?: number; per_page?: number } = {},
+  ): Promise<Paginated<PanelNotification> & { unread: number }> {
     const response = await this.api.get<Paginated<PanelNotification> & { unread: number }>(
       'panel-notifications',
       { unread: params.unread ? 1 : null, page: params.page, per_page: params.per_page },
@@ -43,6 +44,10 @@ export class NotificationService {
     }
     const response = await this.api.post<{ unread: number }>(
       `panel-notifications/${notification.id}/read`,
+      {},
+      undefined,
+      // Se marca sola al abrirla: sin "Procesando…"
+      silent(),
     );
     this.unread.set(response.unread);
     this.markLocally((item) => item.id === notification.id);

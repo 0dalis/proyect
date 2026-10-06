@@ -1,3 +1,27 @@
 :host {
   display: block;
 }
+
+/*
+ * Escritorio: al desplegarse el menú lateral (cursor encima o foco de teclado)
+ * su columna crece y el contenido se encoge para darle paso; al contraerse
+ * el contenido recupera su ancho.
+ */
+@media (min-width: 64rem) {
+  .panel-grid {
+    transition: grid-template-columns 0.25s ease;
+
+    &:has(.sidebar:hover),
+    &:has(.sidebar :focus-visible) {
+      grid-template-columns: 17rem 1fr;
+      // Misma espera que el menú: cruzarlo con el cursor no mueve el contenido
+      transition-delay: 0.1s;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-grid {
+    transition: none;
+  }
+}

@@ -10,6 +10,7 @@ import { GeofenceMapComponent } from '../../../shared/components/geofence-map/ge
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { CHANNEL_LABELS, STATUS_LABELS } from '../../../shared/constants/labels';
+import { ProcessingService } from '../../../core/services/processing.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { TzDatePipe } from '../../../shared/pipes/tz-date.pipe';
@@ -23,7 +24,8 @@ import { TzDatePipe } from '../../../shared/pipes/tz-date.pipe';
     DecimalPipe,
     GeofenceMapComponent,
     ModalComponent,
-    PageHeaderComponent, TzDatePipe,
+    PageHeaderComponent,
+    TzDatePipe,
   ],
   templateUrl: './attendance.component.html',
   styleUrl: './attendance.component.scss',
@@ -32,6 +34,7 @@ export class AttendanceComponent implements OnInit {
   /** Primera carga en curso: se muestra el skeleton. */
   protected readonly loading = signal(true);
   private readonly toast = inject(ToastService);
+  private readonly processing = inject(ProcessingService);
   protected readonly auth = inject(AuthService);
   private readonly attendanceService = inject(AttendanceService);
   private readonly employeeService = inject(EmployeeService);
@@ -81,14 +84,16 @@ export class AttendanceComponent implements OnInit {
   protected async openManual(): Promise<void> {
     this.manualError.set(null);
     if (!this.employees().length) {
-      this.employees.set(await this.employeeService.active());
+      this.employees.set(await this.processing.run(() => this.employeeService.active()));
     }
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     this.manual = {
       employee_id: this.employees()[0]?.id ?? 0,
       // Hora local (no UTC): Laravel la interpreta en la zona de la oficina del empleado
-      recorded_at: new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 16),
+      recorded_at: new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
+        .toISOString()
+        .slice(0, 16),
     };
     this.manualOpen.set(true);
   }

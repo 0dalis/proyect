@@ -12,6 +12,7 @@ import {
 import { AuthService } from '../../../core/services/auth.service';
 import { EmployeeService } from '../../../core/services/employee.service';
 import { OrganizationService } from '../../../core/services/organization.service';
+import { ProcessingService } from '../../../core/services/processing.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { errorMessage } from '../../../core/utils/error-message';
 import {
@@ -48,6 +49,7 @@ export class EmployeesComponent implements OnInit {
   private readonly employeeService = inject(EmployeeService);
   private readonly organizationService = inject(OrganizationService);
   private readonly toast = inject(ToastService);
+  private readonly processing = inject(ProcessingService);
   private readonly router = inject(Router);
 
   protected readonly labels = STATUS_LABELS;
@@ -250,7 +252,9 @@ export class EmployeesComponent implements OnInit {
   /** Fila → credencial: se trae el detalle porque trae foto y QR. */
   protected async openCredential(employee: Employee): Promise<void> {
     try {
-      this.credential.set(await this.employeeService.detail(employee.public_id));
+      this.credential.set(
+        await this.processing.run(() => this.employeeService.detail(employee.public_id)),
+      );
     } catch (error) {
       this.toast.error(errorMessage(error));
     }

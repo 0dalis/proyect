@@ -16,7 +16,7 @@ import { RequestService } from '../../../core/services/request.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { errorMessage } from '../../../core/utils/error-message';
 import { PieChartComponent, PieChartSlice } from '../../../shared/components/pie-chart/pie-chart.component';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { WeatherHeroComponent } from '../../../shared/components/weather-hero/weather-hero.component';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { StatusChartComponent } from '../../../shared/components/status-chart/status-chart.component';
 import { CHANNEL_LABELS, STATUS_LABELS } from '../../../shared/constants/labels';
@@ -39,7 +39,7 @@ const REQUEST_TYPES: { key: string; label: string }[] = [
     RouterLink,
     DatePipe,
     LowerCasePipe,
-    PageHeaderComponent,
+    WeatherHeroComponent,
     StatusChartComponent,
     PieChartComponent,
     TzDatePipe,

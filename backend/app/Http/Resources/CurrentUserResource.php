@@ -5,6 +5,8 @@ namespace App\Http\Resources;
 use App\Enums\CompanyStatus;
 use App\Enums\Permission;
 use App\Enums\Role;
+use App\Models\Employee;
+use App\Models\Office;
 use App\Models\User;
 use App\Support\StoredImage;
 use Illuminate\Http\Request;
@@ -68,6 +70,35 @@ class CurrentUserResource extends JsonResource
                     'offices' => $company->officeLimit(),
                 ],
             ],
+            // Clima del encabezado: el empleado ve el de su oficina; dueño/admin
+            // lo usan de respaldo si niegan la geolocalización del navegador.
+            'weather_location' => $company->database ? $this->weatherLocation($employee) : null,
         ];
+    }
+
+    /**
+     * Oficina del empleado (si tiene coordenadas) o, si no, la primera oficina
+     * de la empresa con coordenadas (la principal primero).
+     *
+     * @return array{latitude: float, longitude: float, place: string}|null
+     */
+    private function weatherLocation(?Employee $employee): ?array
+    {
+        $office = $employee?->office_id ? Office::query()->find($employee->office_id) : null;
+
+        if (! $office?->hasLocation()) {
+            $office = Office::query()
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->orderByDesc('is_default')
+                ->orderBy('id')
+                ->first();
+        }
+
+        return $office ? [
+            'latitude' => $office->latitude,
+            'longitude' => $office->longitude,
+            'place' => $office->name,
+        ] : null;
     }
 }

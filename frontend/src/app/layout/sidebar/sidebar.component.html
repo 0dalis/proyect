@@ -1,10 +1,10 @@
 <aside
-  class="glass glass-bar fixed inset-y-3 left-3 z-50 flex w-64 flex-col overflow-hidden p-4 transition-transform duration-200 lg:sticky lg:top-3 lg:h-[calc(100vh-1.5rem)] lg:translate-x-0"
+  class="sidebar glass glass-bar fixed inset-y-3 left-3 z-50 flex w-64 flex-col overflow-hidden p-4 transition-transform duration-200 lg:sticky lg:top-3 lg:h-[calc(100vh-1.5rem)] lg:translate-x-0"
   [class.-translate-x-[120%]]="!layout.sidebarOpen()"
 >
   <a
     routerLink="/panel"
-    class="flex items-center gap-2 px-2 text-lg font-bold text-ink no-underline"
+    class="brand flex items-center gap-2 px-2 text-lg font-bold text-ink no-underline"
     aria-label="Ir al inicio"
   >
     @if (company()?.logo_url; as logo) {
@@ -12,12 +12,21 @@
     } @else {
       <span class="brand-letter">{{ companyInitial() }}</span>
     }
-    <span class="truncate">{{ companyName() }}</span>
+    <span class="fade truncate">{{ companyName() }}</span>
   </a>
 
   @if (company(); as company) {
-    <div class="mt-5 mb-2 rounded-xl border border-glass bg-surface/60 px-3 py-2.5">
-      <div class="mt-1 flex items-center gap-1.5">
+    <div
+      class="plan-box relative mt-5 mb-2 overflow-hidden rounded-xl border border-glass bg-surface/60 px-3 py-2.5"
+    >
+      <!-- Menú contraído: solo la inicial del plan, con su color -->
+      <span
+        class="rail-only plan-mini badge badge-brand"
+        [attr.title]="company.plan"
+        aria-hidden="true"
+        >{{ company.plan[0] }}</span
+      >
+      <div class="fade mt-1 flex items-center gap-1.5 whitespace-nowrap">
         <span class="badge badge-brand">{{ company.plan }}</span>
         @if (company.status === 'trial') {
           <span class="text-xs text-muted-text"
@@ -28,7 +37,7 @@
     </div>
   }
 
-  <nav class="-mx-1 flex-1 overflow-y-auto px-1">
+  <nav class="-mx-1 flex-1 overflow-x-hidden overflow-y-auto px-1">
     @for (group of groups(); track group.label) {
       <button
         type="button"
@@ -37,8 +46,14 @@
         [attr.aria-controls]="groupId(group)"
         (click)="toggle(group)"
       >
-        <span class="flex-1 text-left">{{ group.label }}</span>
-        <i class="bi bi-chevron-down chevron" [class.rotated]="isOpen(group)" aria-hidden="true"></i>
+        <!-- Con el menú contraído la sección se reconoce por su icono -->
+        <i class="rail-only group-icon bi" [class]="'bi-' + group.icon" aria-hidden="true"></i>
+        <span class="fade flex-1 truncate text-left">{{ group.label }}</span>
+        <i
+          class="fade bi bi-chevron-down chevron"
+          [class.rotated]="isOpen(group)"
+          aria-hidden="true"
+        ></i>
       </button>
 
       <!-- Cartas apiladas: bajan una tras otra con rebote y suben en orden inverso -->
@@ -63,14 +78,16 @@
               [class]="'bi-' + item.icon"
               aria-hidden="true"
             ></i>
-            {{ item.label }}
+            <span class="fade truncate">{{ item.label }}</span>
           </a>
         }
       </div>
     }
   </nav>
 
-  <p class="mt-3 px-2 text-[8px] leading-snug text-muted">
+  <!-- Menú contraído: solo la marca, en pequeño -->
+  <span class="rail-only footer-mini" aria-hidden="true">AsistControl</span>
+  <p class="fade mt-3 px-2 whitespace-nowrap text-[8px] leading-snug text-muted">
     AsistControl · por JALY SYSTEMS<br />
     <a routerLink="/legal/privacidad" class="text-muted hover:text-ink-soft">Privacidad</a> ·
     <a routerLink="/legal/terminos" class="text-muted hover:text-ink-soft">Términos</a>

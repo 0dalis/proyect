@@ -1,5 +1,14 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, ElementRef, inject, input, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
@@ -16,6 +25,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { DialogService } from '../../../core/services/dialog.service';
 import { EmployeeService } from '../../../core/services/employee.service';
 import { OrganizationService } from '../../../core/services/organization.service';
+import { ProcessingService } from '../../../core/services/processing.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { errorMessage } from '../../../core/utils/error-message';
 import { ActivityTimelineComponent } from '../../../shared/components/activity-timeline/activity-timeline.component';
@@ -71,6 +81,7 @@ export class EmployeeDetailComponent implements OnInit {
   private readonly organizationService = inject(OrganizationService);
   private readonly toast = inject(ToastService);
   private readonly dialog = inject(DialogService);
+  private readonly processing = inject(ProcessingService);
 
   /** Viene de la ruta /panel/empleados/:id */
   readonly id = input.required<string>();
@@ -345,9 +356,7 @@ export class EmployeeDetailComponent implements OnInit {
   private async loadStats(): Promise<void> {
     this.statsLoading.set(true);
     try {
-      this.stats.set(
-        await this.employeeService.stats(this.id(), this.period(), this.anchorIso()),
-      );
+      this.stats.set(await this.employeeService.stats(this.id(), this.period(), this.anchorIso()));
     } catch (error) {
       this.toast.error(errorMessage(error));
     } finally {
@@ -460,13 +469,16 @@ export class EmployeeDetailComponent implements OnInit {
       return;
     }
     try {
-      const calendarCapture = await this.captureCalendar();
-      await this.employeeService.downloadReport(
-        employee,
-        this.period(),
-        this.anchorIso(),
-        calendarCapture,
-      );
+      // La foto del calendario tarda: "Procesando…" desde antes de pedir el PDF
+      await this.processing.run(async () => {
+        const calendarCapture = await this.captureCalendar();
+        await this.employeeService.downloadReport(
+          employee,
+          this.period(),
+          this.anchorIso(),
+          calendarCapture,
+        );
+      });
       this.toast.success(`Periodo: ${this.rangeLabel()}.`, {
         title: 'Reporte descargado',
         icon: 'file-earmark-pdf',
@@ -612,14 +624,20 @@ export class EmployeeDetailComponent implements OnInit {
     const employee = this.employee()!;
     this.appSaving.set(true);
     try {
-      await this.employeeService.setAppAccess(employee.public_id, enabled, enabled ? this.appEmail.trim() : undefined);
+      await this.employeeService.setAppAccess(
+        employee.public_id,
+        enabled,
+        enabled ? this.appEmail.trim() : undefined,
+      );
       if (enabled) {
         this.toast.success(
           `Le enviamos a ${this.appEmail.trim()} su código de empresa y una contraseña temporal.`,
           { title: 'App activada', icon: 'phone' },
         );
       } else {
-        this.toast.info(`${employee.first_name} ya no puede usar la app.`, { title: 'App desactivada' });
+        this.toast.info(`${employee.first_name} ya no puede usar la app.`, {
+          title: 'App desactivada',
+        });
       }
       this.appFormOpen.set(false);
       await Promise.all([this.refresh(), this.loadActivity()]);

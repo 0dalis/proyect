@@ -1,6 +1,7 @@
 import { Component, ElementRef, inject, input, output, signal, ViewChild } from '@angular/core';
 import { CredentialCompany, CredentialEmployee, CredentialOrientation } from '../../../core/models';
 import { EmployeeService } from '../../../core/services/employee.service';
+import { ProcessingService } from '../../../core/services/processing.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { errorMessage } from '../../../core/utils/error-message';
 import { CredentialCardComponent } from '../credential-card/credential-card.component';
@@ -39,6 +40,7 @@ export function saveCredentialOrientation(value: CredentialOrientation): void {
 export class CredentialViewerComponent {
   private readonly employeeService = inject(EmployeeService);
   private readonly toast = inject(ToastService);
+  private readonly processing = inject(ProcessingService);
 
   readonly employee = input.required<CredentialEmployee>();
   readonly company = input.required<CredentialCompany>();
@@ -75,18 +77,25 @@ export class CredentialViewerComponent {
     this.busy.set(true);
 
     try {
-      const captures = await this.capture();
-      const filename = `credencial-${employee.employee_code}.pdf`;
+      // La foto de las dos caras tarda: "Procesando…" desde antes de pedir el PDF
+      await this.processing.run(async () => {
+        const captures = await this.capture();
+        const filename = `credencial-${employee.employee_code}.pdf`;
 
-      if (captures) {
-        const blob = await this.employeeService.renderBadge(employee, captures, this.orientation());
+        if (captures) {
+          const blob = await this.employeeService.renderBadge(
+            employee,
+            captures,
+            this.orientation(),
+          );
 
-        mode === 'print' ? this.showIn(tab, blob, filename) : save(blob, filename);
-      } else {
-        // Sin canvas (o sin navegador compatible): el PDF del servidor.
-        tab?.close();
-        await this.employeeService.downloadBadge(employee, this.orientation());
-      }
+          mode === 'print' ? this.showIn(tab, blob, filename) : save(blob, filename);
+        } else {
+          // Sin canvas (o sin navegador compatible): el PDF del servidor.
+          tab?.close();
+          await this.employeeService.downloadBadge(employee, this.orientation());
+        }
+      });
 
       this.toast.success('Lista para imprimir.', {
         title: mode === 'print' ? 'Credencial enviada a impresión' : 'Credencial descargada',

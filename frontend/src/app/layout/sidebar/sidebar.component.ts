@@ -11,8 +11,8 @@ const OPEN_KEY = 'asist.sidebar.open';
 
 /**
  * Menú lateral. Cada grupo se despliega como cartas que bajan una tras otra
- * con un pequeño rebote (y se recogen en orden inverso). El grupo de la
- * página actual siempre se abre; los demás recuerdan cómo los dejaste.
+ * con un pequeño rebote (y se recogen en orden inverso). Solo hay un grupo
+ * abierto a la vez: el de la página actual, o el último que abriste.
  */
 @Component({
   selector: 'app-sidebar',
@@ -58,26 +58,33 @@ export class SidebarComponent {
     return this.openGroups().has(group.label);
   }
 
+  /** Abrir un grupo cierra el que estaba abierto. */
   protected toggle(group: NavGroup): void {
-    const open = new Set(this.openGroups());
-    open.has(group.label) ? open.delete(group.label) : open.add(group.label);
-    this.setOpen(open);
+    this.setOpen(this.isOpen(group) ? new Set() : new Set([group.label]));
   }
 
   /** Id del contenedor de cada grupo (para aria-controls). */
   protected groupId(group: NavGroup): string {
-    return 'nav-' + group.label.normalize('NFD').replace(/[^a-zA-Z]/g, '').toLowerCase();
+    return (
+      'nav-' +
+      group.label
+        .normalize('NFD')
+        .replace(/[^a-zA-Z]/g, '')
+        .toLowerCase()
+    );
   }
 
   private openActiveGroup(url: string): void {
     const path = url.split('?')[0];
     const active = PANEL_NAVIGATION.find((group) =>
       group.items.some((item) =>
-        item.path === '/panel' ? path === '/panel' : path === item.path || path.startsWith(item.path + '/'),
+        item.path === '/panel'
+          ? path === '/panel'
+          : path === item.path || path.startsWith(item.path + '/'),
       ),
     );
     if (active && !this.openGroups().has(active.label)) {
-      this.setOpen(new Set([...this.openGroups(), active.label]));
+      this.setOpen(new Set([active.label]));
     }
   }
 
@@ -94,7 +101,9 @@ export class SidebarComponent {
     try {
       const saved = JSON.parse(localStorage.getItem(OPEN_KEY) ?? 'null');
       if (Array.isArray(saved)) {
-        return new Set(saved.filter((label): label is string => typeof label === 'string'));
+        // Antes se podían abrir varios: se conserva solo el primero
+        const first = saved.find((label): label is string => typeof label === 'string');
+        return new Set(first ? [first] : []);
       }
     } catch {
       // valor dañado: se usa el predeterminado
