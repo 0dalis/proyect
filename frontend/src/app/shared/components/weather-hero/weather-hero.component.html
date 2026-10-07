@@ -1,53 +1,25 @@
 <section class="hero" [attr.data-kind]="kind()" role="region" aria-label="Encabezado con clima actual">
-  <!-- Fondo según el clima (imagen local generada, liviana). -->
+  <!-- Fondo según el clima: video en bucle (estilo app Clima de iOS) sobre su
+       imagen fija, que se ve mientras carga y con "reducir movimiento". -->
   @if (weather(); as w) {
-    <img class="hero-bg" [src]="w.background" alt="" aria-hidden="true" loading="lazy" />
+    <img class="hero-bg" [src]="w.background" alt="" aria-hidden="true" />
+    <video
+      class="hero-bg hero-video"
+      [class.ready]="videoReady()"
+      [src]="w.video"
+      [poster]="w.background"
+      [muted]="true"
+      autoplay
+      muted
+      loop
+      playsinline
+      disablepictureinpicture
+      preload="auto"
+      aria-hidden="true"
+      tabindex="-1"
+      (canplay)="videoReady.set(true)"
+    ></video>
   }
-  <!-- Animación ambiental por condición (se pausa con prefers-reduced-motion). -->
-  <div class="fx" aria-hidden="true">
-    @switch (kind()) {
-      @case ('rain') {
-        @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track i) {
-          <span class="drop" [style.left.%]="i * 8 - 4" [style.animation-delay.s]="-(i * 0.13)"></span>
-        }
-      }
-      @case ('storm') {
-        @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
-          <span class="drop" [style.left.%]="i * 12 - 6" [style.animation-delay.s]="-(i * 0.17)"></span>
-        }
-        <span class="flash"></span>
-      }
-      @case ('snow') {
-        @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; track i) {
-          <span
-            class="flake"
-            [style.left.%]="i * 6.6 - 3"
-            [style.animation-delay.s]="-(i * 0.4)"
-            [style.animation-duration.s]="5 + (i % 4)"
-          ></span>
-        }
-      }
-      @case ('cloudy') {
-        <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
-      }
-      @case ('fog') {
-        <span class="fog f1"></span><span class="fog f2"></span><span class="fog f3"></span>
-      }
-      @case ('clear-night') {
-        @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track i) {
-          <span
-            class="star"
-            [style.left.%]="i * 9.5"
-            [style.top.%]="(i * 23) % 55 + 5"
-            [style.animation-delay.s]="-(i * 0.35)"
-          ></span>
-        }
-      }
-      @case ('clear-day') {
-        <span class="sun"></span>
-      }
-    }
-  </div>
   <!-- Velo para que el texto siempre sea legible sobre la imagen. -->
   <div class="scrim" aria-hidden="true"></div>
 

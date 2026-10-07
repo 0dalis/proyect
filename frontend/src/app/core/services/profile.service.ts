@@ -1,10 +1,24 @@
 import { inject, Injectable } from '@angular/core';
-import { CurrentUser, MySummary } from '../models';
+import { CurrentUser, MyProfile, MySummary, MyProfileUpdate } from '../models';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
   private readonly api = inject(ApiService);
+
+  profile(): Promise<MyProfile> {
+    return this.api.get<MyProfile>('me/profile');
+  }
+
+  /** Cambiar el correo exige la contraseña actual (es su usuario para entrar). */
+  updateProfile(data: MyProfileUpdate): Promise<{ message: string; user: CurrentUser }> {
+    return this.api.put('me/profile', data);
+  }
+
+  /** Cierra los demás navegadores y los tokens de la app. */
+  closeOtherSessions(current_password: string): Promise<{ message: string }> {
+    return this.api.post('me/sessions/close', { current_password });
+  }
 
   summary(): Promise<MySummary> {
     return this.api.get<MySummary>('me/summary');

@@ -115,6 +115,11 @@ export class AuthService {
     );
   }
 
+  /** Tras editar "Mi perfil": nombre y correo nuevos en la barra superior. */
+  replaceUser(user: CurrentUser): void {
+    this.user.set(user);
+  }
+
   /** Foto de la cuenta: se ve al instante en la barra superior. */
   updateAvatar(url: string | null): void {
     this.user.update((user) => (user ? { ...user, avatar_url: url } : user));

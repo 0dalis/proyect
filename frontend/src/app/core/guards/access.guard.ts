@@ -36,7 +36,9 @@ export function canAccess(auth: AuthService, access: RouteAccess | undefined): b
 
 export const accessGuard: CanActivateFn = async (route) => {
   const auth = inject(AuthService);
+  // inject() solo funciona antes del primer await (contexto de inyección)
+  const router = inject(Router);
   await auth.loadUser();
 
-  return canAccess(auth, route.data['access']) ? true : inject(Router).createUrlTree(['/panel']);
+  return canAccess(auth, route.data['access']) ? true : router.createUrlTree(['/panel']);
 };

@@ -65,7 +65,7 @@ export interface Subscription {
   trial_ends_at: string | null;
   extras: { extra_employee_blocks: number; extra_offices: number };
   usage: Record<'employees' | 'offices', { used: number; limit: number; locked?: number }>;
-  /** Empleados con app activa (no tienen límite propio: cuentan como empleados). */
+  /** Empleados con app activa; su tope es el límite de empleados del plan. */
   app_users: number;
   monthly_price: number;
   payment_method: string | null;

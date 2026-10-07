@@ -70,6 +70,8 @@ export class SubscriptionComponent implements OnInit {
   protected usageItems(s: Subscription) {
     return [
       { label: 'Empleados activos', ...s.usage.employees },
+      // La app no tiene límite propio: el tope es el de empleados del plan
+      { label: 'Empleados con app', used: s.app_users, limit: s.usage.employees.limit },
       { label: 'Oficinas', ...s.usage.offices },
     ];
   }

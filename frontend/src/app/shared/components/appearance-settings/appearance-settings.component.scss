@@ -14,15 +14,15 @@
 .segment {
   display: inline-flex;
   padding: 0.25rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-line);
+  border-radius: 0.5rem;
+  border: 0.6px solid var(--color-line);
   background: var(--color-surface);
 
   button {
     border: 0;
     background: transparent;
     padding: 0.4rem 1rem;
-    border-radius: 999px;
+    border-radius: 0.375rem;
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-ink-soft);
@@ -42,7 +42,7 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.6rem;
-  border-radius: 0.9rem;
+  border-radius: 0.5rem;
   border: 1.5px solid var(--color-line);
   background: var(--color-surface);
   color: var(--color-ink-soft);

@@ -5,15 +5,15 @@
 .interval {
   display: inline-flex;
   padding: 0.25rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-line);
+  border-radius: 0.5rem;
+  border: 0.6px solid var(--color-line);
   background: var(--color-surface);
 
   button {
     border: 0;
     background: transparent;
     padding: 0.4rem 1.1rem;
-    border-radius: 999px;
+    border-radius: 0.375rem;
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-ink-soft);
@@ -34,7 +34,7 @@
   width: 100%;
   text-align: left;
   padding: 1rem;
-  border-radius: 1rem;
+  border-radius: 0.625rem;
   border: 1.5px solid var(--color-line);
   background: var(--color-surface);
   cursor: pointer;

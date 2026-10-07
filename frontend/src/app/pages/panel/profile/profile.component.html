@@ -1,167 +1,366 @@
 <app-page-header
   heading="Mi perfil"
-  description="{{ auth.user()?.email }} · {{ auth.user()?.role_label }}"
+  description="Tus datos, tu seguridad y cómo se ve AsistControl para ti."
 />
 
 @if (loading()) {
-  <div class="grid gap-5">
-    <app-skeleton type="cards" [cards]="4" /><app-skeleton type="lines" [rows]="6" />
+  <div class="grid gap-5 lg:grid-cols-[18rem_1fr]">
+    <app-skeleton type="cards" [cards]="1" /><app-skeleton type="lines" [rows]="8" />
   </div>
 } @else {
-  <div class="grid gap-5 lg:grid-cols-2">
-    <section class="card lg:col-span-2">
-      <app-image-upload
-        [photoUrl]="auth.user()?.avatar_url ?? null"
-        [initials]="initials()"
-        [busy]="uploading()"
-        label="Tu foto de perfil"
-        hint="Se ve en la barra superior junto a tu nombre. JPG, PNG o WebP · máximo 2 MB"
-        (upload)="uploadAvatar($event)"
-        (removed)="removeAvatar()"
-      />
-    </section>
-
-    @if (summary(); as s) {
-      <section class="card lg:col-span-2">
-        <h3 class="mb-3 text-base">Mi jornada</h3>
-        <div class="grid gap-3 text-sm sm:grid-cols-3">
-          <div class="rounded-xl bg-surface/60 p-3">
-            <div class="stat-label">Oficina · área</div>
-            <div class="font-semibold">{{ s.office }} · {{ s.area }}</div>
-          </div>
-          <div class="rounded-xl bg-surface/60 p-3">
-            <div class="stat-label">Turno</div>
-            <div class="font-semibold">
-              {{ s.shift.name }} · {{ s.shift.starts_at.slice(0, 5) }}–{{
-                s.shift.ends_at.slice(0, 5)
-              }}
-            </div>
-            <div class="text-xs text-muted-text">{{ days(s.shift.weekdays) }}</div>
-          </div>
-          <div class="rounded-xl bg-surface/60 p-3">
-            <div class="stat-label">Tolerancia</div>
-            <div class="font-semibold">{{ s.shift.tolerance_minutes }} minutos</div>
-          </div>
+  @let user = auth.user();
+  @let p = profile();
+  <div class="profile-layout">
+    <!-- Identidad + menú de secciones -->
+    <aside class="profile-aside">
+      <section class="card identity">
+        <div class="identity-avatar">
+          @if (user?.avatar_url; as src) {
+            <img [src]="src" alt="Tu foto de perfil" />
+          } @else {
+            <span>{{ initials() || '·' }}</span>
+          }
         </div>
-        @if (s.metrics; as m) {
-          <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            @for (
-              item of [
-                ['Días trabajados', m.worked_days],
-                ['A tiempo', m.on_time],
-                ['Retardos', m.lates],
-                ['Faltas', m.absences],
-                ['Vacaciones / permisos', m.excused_days],
-              ];
-              track item[0]
-            ) {
-              <div class="rounded-xl border border-glass bg-surface/40 p-3 text-center">
-                <div class="text-2xl font-bold text-ink">{{ item[1] }}</div>
-                <div class="text-xs text-muted-text">{{ item[0] }}</div>
-              </div>
-            }
+        <div class="min-w-0 text-center">
+          <div class="truncate text-lg font-bold text-ink">{{ user?.name }}</div>
+          <div class="truncate text-sm text-muted-text">{{ user?.email }}</div>
+        </div>
+        <div class="flex flex-wrap justify-center gap-1.5">
+          <span class="badge badge-brand">{{ user?.role_label }}</span>
+          @if (user?.employee; as e) {
+            <span class="badge"><i class="bi bi-person-badge" aria-hidden="true"></i> {{ e.employee_code }}</span>
+          }
+        </div>
+        <dl class="identity-facts">
+          <div>
+            <dt><i class="bi bi-building" aria-hidden="true"></i> Empresa</dt>
+            <dd>{{ user?.company?.name }}</dd>
           </div>
-        }
+          @if (p?.position) {
+            <div>
+              <dt><i class="bi bi-briefcase" aria-hidden="true"></i> Puesto</dt>
+              <dd>{{ p?.position }}</dd>
+            </div>
+          }
+          @if (p?.last_login_at) {
+            <div>
+              <dt><i class="bi bi-clock-history" aria-hidden="true"></i> Último acceso</dt>
+              <dd>{{ p?.last_login_at | date: 'd MMM y, HH:mm' }}</dd>
+            </div>
+          }
+          @if (p?.member_since) {
+            <div>
+              <dt><i class="bi bi-calendar-check" aria-hidden="true"></i> Cuenta desde</dt>
+              <dd>{{ p?.member_since | date: 'MMMM y' }}</dd>
+            </div>
+          }
+        </dl>
       </section>
-    }
 
-    <section class="card">
-      <h3 class="mb-3 text-base">Cambiar contraseña</h3>
-      <div class="field">
-        <label>Contraseña actual</label
-        ><input
-          type="password"
-          [(ngModel)]="password.current_password"
-          autocomplete="current-password"
-        />
-      </div>
-      <div class="field">
-        <label>Nueva contraseña</label
-        ><input type="password" [(ngModel)]="password.password" autocomplete="new-password" />
-      </div>
-      <div class="field">
-        <label>Confírmala</label
-        ><input
-          type="password"
-          [(ngModel)]="password.password_confirmation"
-          autocomplete="new-password"
-        />
-      </div>
+      <nav class="card section-nav" aria-label="Secciones de Mi perfil">
+        @for (item of sections(); track item.id) {
+          <button
+            type="button"
+            class="section-link"
+            [class.active]="section() === item.id"
+            [class.danger]="item.id === 'empresa'"
+            [attr.aria-current]="section() === item.id ? 'page' : null"
+            (click)="section.set(item.id)"
+          >
+            <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>
+            <span>{{ item.label }}</span>
+          </button>
+        }
+      </nav>
+    </aside>
+
+    <div class="grid min-w-0 content-start gap-5">
+      @switch (section()) {
+        @case ('datos') {
+          <section class="card">
+            <h3 class="section-title">Foto de perfil</h3>
+            <app-image-upload
+              [photoUrl]="user?.avatar_url ?? null"
+              [initials]="initials()"
+              [busy]="uploading()"
+              label="Tu foto"
+              hint="Se ve en la barra superior junto a tu nombre. JPG, PNG o WebP · máximo 2 MB"
+              (upload)="uploadAvatar($event)"
+              (removed)="removeAvatar()"
+            />
+          </section>
+
+          <section class="card">
+            <h3 class="section-title">Datos personales</h3>
+            <p class="section-hint">
+              @if (p?.linked_employee) {
+                Tu nombre y teléfono se guardan también en tu ficha de empleado.
+              } @else {
+                Así te verán los demás en el panel y en el historial de cambios.
+              }
+            </p>
+
+            @if (!p) {
+              <div class="alert alert-error">No pudimos cargar tus datos. Recarga la página.</div>
+            } @else {
+              <form (ngSubmit)="saveProfile()" autocomplete="on">
+                <div class="grid gap-x-4 sm:grid-cols-2">
+                  @if (p.linked_employee) {
+                    <div class="field">
+                      <label for="pf-first">Nombre(s)</label>
+                      <input id="pf-first" name="first_name" maxlength="80" autocomplete="given-name" [(ngModel)]="form.first_name" required />
+                    </div>
+                    <div class="field">
+                      <label for="pf-last">Apellidos</label>
+                      <input id="pf-last" name="last_name" maxlength="80" autocomplete="family-name" [(ngModel)]="form.last_name" required />
+                    </div>
+                    <div class="field">
+                      <label for="pf-phone">Teléfono</label>
+                      <input id="pf-phone" name="phone" type="tel" maxlength="30" autocomplete="tel" placeholder="Opcional" [(ngModel)]="form.phone" />
+                    </div>
+                    <div class="field">
+                      <label for="pf-position">Puesto</label>
+                      <input id="pf-position" [value]="p.position || 'Sin asignar'" disabled />
+                      <span class="hint">Lo asigna tu empresa.</span>
+                    </div>
+                  } @else {
+                    <div class="field sm:col-span-2">
+                      <label for="pf-name">Nombre completo</label>
+                      <input id="pf-name" name="name" maxlength="120" autocomplete="name" [(ngModel)]="form.name" required />
+                    </div>
+                  }
+                  <div class="field sm:col-span-2">
+                    <label for="pf-email">Correo electrónico</label>
+                    <input id="pf-email" name="email" type="email" maxlength="190" autocomplete="email" [(ngModel)]="form.email" required />
+                    <span class="hint">Es tu usuario para entrar al panel y a la app.</span>
+                  </div>
+                  @if (emailChanged()) {
+                    <div class="field sm:col-span-2">
+                      <div class="alert alert-warning mb-2">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        <span>Desde que guardes, entrarás con <strong>{{ form.email }}</strong>. Escribe tu contraseña para confirmar.</span>
+                      </div>
+                      <label for="pf-pass">Tu contraseña</label>
+                      <input id="pf-pass" name="current_password" type="password" autocomplete="current-password" [(ngModel)]="form.current_password" />
+                    </div>
+                  }
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-ghost" type="button" (click)="resetForm()" [disabled]="!dirty() || saving()">
+                    Descartar
+                  </button>
+                  <button class="btn btn-primary" type="submit" [disabled]="!canSave()">
+                    <i class="bi bi-check2" aria-hidden="true"></i>
+                    {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+                  </button>
+                </div>
+              </form>
+            }
+          </section>
+        }
+
+        @case ('seguridad') {
+          <section class="card">
+            <h3 class="section-title">Cambiar contraseña</h3>
+            <p class="section-hint">Al cambiarla cerramos tus sesiones en otros dispositivos.</p>
+            <form (ngSubmit)="savePassword()">
+              <div class="grid gap-x-4 sm:grid-cols-2">
+                <div class="field sm:col-span-2">
+                  <label for="pw-current">Contraseña actual</label>
+                  <input id="pw-current" name="current_password" [type]="showPassword() ? 'text' : 'password'" autocomplete="current-password" [(ngModel)]="password.current_password" />
+                </div>
+                <div class="field">
+                  <label for="pw-new">Nueva contraseña</label>
+                  <input id="pw-new" name="password" [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" [(ngModel)]="password.password" />
+                </div>
+                <div class="field">
+                  <label for="pw-confirm">Confírmala</label>
+                  <input id="pw-confirm" name="password_confirmation" [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" [(ngModel)]="password.password_confirmation" />
+                </div>
+              </div>
+              <ul class="rules">
+                @for (rule of passwordRules(); track rule.label) {
+                  <li [class.ok]="rule.ok">
+                    <i class="bi" [class.bi-check-circle-fill]="rule.ok" [class.bi-circle]="!rule.ok" aria-hidden="true"></i>
+                    {{ rule.label }}
+                  </li>
+                }
+              </ul>
+              <div class="form-actions">
+                <label class="check mr-auto">
+                  <input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(!showPassword())" />
+                  Mostrar contraseñas
+                </label>
+                <button class="btn btn-primary" type="submit" [disabled]="!canSavePassword()">
+                  <i class="bi bi-shield-check" aria-hidden="true"></i>
+                  {{ savingPassword() ? 'Guardando…' : 'Actualizar contraseña' }}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          @if (user?.employee) {
+            <section class="card">
+              <h3 class="section-title">PIN para checar</h3>
+              <p class="section-hint">
+                Lo usas en el teclado de la app y en el kiosko, junto con tu código
+                <strong>{{ user?.employee?.employee_code }}</strong> (en el kiosko escribe solo las cifras).
+              </p>
+              <form (ngSubmit)="savePin()">
+                <div class="grid gap-x-4 sm:grid-cols-3">
+                  <div class="field">
+                    <label for="pin-new">Nuevo PIN</label>
+                    <input id="pin-new" name="pin" type="password" inputmode="numeric" maxlength="6" placeholder="6 dígitos" autocomplete="off" [(ngModel)]="pin.pin" />
+                  </div>
+                  <div class="field">
+                    <label for="pin-confirm">Confírmalo</label>
+                    <input id="pin-confirm" name="pin_confirmation" type="password" inputmode="numeric" maxlength="6" autocomplete="off" [(ngModel)]="pin.pin_confirmation" />
+                  </div>
+                  <div class="field">
+                    <label for="pin-pass">Tu contraseña</label>
+                    <input id="pin-pass" name="current_password" type="password" autocomplete="current-password" [(ngModel)]="pin.current_password" />
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-primary" type="submit" [disabled]="pin.pin.length !== 6 || pin.pin !== pin.pin_confirmation || !pin.current_password || savingPin()">
+                    <i class="bi bi-key" aria-hidden="true"></i>
+                    {{ savingPin() ? 'Guardando…' : 'Cambiar PIN' }}
+                  </button>
+                </div>
+              </form>
+            </section>
+          }
+
+          <section class="card">
+            <div class="flex flex-wrap items-center gap-4">
+              <span class="icon-tile"><i class="bi bi-laptop" aria-hidden="true"></i></span>
+              <div class="min-w-0 flex-1">
+                <h3 class="section-title mb-0">Sesiones abiertas</h3>
+                <p class="text-sm text-muted-text">
+                  @if (p?.other_sessions) {
+                    Tienes {{ p?.other_sessions }} sesión(es) abierta(s) en otros navegadores o en la app.
+                  } @else {
+                    Solo tienes abierta esta sesión.
+                  }
+                  ¿Perdiste un dispositivo? Ciérralas todas menos esta.
+                </p>
+              </div>
+              <button class="btn" type="button" (click)="openSessions()">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar las demás
+              </button>
+            </div>
+          </section>
+        }
+
+        @case ('jornada') {
+          @if (summary(); as s) {
+            <section class="card">
+              <h3 class="section-title">Mi jornada</h3>
+              <div class="grid gap-3 text-sm sm:grid-cols-3">
+                <div class="fact-tile">
+                  <div class="stat-label">Oficina · área</div>
+                  <div class="font-semibold">{{ s.office }} · {{ s.area }}</div>
+                </div>
+                <div class="fact-tile">
+                  <div class="stat-label">Turno</div>
+                  <div class="font-semibold">
+                    {{ s.shift.name }} · {{ s.shift.starts_at.slice(0, 5) }}–{{ s.shift.ends_at.slice(0, 5) }}
+                  </div>
+                  <div class="text-xs text-muted-text">{{ days(s.shift.weekdays) }}</div>
+                </div>
+                <div class="fact-tile">
+                  <div class="stat-label">Tolerancia</div>
+                  <div class="font-semibold">{{ s.shift.tolerance_minutes }} minutos</div>
+                </div>
+              </div>
+            </section>
+            @if (s.metrics; as m) {
+              <section class="card">
+                <h3 class="section-title">Este mes</h3>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                  @for (
+                    item of [
+                      ['Días trabajados', m.worked_days],
+                      ['A tiempo', m.on_time],
+                      ['Retardos', m.lates],
+                      ['Faltas', m.absences],
+                      ['Vacaciones / permisos', m.excused_days],
+                    ];
+                    track item[0]
+                  ) {
+                    <div class="fact-tile text-center">
+                      <div class="text-2xl font-bold text-ink">{{ item[1] }}</div>
+                      <div class="text-xs text-muted-text">{{ item[0] }}</div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          } @else {
+            <section class="card">
+              <div class="empty">No pudimos cargar tu jornada.</div>
+            </section>
+          }
+        }
+
+        @case ('apariencia') {
+          <section class="card">
+            <h3 class="section-title">Apariencia</h3>
+            <p class="section-hint">Se guarda en este navegador y se aplica al momento.</p>
+            <app-appearance-settings />
+          </section>
+        }
+
+        @case ('empresa') {
+          <section class="card danger-zone">
+            <h3 class="section-title text-danger-text">
+              <i class="bi bi-exclamation-octagon" aria-hidden="true"></i> Eliminar perfil de empresa de AsistControl
+            </h3>
+            <p class="text-sm text-ink-soft">
+              Cierra de inmediato el acceso de todos (dueño, administradores, empleados y kioskos) y
+              cancela tu suscripción. Recibirás un enlace para descargar tus datos, válido por 48
+              horas. A los 30 días eliminaremos de forma definitiva toda la información de tu empresa
+              y de tus empleados.
+            </p>
+            <div class="form-actions">
+              <button class="btn btn-danger" type="button" (click)="openDeletion()">
+                <i class="bi bi-trash3" aria-hidden="true"></i> Eliminar empresa
+              </button>
+            </div>
+          </section>
+        }
+      }
+    </div>
+  </div>
+}
+
+@if (sessionsOpen()) {
+  <app-modal heading="Cerrar las demás sesiones" (closed)="sessionsOpen.set(false)">
+    <p class="mb-4 text-sm text-ink-soft">
+      Saldrás de AsistControl en los demás navegadores y en la app. Esta sesión sigue abierta.
+    </p>
+    <div class="field">
+      <label for="sessions-password">Tu contraseña</label>
+      <input
+        id="sessions-password"
+        type="password"
+        autocomplete="current-password"
+        [(ngModel)]="sessionsPassword"
+        (keydown.enter)="sessionsPassword && closeOtherSessions()"
+      />
+    </div>
+    <div modal-footer>
+      <button class="btn" type="button" (click)="sessionsOpen.set(false)">Cancelar</button>
       <button
         class="btn btn-primary"
         type="button"
-        (click)="savePassword()"
-        [disabled]="!password.current_password || !password.password"
+        (click)="closeOtherSessions()"
+        [disabled]="!sessionsPassword || closingSessions()"
       >
-        Actualizar contraseña
+        {{ closingSessions() ? 'Cerrando…' : 'Cerrar sesiones' }}
       </button>
-    </section>
-
-    @if (auth.user()?.employee) {
-      <section class="card">
-        <h3 class="mb-1 text-base">PIN para checar</h3>
-        <p class="mb-3 text-sm text-muted-text">
-          Lo usas en el teclado de la app y en el kiosko, junto con tu código
-          <strong>{{ auth.user()?.employee?.employee_code }}</strong>
-          (en el kiosko escribe solo las cifras).
-        </p>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="field">
-            <label>Nuevo PIN</label
-            ><input type="password" inputmode="numeric" maxlength="6" placeholder="6 dígitos" [(ngModel)]="pin.pin" />
-          </div>
-          <div class="field">
-            <label>Confírmalo</label
-            ><input
-              type="password"
-              inputmode="numeric"
-              maxlength="6"
-              [(ngModel)]="pin.pin_confirmation"
-            />
-          </div>
-        </div>
-        <div class="field">
-          <label>Tu contraseña</label><input type="password" [(ngModel)]="pin.current_password" />
-        </div>
-        <button
-          class="btn btn-primary"
-          type="button"
-          (click)="savePin()"
-          [disabled]="!pin.pin || !pin.current_password"
-        >
-          Cambiar PIN
-        </button>
-      </section>
-    }
-  </div>
-
-  <section class="card mt-8">
-    <h3 class="text-base"><i class="bi bi-palette" aria-hidden="true"></i> Apariencia</h3>
-    <p class="text-sm text-muted-text">Se guarda en este navegador y se aplica al momento.</p>
-    <app-appearance-settings />
-  </section>
-
-  @if (auth.isOwner()) {
-    <section class="card danger-zone mt-8">
-      <div class="flex flex-wrap items-start gap-4">
-        <div class="flex-1">
-          <h3 class="text-base text-danger-text">
-            <i class="bi bi-exclamation-octagon" aria-hidden="true"></i> Eliminar perfil de empresa de
-            AsistControl
-          </h3>
-          <p class="mt-1 text-sm text-ink-soft">
-            Cierra de inmediato el acceso de todos (dueño, administradores, empleados y kioskos) y
-            cancela tu suscripción. Recibirás un enlace para descargar tus datos, válido por 48
-            horas. A los 30 días eliminaremos de forma definitiva toda la información de tu empresa
-            y de tus empleados.
-          </p>
-        </div>
-        <button class="btn btn-danger" type="button" (click)="openDeletion()">
-          <i class="bi bi-trash3" aria-hidden="true"></i> Eliminar empresa
-        </button>
-      </div>
-    </section>
-  }
+    </div>
+  </app-modal>
 }
 
 @if (deleteOpen()) {

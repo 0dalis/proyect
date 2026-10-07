@@ -36,6 +36,8 @@ export class WeatherHeroComponent implements OnInit {
 
   protected readonly weather = signal<WeatherState | null>(null);
   protected readonly loading = signal(true);
+  /** El video ya puede reproducirse: aparece con un fundido sobre la imagen. */
+  protected readonly videoReady = signal(false);
   /**
    * Se usa la oficina o CDMX porque no hubo geolocalización: se ofrece
    * "usar mi ubicación". Al empleado no, él siempre ve el de su oficina.
@@ -66,6 +68,7 @@ export class WeatherHeroComponent implements OnInit {
 
   protected async retry(): Promise<void> {
     this.loading.set(true);
+    this.videoReady.set(false);
     try {
       const state = await this.weatherService.refresh();
       this.weather.set(state);

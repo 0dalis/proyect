@@ -23,8 +23,10 @@ export interface WeatherState {
   /** De dónde salió la ubicación (para ofrecer "usar mi ubicación"). */
   source: 'device' | 'office' | 'fallback';
   isDay: boolean;
-  /** Ruta del fondo local, si existe (public/weather/*.png). */
+  /** Imagen fija del fondo (public/weather/*.jpg): póster y modo sin movimiento. */
   background: string;
+  /** Video en bucle del fondo (public/weather/*.webm). */
+  video: string;
 }
 
 interface OpenMeteoCurrent {
@@ -38,7 +40,7 @@ interface OpenMeteoResponse {
   timezone?: string;
 }
 
-const CACHE_KEY = 'ac-weather-cache-v2';
+const CACHE_KEY = 'ac-weather-cache-v3';
 const POS_KEY = 'ac-weather-pos-v2';
 const CACHE_MS = 30 * 60 * 1000;
 /** Sin geolocalización ni oficina con coordenadas: CDMX como último recurso. */
@@ -73,7 +75,11 @@ export function mapWeatherCode(code: number, isDay: boolean): { kind: WeatherKin
 }
 
 export function backgroundFor(kind: WeatherKind): string {
-  return `/weather/${kind}.png`;
+  return `/weather/${kind}.jpg`;
+}
+
+export function videoFor(kind: WeatherKind): string {
+  return `/weather/${kind}.webm`;
 }
 
 /**
@@ -108,6 +114,7 @@ export class WeatherService {
         source: pos.source,
         isDay,
         background: backgroundFor(kind),
+        video: videoFor(kind),
       };
       this.writeCache(key, state);
       return state;
@@ -121,6 +128,7 @@ export class WeatherService {
         source: pos.source,
         isDay: true,
         background: backgroundFor('cloudy'),
+        video: videoFor('cloudy'),
       };
     }
   }

@@ -26,6 +26,9 @@ Route::get('session/ping', fn () => response()->json([
 
 Route::prefix('me')->name('perfil.')->group(function () {
     Route::get('/', [AuthController::class, 'me'])->name('actual');
+    Route::get('profile', [ProfileController::class, 'show'])->name('datos');
+    Route::put('profile', [ProfileController::class, 'update'])->middleware('throttle:10,1')->name('datos.guardar');
+    Route::post('sessions/close', [ProfileController::class, 'destroyOtherSessions'])->middleware('throttle:6,1')->name('sesiones.cerrar');
     Route::get('summary', [ProfileController::class, 'summary'])->name('resumen');
     Route::put('password', [ProfileController::class, 'updatePassword'])->middleware('throttle:6,1')->name('password');
     Route::put('pin', [ProfileController::class, 'updatePin'])->middleware('throttle:6,1')->name('pin');

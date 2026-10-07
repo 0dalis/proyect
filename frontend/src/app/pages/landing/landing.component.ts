@@ -5,17 +5,16 @@ import { Plan, Testimonials } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { RatingService } from '../../core/services/rating.service';
 import { StarRatingComponent } from '../../shared/components/star-rating/star-rating.component';
-import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
 import { quote, yearlyTotal } from './pricing';
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, CurrencyPipe, ThemeToggleComponent, StarRatingComponent],
+  imports: [RouterLink, CurrencyPipe, StarRatingComponent],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
 })
 export class LandingComponent implements OnInit {
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
   private readonly ratings = inject(RatingService);
 
   protected readonly plans = signal<Plan[]>([]);
@@ -129,6 +128,10 @@ export class LandingComponent implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
+    // Se pregunta por la sesión desde ya: así "Entrar" / "Prueba gratis" no
+    // esperan a /me al hacer clic (el guard de invitados ya la tiene en caché).
+    this.auth.loadUser().catch(() => undefined);
+
     // Las opiniones son opcionales: si fallan, la sección no se muestra
     this.ratings
       .testimonials()

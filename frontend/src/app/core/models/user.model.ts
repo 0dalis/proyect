@@ -52,3 +52,28 @@ export interface CurrentUser {
   /** Oficina para el clima: la del empleado o la primera de la empresa con coordenadas. */
   weather_location?: { latitude: number; longitude: number; place: string } | null;
 }
+
+/** Datos editables de "Mi perfil" (GET me/profile). */
+export interface MyProfile {
+  name: string;
+  email: string;
+  /** Solo si la cuenta está ligada a un empleado: se editan en su ficha. */
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  position: string | null;
+  linked_employee: boolean;
+  last_login_at: string | null;
+  member_since: string | null;
+  /** Navegadores y tokens de la app abiertos, sin contar este. */
+  other_sessions: number;
+}
+
+export interface MyProfileUpdate {
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string | null;
+  email: string;
+  current_password?: string;
+}

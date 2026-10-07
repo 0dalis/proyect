@@ -15,6 +15,17 @@
  * `static`: las variables existen aunque ninguna clase las use (SCSS y SVG las leen).
  */
 @theme static {
+  /* Esquinas sobrias: menos redondeadas que las de Tailwind por defecto */
+  --radius-sm: 0.1875rem;
+  --radius-md: 0.3125rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.625rem;
+  --radius-3xl: 0.75rem;
+
+  /* Bordes finos: `border` dibuja 0.6px (línea casi imperceptible) */
+  --default-border-width: 0.6px;
+
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --color-ink: #1e293b;
@@ -23,7 +34,9 @@
   --color-muted-text: #64748b;
   --color-canvas: #f1f5f9;
   --color-surface: #ffffff;
-  --color-line: #e2e8f0;
+  /* Líneas apenas visibles; line-strong solo para campos de formulario */
+  --color-line: rgb(15 23 42 / 0.23);
+  --color-line-strong: rgb(15 23 42 / 0.32);
   --color-glass: rgb(255 255 255 / 0.6);
 
   /* Receta de vidrio que comparten .glass y sus variantes (CSS puro) */
@@ -91,7 +104,8 @@
   --color-muted-text: #93b3a8;
   --color-canvas: #06110e;
   --color-surface: #0e1d19;
-  --color-line: #1e332d;
+  --color-line: rgb(195 216 208 / 0.23);
+  --color-line-strong: rgb(195 216 208 / 0.32);
   --color-glass: rgb(147 179 168 / 0.22);
 
   /* Vidrio en oscuro: tinte del propio petróleo, opaco y con menos saturación */
@@ -322,7 +336,7 @@ html[data-font] body {
   input:not([type='checkbox']):not([type='radio']):not([type='range']),
   select,
   textarea {
-    @apply w-full rounded-xl border border-line bg-surface/90 px-3 py-2 text-ink shadow-sm placeholder:text-muted focus:border-primary focus:ring-3 focus:ring-primary-focus/60 focus:outline-none disabled:bg-canvas disabled:text-muted;
+    @apply w-full rounded-xl border border-line-strong bg-surface/90 px-3 py-2 text-ink shadow-sm placeholder:text-muted focus:border-primary focus:ring-3 focus:ring-primary-focus/60 focus:outline-none disabled:bg-canvas disabled:text-muted;
     box-shadow:
       inset 0 1px 0 var(--glass-highlight),
       inset 0 2px 6px rgb(15 23 42 / 0.04);
@@ -362,8 +376,8 @@ html[data-font] body {
  * esta utilidad, así que se combinan con ella: class="glass glass-bar".
  */
 @utility glass {
-  border: 1px solid var(--color-glass);
-  border-radius: 1rem;
+  border: 0.6px solid var(--color-line);
+  border-radius: 0.625rem;
   background-color: var(--glass-bg, var(--glass-tint));
   background-image: var(--glass-sheen);
   box-shadow:
@@ -397,7 +411,7 @@ html[data-font] body {
   }
 
   .btn {
-    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink-soft shadow-sm transition hover:border-muted/60 hover:bg-canvas focus-visible:ring-3 focus-visible:ring-primary-focus/70 focus-visible:outline-none active:translate-y-px disabled:cursor-not-allowed disabled:border-disabled disabled:bg-canvas disabled:text-muted;
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink-soft shadow-sm transition hover:border-line-strong hover:bg-canvas focus-visible:ring-3 focus-visible:ring-primary-focus/70 focus-visible:outline-none active:translate-y-px disabled:cursor-not-allowed disabled:border-disabled disabled:bg-canvas disabled:text-muted;
     box-shadow: inset 0 1px 0 var(--glass-highlight);
   }
 
@@ -446,7 +460,7 @@ html[data-font] body {
   }
 
   .badge {
-    @apply inline-flex items-center gap-1 rounded-full border border-line bg-surface px-2.5 py-0.5 text-xs font-semibold text-ink-soft;
+    @apply inline-flex items-center gap-1 rounded-md border border-line bg-surface px-2 py-0.5 text-xs font-semibold text-ink-soft;
   }
 
   .badge-brand {

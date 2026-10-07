@@ -8,17 +8,127 @@ use App\Support\ActivityLogger;
 use App\Support\AttendanceSummary;
 use App\Support\StoredImage;
 use App\Support\VacationBalance;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class ProfileController extends Controller
 {
+    /**
+     * Datos editables de "Mi perfil". Si la cuenta está ligada a un empleado,
+     * el nombre y el teléfono son los de su ficha (se mantienen sincronizados).
+     */
+    public function show(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $employee = $user->company->database ? $user->employee() : null;
+
+        return response()->json([
+            'name' => $user->name,
+            'email' => $user->email,
+            'first_name' => $employee?->first_name,
+            'last_name' => $employee?->last_name,
+            'phone' => $employee?->phone,
+            'position' => $employee?->position,
+            'linked_employee' => $employee !== null,
+            'last_login_at' => $user->last_login_at,
+            'member_since' => $user->created_at,
+            'other_sessions' => $this->otherSessions($request)->count() + $this->otherTokens($request)->count(),
+        ]);
+    }
+
+    /**
+     * El usuario edita su nombre, su correo de acceso y (si es empleado) su
+     * teléfono. Cambiar el correo exige la contraseña actual: es su usuario.
+     */
+    public function update(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $employee = $user->company->database ? $user->employee() : null;
+        $emailChanged = $request->filled('email') && strcasecmp((string) $request->input('email'), $user->email) !== 0;
+
+        $data = $request->validate([
+            'name' => [$employee ? 'prohibited' : 'required', 'string', 'max:120'],
+            'first_name' => [$employee ? 'required' : 'prohibited', 'string', 'max:80'],
+            'last_name' => [$employee ? 'required' : 'prohibited', 'string', 'max:80'],
+            'phone' => [$employee ? 'nullable' : 'prohibited', 'string', 'max:30', 'regex:/^[0-9+()\-\s]{7,30}$/'],
+            'email' => ['required', 'email', 'max:190', Rule::unique('users', 'email')->ignore($user->id)],
+            'current_password' => [Rule::requiredIf($emailChanged), 'nullable', 'current_password:sanctum'],
+        ], [
+            'email.unique' => 'Ese correo ya tiene una cuenta en AsistControl.',
+            'current_password.required' => 'Escribe tu contraseña para cambiar el correo.',
+            'current_password.current_password' => 'La contraseña es incorrecta.',
+            'phone.regex' => 'Escribe un teléfono válido (solo números, espacios, +, - y paréntesis).',
+            'name.prohibited' => 'Tu nombre se toma de tu ficha de empleado.',
+        ]);
+
+        if ($employee) {
+            $employee->fill([
+                'first_name' => trim($data['first_name']),
+                'last_name' => trim($data['last_name']),
+                'phone' => $data['phone'] ?? null,
+                // El correo de la ficha sigue al de la cuenta
+                'email' => $data['email'],
+            ])->save();
+            $data['name'] = $employee->fullName();
+        }
+
+        $user->forceFill(['name' => trim($data['name']), 'email' => $data['email']])->save();
+
+        ActivityLogger::log('updated', $user, $emailChanged
+            ? "Actualizó su perfil y cambió su correo a {$data['email']}"
+            : 'Actualizó su perfil');
+
+        return response()->json([
+            'message' => $emailChanged ? 'Perfil actualizado. Desde ahora entras con tu nuevo correo.' : 'Perfil actualizado.',
+            'user' => new CurrentUserResource($user->refresh()),
+        ]);
+    }
+
+    /**
+     * Cierra las sesiones de otros navegadores y los tokens de la app,
+     * dejando abierta solo la actual.
+     */
+    public function destroyOtherSessions(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password:sanctum'],
+        ], [
+            'current_password.current_password' => 'La contraseña es incorrecta.',
+        ]);
+
+        $closed = $this->otherSessions($request)->delete() + $this->otherTokens($request)->delete();
+
+        ActivityLogger::log('updated', $request->user(), 'Cerró sus otras sesiones');
+
+        return response()->json([
+            'message' => $closed ? "Cerramos {$closed} sesión(es) en otros dispositivos." : 'No había otras sesiones abiertas.',
+        ]);
+    }
+
+    private function otherSessions(Request $request): Builder
+    {
+        return DB::connection('central')->table('sessions')
+            ->where('user_id', $request->user()->id)
+            ->when($request->hasSession(), fn (Builder $query) => $query->where('id', '!=', $request->session()->getId()));
+    }
+
+    private function otherTokens(Request $request): Relation
+    {
+        $current = $request->user()->currentAccessToken();
+
+        return $request->user()->tokens()
+            ->when($current instanceof PersonalAccessToken, fn ($query) => $query->whereKeyNot($current->getKey()));
+    }
+
     public function updatePassword(Request $request): JsonResponse
     {
         $request->validate([

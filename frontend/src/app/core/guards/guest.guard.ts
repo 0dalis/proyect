@@ -7,6 +7,8 @@ import { AuthService } from '../services/auth.service';
  */
 export const guestGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
+  // inject() solo funciona antes del primer await (contexto de inyección)
+  const router = inject(Router);
 
-  return (await auth.loadUser()) ? inject(Router).createUrlTree(['/panel']) : true;
+  return (await auth.loadUser()) ? router.createUrlTree(['/panel']) : true;
 };

@@ -183,8 +183,8 @@ $types: (
   width: 100%;
   min-height: $icon-size;
   overflow: hidden;
-  border: 1px solid var(--color-glass);
-  border-radius: 1rem;
+  border: 0.6px solid var(--color-line);
+  border-radius: 0.625rem;
   background: color-mix(in oklab, var(--color-surface) 94%, transparent);
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.3);
   backdrop-filter: blur(16px);
